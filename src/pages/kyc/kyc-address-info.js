@@ -8,7 +8,7 @@ export default function KycAddressInfoPage() {
   return (
     <>
       <Helmet>
-        <title> Bonds: KYC</title>
+        <title> Dashboard: KYC</title>
       </Helmet>
 
       <KycAddressInfo />

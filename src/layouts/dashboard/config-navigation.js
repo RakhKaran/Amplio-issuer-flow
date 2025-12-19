@@ -91,33 +91,33 @@ export function useNavData() {
         //   },
 
           // COMPANY
-          {
-            title: t('issuer services'),
-            path: paths.dashboard.issureservices.root,
-            icon: ICONS.company,
-            children: [
-              { title: t('Bond Estimation'), path: paths.dashboard.issureservices.roi },
-              { title: t('Document Drafting'), path: paths.dashboard.documentDrafting.list },
-            ],
-          },
+          // {
+          //   title: t('issuer services'),
+          //   path: paths.dashboard.issureservices.root,
+          //   icon: ICONS.company,
+          //   children: [
+          //     { title: t('Bond Estimation'), path: paths.dashboard.issureservices.roi },
+          //     { title: t('Document Drafting'), path: paths.dashboard.documentDrafting.list },
+          //   ],
+          // },
 
-            {
-            title: t('intermediates'),
-            path: paths.dashboard.trustee.root,
-            icon: ICONS.intermediate,
-            children: [
-              { title: t('Debenture Trustees'), path: paths.dashboard.trustee.list },
-            ],
+          //   {
+          //   title: t('intermediates'),
+          //   path: paths.dashboard.trustee.root,
+          //   icon: ICONS.intermediate,
+          //   children: [
+          //     { title: t('Debenture Trustees'), path: paths.dashboard.trustee.list },
+          //   ],
 
-          },
-          {
-            title: t('my bonds'),
-            path: paths.dashboard.mybond.root,
-            icon: ICONS.bonds,
-            children: [
-              { title: t('create'), path: paths.dashboard.mybond.create },
-            ],
-          },
+          // },
+          // {
+          //   title: t('my bonds'),
+          //   path: paths.dashboard.mybond.root,
+          //   icon: ICONS.bonds,
+          //   children: [
+          //     { title: t('create'), path: paths.dashboard.mybond.create },
+          //   ],
+          // },
             {
             title: t('signatories'),
             path: paths.dashboard.signatories.root,
