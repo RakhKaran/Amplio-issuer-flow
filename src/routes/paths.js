@@ -76,6 +76,8 @@ export const paths = {
     },
     jwt: {
       login: `${ROOTS.AUTH}/jwt/login`,
+      registerPhone: `${ROOTS.AUTH}/jwt/register-phone`,
+      registerEmail: `${ROOTS.AUTH}/jwt/register-email`,
       register: `${ROOTS.AUTH}/jwt/register`,
       newPassword: `${ROOTS.AUTH}/jwt/new-password`,
       forgotPassword: `${ROOTS.AUTH}/jwt/forgot-password`,
@@ -88,6 +90,12 @@ export const paths = {
     },
     auth0: {
       login: `${ROOTS.AUTH}/auth0/login`,
+    },
+    kyc: {
+      issuerKyc: `${ROOTS.AUTH}/kyc/issuer-kyc`,
+      kycBasicInfo: `${ROOTS.AUTH}/kyc/basic-info`,
+      kycSuccessful: `${ROOTS.AUTH}/kyc/kyc-successful`,
+      kycPending: `${ROOTS.AUTH}/kyc/kyc-pending`
     },
   },
   authDemo: {

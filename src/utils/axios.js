@@ -1,7 +1,3 @@
-
-
-
-
 //
 import axios from 'axios';
 // config
@@ -67,6 +63,25 @@ export const endpoints = {
     filterList: (filter) => `/document-types?filter=${filter}`,
     details: (id) => `/document-types/${id}`,
   },
+  entityType: {
+    list: '/company-entity-types',
+    filterList: (filter) => `/company-entity-types?filter=${filter}`,
+    details: (id) => `/company-entity-types/${id}`,
+  },
+  issuerKyc: {
+    kycProgress: (sessionId) => `/trustee-profiles/kyc-progress/${sessionId}`,
+    getSection: (section, profileId, route = '') =>
+      `/trustee-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
+    details: (id) => `/trustee-profiles/bank-details/${id}`,
+    getBankDetails: `/trustee-profiles/bank-details`,
+    getDocuments: `/trustee-profiles/documents`,
+    getProfileData: `/trustee-profiles/me`,
+  },
+  issuerEntityType: {
+    list: '/trustee-entity-types',
+    filterList: (filter) => `/trustee-entity-types?filter=${filter}`,
+    details: (id) => `/trustee-entity-types/${id}`,
+  },
   companyInfo: {
     list: '/api/kyc/issuer_kyc/company-info/',
     filterList: (filter) => `/api/kyc/issuer_kyc/company-info/?filter=${filter}`,
@@ -85,7 +100,7 @@ export const endpoints = {
   bondEstimations: {
     list: '/bond-estimations',
     filterList: (filter) => `/bond-estimations?filter=${filter}`,
-    details: (applicationId) => `/bond-estimations/${applicationId}`
+    details: (applicationId) => `/bond-estimations/${applicationId}`,
   },
   creditRatingAgencies: {
     list: '/credit-rating-agencies',
@@ -105,6 +120,6 @@ export const endpoints = {
   fieldOptions: {
     chargeTypes: '',
     ownershipTypes: '',
-    collateralTypes: ''
-  }
+    collateralTypes: '',
+  },
 };

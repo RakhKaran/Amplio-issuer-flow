@@ -21,6 +21,8 @@ const AmplifyForgotPasswordPage = lazy(() => import('src/pages/auth/amplify/forg
 
 // JWT
 const JwtLoginPage = lazy(() => import('src/pages/auth/jwt/login'));
+const JwtRegisterPhonePage = lazy(() => import('src/pages/auth/jwt/register-phone'));
+const JwtRegisterEmailPage = lazy(() => import('src/pages/auth/jwt/register-email'));
 const JwtRegisterPage = lazy(() => import('src/pages/auth/jwt/register'));
 const JwtNewPasswordPage = lazy(() => import('src/pages/auth/jwt/new-password'));
 const JwtForgotPasswordPage = lazy(() => import('src/pages/auth/jwt/forgot-password'));
@@ -34,6 +36,9 @@ const FirebaseForgotPasswordPage = lazy(() => import('src/pages/auth/firebase/fo
 // AUTH0
 const Auth0LoginPage = lazy(() => import('src/pages/auth/auth0/login'));
 const Auth0Callback = lazy(() => import('src/pages/auth/auth0/callback'));
+
+// kyc pages
+const KYCBasicInfoPage = lazy(() => import('src/pages/kyc/kyc-basic-info'));
 
 // ----------------------------------------------------------------------
 
@@ -93,6 +98,22 @@ const authJwt = {
       element: (
         <AuthClassicLayout>
           <JwtLoginPage />
+        </AuthClassicLayout>
+      ),
+    },
+    {
+      path: 'register-phone',
+      element: (
+        <AuthClassicLayout title="Manage the job more effectively with Minimal">
+          <JwtRegisterPhonePage />
+        </AuthClassicLayout>
+      ),
+    },
+    {
+      path: 'register-email',
+      element: (
+        <AuthClassicLayout title="Manage the job more effectively with Minimal">
+          <JwtRegisterEmailPage />
         </AuthClassicLayout>
       ),
     },
@@ -183,9 +204,24 @@ const authAuth0 = {
   ],
 };
 
+const authKyc = {
+  path: 'kyc',
+  element: (
+    <Suspense fallback={<SplashScreen />}>
+      <Outlet />
+    </Suspense>
+  ),
+  children: [
+    {
+      path: 'basic-info',
+      element: <KYCBasicInfoPage />,
+    },
+  ],
+};
+
 export const authRoutes = [
   {
     path: 'auth',
-    children: [authAmplify, authJwt, authFirebase, authAuth0],
+    children: [authAmplify, authJwt, authFirebase, authAuth0, authKyc],
   },
 ];
