@@ -100,6 +100,13 @@ export default function JwtLoginView() {
         Log in securely to manage your account, protect your personal information, and stay safe
         with advanced security features
       </Typography>
+      <Stack direction="row" spacing={0.5}>
+        <Typography variant="body2">New user?</Typography>
+
+        <Link component={RouterLink} href={paths.auth.jwt.registerPhone} variant="subtitle2">
+          Create an account
+        </Link>
+      </Stack>
       <RHFTextField name="email" label="Email address" />
 
       <RHFTextField

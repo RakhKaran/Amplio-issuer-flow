@@ -1,9 +1,8 @@
-import PropTypes from 'prop-types';
 import * as Yup from 'yup';
-import { useMemo } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useMemo, useEffect, useState } from 'react';
+import { useSnackbar } from 'src/components/snackbar';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useDropzone } from 'react-dropzone';
 // @mui
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -12,9 +11,9 @@ import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Card } from '@mui/material';
 // sections
 import KYCTitle from './kyc-title';
 import KYCFooter from './kyc-footer';
@@ -22,78 +21,79 @@ import KYCFooter from './kyc-footer';
 import { countries } from 'src/assets/data';
 // components
 import Iconify from 'src/components/iconify';
-import FormProvider, { RHFTextField, RHFSelect, RHFAutocomplete } from 'src/components/hook-form';
-
-// ----------------------------------------------------------------------
-
-function PANUploadArea({ value, onChange, error }) {
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles) => {
-      const file = acceptedFiles[0];
-      if (file) {
-        onChange(file);
-      }
-    },
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.pdf'],
-    },
-  });
-
-  return (
-    <Box
-      {...getRootProps()}
-      sx={{
-        p: 2,
-        borderRadius: 1,
-        cursor: 'pointer',
-        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-        border: (theme) => `1px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 2,
-        ...(isDragActive && {
-          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
-        }),
-        ...(error && {
-          borderColor: 'error.main',
-        }),
-      }}
-    >
-      <input {...getInputProps()} />
-      <Button variant="outlined" size="small">
-        Select file...
-      </Button>
-      <Typography variant="body2" sx={{ color: 'text.secondary', flex: 1 }}>
-        {value ? value.name : 'Drop files here to upload'}
-      </Typography>
-    </Box>
-  );
-}
-
-PANUploadArea.propTypes = {
-  value: PropTypes.object,
-  onChange: PropTypes.func,
-  error: PropTypes.bool,
-};
+import FormProvider, {
+  RHFTextField,
+  RHFSelect,
+  RHFAutocomplete,
+  RHFCustomFileUploadBox,
+} from 'src/components/hook-form';
+import axiosInstance from 'src/utils/axios';
+import dayjs from 'dayjs';
+import RHFFileUploadBox from 'src/components/custom-file-upload/file-upload';
+import YupErrorMessage from 'src/components/error-field/yup-error-messages';
+import { useGetIssuerEntityTypes } from 'src/api/entityType';
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hook';
+import { useGetKycProgress } from 'src/api/issuerKyc';
 
 // ----------------------------------------------------------------------
 
 export default function KYCBasicInfo() {
+  const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
+  const storedProfileId = sessionStorage.getItem('issuer_user_id');
+
+  const sessionId = localStorage.getItem('sessionId');
+  const { kycProgress, profileId: fetchedProfileId } = useGetKycProgress(sessionId);
+
+  const profileId = storedProfileId || fetchedProfileId;
+  console.log('KYCBasicInfo profileId:', profileId);
+
+  const [panExtractionStatus, setPanExtractionStatus] = useState('idle'); // 'idle' | 'success' | 'failed'
+  const [extractedPanDetails, setExtractedPanDetails] = useState(null);
+
+  // State to store mapped API values
+  const [entityOptions, setEntityOptions] = useState([]);
+  const { EntityTypes, EntityTypesEmpty } = useGetIssuerEntityTypes();
+
+  const [humanInteraction, setHumanInteraction] = useState({
+    companyName: false,
+    gstin: false,
+    dateOfIncorporation: false,
+    msmeUdyamRegistrationNo: false,
+    city: false,
+    state: false,
+    country: false,
+    panNumber: false,
+    panHoldersName: false,
+    sebiRegistrationNumber: false,
+    sebiValidityDate: false,
+  });
+
+  const handleHumanInteraction = (fieldName) => {
+    if (!humanInteraction[fieldName]) {
+      setHumanInteraction((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+    }
+  };
+
   const NewUserSchema = Yup.object().shape({
     cin: Yup.string().required('CIN is required'),
     companyName: Yup.string().required('Company Name is required'),
     gstin: Yup.string().required('GSTIN is required'),
     dateOfIncorporation: Yup.date().required('Date of Incorporation is required'),
-    msmeUdyamRegistrationNo: Yup.string(),
+    msmeUdyamRegistrationNo: Yup.string().required('MSME Udyam Registration No is required'),
+    sebiRegistrationNumber: Yup.string().required('SEBI Registration Number is required'),
+    sebiValidityDate: Yup.date().required('SEBI Validity Date is required'),
     city: Yup.string().required('City is required'),
     state: Yup.string().required('State is required'),
     country: Yup.string().required('Country is required'),
-    entityType: Yup.string().required('Entity Type is required'),
-    panFile: Yup.mixed(),
-    panNumber: Yup.string(),
-    dateOfBirth: Yup.date(),
-    panHoldersName: Yup.string(),
+    panFile: Yup.mixed().required('PAN file is required'),
+    panNumber: Yup.string().required('PAN Number is required'),
+    panHoldersName: Yup.string().required("PAN Holder's Name is required"),
+    companyEntityTypeId: Yup.string().required('Entity Type is required'),
   });
 
   const defaultValues = useMemo(
@@ -103,16 +103,19 @@ export default function KYCBasicInfo() {
       gstin: '',
       dateOfIncorporation: null,
       msmeUdyamRegistrationNo: '',
+      sebiRegistrationNumber: '',
+      sebiValidityDate: null,
       city: '',
       state: '',
-      country: '',
-      entityType: '',
+      country: 'India',
       panFile: null,
       panNumber: '',
-      dateOfBirth: null,
       panHoldersName: '',
+      panCardDocumentId: '',
+      companyEntityTypeId: '',
+      humanInteraction: { ...humanInteraction },
     }),
-    []
+    [humanInteraction]
   );
 
   const methods = useForm({
@@ -123,314 +126,601 @@ export default function KYCBasicInfo() {
   const {
     handleSubmit,
     control,
+    reset,
     setValue,
-    formState: { isSubmitting },
+    getValues,
+    watch,
+    formState: { isSubmitting, errors },
   } = methods;
+  const panFile = useWatch({
+    control: methods.control,
+    name: 'panFile',
+  });
 
-  const onSubmit = handleSubmit(async (data) => {
+  const isPanUploaded = Boolean(panFile?.id);
+
+  const handlePanUpload = async (file) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      console.info('DATA', data);
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const uploadRes = await axiosInstance.post('/files', uploadFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      const uploaded = uploadRes?.data?.files?.[0];
+      if (!uploaded || !uploaded.id) {
+        throw new Error('PAN file upload failed');
+      }
+      setValue('panCardDocumentId', uploaded.id, { shouldValidate: true });
+
+      const extractRes = await axiosInstance.post('/extract/pan-info', uploadFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const panData = extractRes?.data?.data || extractRes?.data;
+
+      // Adjust these keys according to your actual API response
+      const panNumberFromApi = panData?.extractedPanNumber || '';
+      const panHolderNameFromApi = panData?.extractedPanHolderName || '';
+
+      if (!panNumberFromApi && !panHolderNameFromApi) {
+        // Treat as failure if nothing useful came back
+        setPanExtractionStatus('failed');
+        enqueueSnackbar(
+          "We couldn't fetch details from your PAN document. Please fill the details manually.",
+          { variant: 'error' }
+        );
+        return;
+      }
+
+      // Fill form values from extraction
+      if (panHolderNameFromApi) {
+        setValue('panHoldersName', panHolderNameFromApi, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+
+      if (panNumberFromApi) {
+        setValue('panNumber', panNumberFromApi, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+
+      // Save extracted details in state for final payload
+      const extracted = {
+        extractedIssuerName: panHolderNameFromApi || '',
+        extractedPanNumber: panNumberFromApi || '',
+      };
+
+      setExtractedPanDetails(extracted);
+      setPanExtractionStatus('success');
+
+      enqueueSnackbar('PAN details extracted successfully', { variant: 'success' });
+    } catch (error) {
+      console.error('Error in PAN upload/extraction:', error);
+      setPanExtractionStatus('failed');
+      enqueueSnackbar(
+        "We couldn't fetch details from your PAN document. Please fill the details manually.",
+        { variant: 'error' }
+      );
+    }
+  };
+
+  const onSubmit = handleSubmit(async (formData) => {
+    try {
+      const sessionId = localStorage.getItem('sessionId') || '';
+
+      const dateOfIncorporationStr = formData.dateOfIncorporation
+        ? dayjs(formData.dateOfIncorporation).format('YYYY-MM-DD')
+        : '';
+      // Detect if user changed PAN fields manually
+      let humanEdited = false;
+
+      if (extractedPanDetails) {
+        humanEdited =
+          extractedPanDetails.extractedIssuerName !== formData.panHoldersName ||
+          extractedPanDetails.extractedPanNumber !== formData.panNumber;
+      }
+
+      // Build extracted PAN object
+      const extractedPan = extractedPanDetails
+        ? {
+            extractedIssuerName: extractedPanDetails.extractedIssuerName || '',
+            extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
+          }
+        : {
+            extractedIssuerName: formData.panHoldersName,
+            extractedPanNumber: formData.panNumber,
+          };
+
+      // Build submitted PAN object
+      const submittedPan = humanEdited
+        ? {
+            submittedIssuerName: formData.panHoldersName,
+            submittedPanNumber: formData.panNumber,
+          }
+        : {
+            submittedIssuerName: formData.panHoldersName,
+            submittedPanNumber: formData.panNumber,
+          };
+
+      // FINAL API PAYLOAD — 100% MATCHES THE API FORMAT YOU GAVE
+      const payload = {
+        sessionId,
+        legalEntityName: formData.companyName,
+        CIN: formData.cin,
+        GSTIN: formData.gstin,
+        udyamRegistrationNumber: formData.msmeUdyamRegistrationNo,
+
+        dateOfIncorporation: dateOfIncorporationStr,
+        sebiRegistrationNumber: formData.sebiRegistrationNumber,
+        sebiValidityDate: formData.sebiValidityDate
+          ? dayjs(formData.sebiValidityDate).format('YYYY-MM-DD')
+          : '',
+
+        cityOfIncorporation: formData.city,
+        stateOfIncorporation: formData.state,
+        countryOfIncorporation: formData.country,
+
+        humanInteraction: humanEdited ? true : false,
+
+        extractedPanDetails: extractedPan,
+        submittedPanDetails: submittedPan,
+
+        panCardDocumentId: formData.panCardDocumentId,
+        issuerEntityTypesId: formData.companyEntityTypeId,
+      };
+
+      console.log('FINAL Issuer Registration Payload:', payload);
+
+      const response = await axiosInstance.post('/auth/issuer-registration', payload);
+
+      if (response?.data?.success) {
+        const usersId = response?.data?.usersId;
+
+        // ✅ Store it so next page can access it
+        if (usersId) {
+          sessionStorage.setItem('issuer_user_id', usersId);
+        } else {
+          console.warn('No usersId found in issuer-registration response');
+        }
+        enqueueSnackbar(response.data.message || 'Issuer Registration Successful', {
+          variant: 'success',
+        });
+
+        reset();
+        router.push(paths.auth.kyc.issuerKyc);
+      } else {
+        throw new Error(response?.data?.message || 'Registration failed');
+      }
     } catch (error) {
       console.error(error);
+      enqueueSnackbar(error?.error?.message || 'Something went wrong', {
+        variant: 'error',
+      });
     }
   });
 
+  const existingPAN = useMemo(() => {
+    const p = kycProgress?.profile?.issuerPanCards;
+    if (!p || !p.panCardDocument) return null;
+
+    return {
+      name: p.panCardDocument.fileOriginalName,
+      url: p.panCardDocument.fileUrl,
+      status: p.status,
+    };
+  }, [kycProgress]);
+
+  useEffect(() => {
+    if (fetchedProfileId) {
+      sessionStorage.setItem('issuer_user_id', fetchedProfileId);
+    }
+  }, [fetchedProfileId]);
+
+  useEffect(() => {
+    if (EntityTypes && !EntityTypesEmpty) {
+      setEntityOptions(EntityTypes);
+    } else {
+      setEntityOptions([]);
+    }
+  }, [EntityTypes, EntityTypesEmpty]);
+
+  useEffect(() => {
+    if (kycProgress?.profile) {
+      const p = kycProgress.profile;
+
+      reset({
+        cin: p.CIN || '',
+        companyName: p.legalEntityName || '',
+        gstin: p.GSTIN || '',
+        dateOfIncorporation: p.dateOfIncorporation ? dayjs(p.dateOfIncorporation).toDate() : null,
+
+        msmeUdyamRegistrationNo: p.udyamRegistrationNumber || '',
+        sebiRegistrationNumber: p.sebiRegistrationNumber || '',
+        sebiValidityDate: p.sebiValidityDate ? dayjs(p.sebiValidityDate).toDate() : null,
+
+        city: p.cityOfIncorporation || '',
+        state: p.stateOfIncorporation || '',
+        country: p.countryOfIncorporation || 'India',
+
+        // PAN fields — your GET API does NOT return them
+        panFile: null,
+        panCardDocumentId: p?.issuerPanCards?.panCardDocumentId || '',
+
+        panNumber:
+          p?.issuerPanCards?.submittedPanNumber || p?.issuerPanCards?.extractedPanNumber || '',
+
+        panHoldersName:
+          p?.issuerPanCards?.submittedIssuerName || p?.issuerPanCards?.extractedIssuerName || '',
+
+        companyEntityTypeId: p?.issuerEntityTypesId || '',
+      });
+      if (p?.issuerPanCards?.panCardDocument) {
+        const serverFile = {
+          name: p.issuerPanCards.panCardDocument.fileOriginalName,
+          url: p.issuerPanCards.panCardDocument.fileUrl,
+          id: p.issuerPanCards.panCardDocument.id,
+          isServerFile: true,
+        };
+
+        setValue('panFile', serverFile, { shouldValidate: true });
+
+        // Also hydrate extractedPanDetails for humanEdited comparison
+        setExtractedPanDetails({
+          extractedIssuerName:
+            p?.issuerPanCards?.extractedIssuerName || p?.issuerPanCards?.submittedIssuerName || '',
+          extractedPanNumber:
+            p?.issuerPanCards?.extractedPanNumber || p?.issuerPanCards?.submittedPanNumber || '',
+        });
+      }
+    }
+  }, [kycProgress, reset, setValue]);
+
+  useEffect(() => {
+    if (!panFile?.id) return;
+
+    const extractPanDetails = async () => {
+      try {
+        setPanExtractionStatus('loading');
+
+        const response = await axiosInstance.post('/extract/pan-info', {
+          fileId: panFile.id,
+        });
+
+        const data = response?.data?.data || {};
+
+        const panNumber = data?.extractedPanNumber;
+        const panName = data?.extractedPanHolderName;
+
+        if (!panNumber && !panName) {
+          setPanExtractionStatus('failed');
+          enqueueSnackbar("Couldn't extract PAN details. Please fill manually.", {
+            variant: 'error',
+          });
+          return;
+        }
+
+        if (panName) {
+          setValue('panHoldersName', panName, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }
+
+        if (panNumber) {
+          setValue('panNumber', panNumber, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }
+
+        setPanExtractionStatus('success');
+        enqueueSnackbar('PAN details extracted successfully', {
+          variant: 'success',
+        });
+      } catch (error) {
+        console.error(error);
+        setPanExtractionStatus('failed');
+        enqueueSnackbar('Unable to extract PAN details. Please fill manually.', {
+          variant: 'error',
+        });
+      }
+    };
+
+    extractPanDetails();
+  }, [panFile?.id]);
+
   return (
-    <Container>
-      <KYCTitle
-        title="Welcome to Bond Issuer"
-        subtitle={"Let's get you started please provide your details"}
-      />
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* <KYCTitle
+      title="Basic Information"
+      subtitle="Please provide your company details to proceed"
+    /> */}
 
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <Box sx={{ py: 4 }}>
-          <Grid container spacing={3}>
-            {/* Left Section */}
-            <Grid xs={12} md={6}>
-              <Box
+        <Card
+          sx={{
+            p: 4,
+            borderRadius: 3,
+            width: '100%',
+            boxShadow: '0px 8px 25px rgba(0,0,0,0.08)',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: 600,
+          }}
+        >
+          {/* Background Image */}
+          <Box
+            component="img"
+            src="/assets/images/kyc/kyc-basic-info/kyc-img.svg"
+            alt="background"
+            sx={{
+              position: 'absolute',
+              right: 0,
+              bottom: '10%',
+              height: '100%',
+              width: '100%',
+              opacity: 0.1,
+              objectFit: 'contain',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* CONTENT WRAPPER */}
+          <Box sx={{ position: 'relative', zIndex: 10 }}>
+            {/* TITLE */}
+            <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
+              <Typography
+                variant="h3"
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 3,
+                  fontWeight: 700,
+                  color: '#206CFE',
+                  textAlign: 'left',
                 }}
               >
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:user-rounded-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      CIN
-                    </Box>
-                  </Box>
-                  <RHFTextField name="cin" />
-                </Box>
+                Company Basic Information
+              </Typography>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 500,
+                  color: '#000000',
+                  textAlign: 'left',
+                }}
+              >
+                Please provide your company details to proceed
+              </Typography>
+            </Stack>
 
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:buildings-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Company Name
-                    </Box>
-                  </Box>
-                  <RHFTextField name="companyName" />
-                </Box>
-
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:percentage-circle-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      GSTIN
-                    </Box>
-                  </Box>
-                  <RHFTextField name="gstin" />
-                </Box>
-
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:calendar-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Date of Incorporation
-                    </Box>
-                  </Box>
-                  <Controller
-                    name="dateOfIncorporation"
-                    control={control}
-                    render={({ field, fieldState: { error } }) => (
-                      <DatePicker
-                        value={field.value}
-                        onChange={(newValue) => {
-                          field.onChange(newValue);
+            {/* 3 Fields in One Row */}
+            <Grid container spacing={3}>
+              <Grid xs={12} md={4}>
+                <RHFTextField
+                  name="cin"
+                  label="CIN *"
+                  placeholder="Enter CIN"
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        sx={{
+                          textTransform: 'none',
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          ml: 1,
                         }}
-                        format="DD-MM-YYYY"
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            error: !!error,
-                            helperText: error?.message,
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:buildings-2-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      MSME/Udyam Registration No.
-                    </Box>
-                  </Box>
-                  <RHFTextField name="msmeUdyamRegistrationNo" />
-                </Box>
-
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:map-point-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Place of Incorporation
-                    </Box>
-                  </Box>
-                  <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
-                    <RHFTextField name="city" placeholder="City" sx={{ flex: 1 }} />
-                    <RHFSelect
-                      name="state"
-                      sx={{ flex: 1 }}
-                      SelectProps={{
-                        displayEmpty: true,
-                        renderValue: (selected) => {
-                          if (!selected) {
-                            return <Box sx={{ color: 'text.disabled' }}>State</Box>;
+                        onClick={async () => {
+                          const cin = getValues('cin');
+                          if (!cin) {
+                            enqueueSnackbar('Enter CIN first.', { variant: 'warning' });
+                            return;
                           }
-                          return selected;
+                          try {
+                            const res = await axiosInstance.post('/extraction/company-info', {
+                              CIN: cin,
+                            });
+                            const data = res?.data?.data;
+                            if (res.data.success && data) {
+                              setValue('companyName', data.companyName || '');
+                              setValue('gstin', data.gstin || '');
+                              setValue(
+                                'dateOfIncorporation',
+                                data.dateOfIncorporation ? new Date(data.dateOfIncorporation) : null
+                              );
+                              setValue('city', data.cityOfIncorporation || '', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+
+                              setValue('state', data.stateOfIncorporation || '', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+
+                              setValue('country', data.countryOfIncorporation || 'India', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+
+                              enqueueSnackbar('CIN details fetched!', { variant: 'success' });
+                            }
+                          } catch (err) {
+                            enqueueSnackbar('Unable to fetch CIN details', { variant: 'error' });
+                          }
+                        }}
+                      >
+                        Fetch
+                      </Button>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <RHFTextField
+                  name="companyName"
+                  label="Legal Entity Name *"
+                  placeholder="Company Name"
+                />
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <RHFTextField name="gstin" label="GSTIN *" placeholder="Enter GSTIN" />
+              </Grid>
+              <Grid xs={12} md={4}>
+                <RHFTextField
+                  name="sebiRegistrationNumber"
+                  label="SEBI Registration Number *"
+                  placeholder="Enter Registration Number"
+                />
+              </Grid>
+
+              {/* NEXT ROW - 3 fields */}
+              <Grid xs={12} md={4}>
+                <Controller
+                  name="sebiValidityDate"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <DatePicker
+                      label="SEBI Validity Date *"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!error,
+                          helperText: error?.message,
                         },
                       }}
-                    >
-                      <MenuItem value="">State</MenuItem>
-                      {/* Add state options here */}
-                    </RHFSelect>
-                    <RHFAutocomplete
-                      name="country"
-                      placeholder="Country"
-                      sx={{ flex: 1 }}
-                      options={countries.map((country) => country.label)}
-                      getOptionLabel={(option) => option}
-                      renderOption={(props, option) => {
-                        const { code, label, phone } = countries.filter(
-                          (country) => country.label === option
-                        )[0];
-
-                        if (!label) {
-                          return null;
-                        }
-
-                        return (
-                          <li {...props} key={label}>
-                            <Iconify
-                              key={label}
-                              icon={`circle-flags:${code.toLowerCase()}`}
-                              width={28}
-                              sx={{ mr: 1 }}
-                            />
-                            {label} ({code}) +{phone}
-                          </li>
-                        );
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid xs={12} md={4}>
+                <Controller
+                  name="dateOfIncorporation"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <DatePicker
+                      label="Date of Incorporation *"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!error,
+                          helperText: error?.message,
+                        },
                       }}
                     />
-                  </Stack>
-                </Box>
+                  )}
+                />
+              </Grid>
 
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:buildings-2-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Entity Type
-                    </Box>
-                  </Box>
-                  <RHFSelect name="entityType" placeholder="Select Entity Type">
-                    <MenuItem value="">Select Entity Type</MenuItem>
-                    {/* Add entity type options here */}
-                  </RHFSelect>
-                </Box>
-              </Box>
+              <Grid xs={12} md={4}>
+                <RHFTextField name="city" label="City of Incorporation*" placeholder="City" />
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <RHFSelect name="state" label="State of Incorporation*">
+                  <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                </RHFSelect>
+              </Grid>
+
+              {/* COUNTRY + ENTITY TYPE */}
+              <Grid xs={12} md={4}>
+                <RHFAutocomplete
+                  name="country"
+                  label="Country"
+                  readOnly
+                  options={['India']}
+                  getOptionLabel={(o) => o}
+                />
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <RHFTextField
+                  name="msmeUdyamRegistrationNo"
+                  label="MSME / Udyam No. *"
+                  placeholder="Enter MSME Number"
+                />
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <RHFSelect name="companyEntityTypeId" label="Entity Type *">
+                  <MenuItem value="">Select Entity Type</MenuItem>
+                  {entityOptions.map((opt) => (
+                    <MenuItem key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </RHFSelect>
+              </Grid>
             </Grid>
 
-            {/* Right Section */}
-            <Grid xs={12} md={6}>
-              <Box
+            <Typography variant="h6" sx={{ fontWeight: 700, mt: 5, mb: 2 }}>
+              PAN Details
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid xs={12} md={12}>
+                <RHFCustomFileUploadBox
+                  name="panFile"
+                  label="Upload PAN Card *"
+                  icon="mdi:file-document-outline"
+                  accept={{
+                    'image/png': ['.png'],
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                    'application/pdf': ['.pdf'],
+                  }}
+                />
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <RHFTextField
+                  name="panNumber"
+                  label="PAN Number *"
+                  placeholder="Enter PAN Number"
+                  disabled={!isPanUploaded}
+                />
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <RHFTextField
+                  name="panHoldersName"
+                  label="PAN Holder Name *"
+                  placeholder="Enter Name"
+                  disabled={!isPanUploaded}
+                />
+              </Grid>
+            </Grid>
+
+            {/* SUBMIT BUTTON */}
+            <Box textAlign="center" sx={{ mt: 4 }}>
+              <LoadingButton
+                type="submit"
+                variant="contained"
+                size="large"
+                loading={isSubmitting}
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 3,
+                  px: 6,
+                  py: 1.6,
+                  fontWeight: 600,
+                  borderRadius: 1,
                 }}
               >
-                {/* Image - takes up 3 textField areas */}
-                <Box
-                  sx={{
-                    height: { xs: 'auto', md: 'calc(3.82 * (56px + 24px))' }, // Approximate height of 3 fields with gaps
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mb: { xs: 0, md: 0 },
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src="/assets/images/kyc/kyc-basic-info/kyc-img.svg"
-                    alt="KYC Illustration"
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                    }}
-                  />
-                </Box>
+                Save & Continue
+              </LoadingButton>
+            </Box>
+          </Box>
+        </Card>
 
-                {/* Upload PAN Section */}
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:calendar-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Upload PAN to Fill Details Automatically
-                    </Box>
-                  </Box>
-                  <Controller
-                    name="panFile"
-                    control={control}
-                    render={({ field, fieldState: { error } }) => (
-                      <PANUploadArea
-                        value={field.value}
-                        onChange={(file) => {
-                          field.onChange(file);
-                          setValue('panFile', file, { shouldValidate: true });
-                        }}
-                        error={!!error}
-                      />
-                    )}
-                  />
-                </Box>
-
-                {/* PAN Number Field */}
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:calendar-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      PAN Number
-                    </Box>
-                  </Box>
-                  <RHFTextField name="panNumber" placeholder="Your PAN Number" />
-                </Box>
-
-                {/* Date of Birth Field */}
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:calendar-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Date of Birth
-                    </Box>
-                  </Box>
-                  <Controller
-                    name="dateOfBirth"
-                    control={control}
-                    render={({ field, fieldState: { error } }) => (
-                      <DatePicker
-                        value={field.value}
-                        onChange={(newValue) => {
-                          field.onChange(newValue);
-                        }}
-                        format="DD-MM-YYYY"
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            placeholder: 'DD-MM-YYYY',
-                            error: !!error,
-                            helperText: error?.message,
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-
-                {/* PAN Holder's Name Field */}
-                <Box>
-                  <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Iconify icon="solar:calendar-bold" width={24} />
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      PAN Holder's Name
-                    </Box>
-                  </Box>
-                  <RHFTextField name="panHoldersName" placeholder="Enter Name as per PAN" />
-                </Box>
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
+        <KYCFooter />
       </FormProvider>
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4, mb: 4 }}>
-        <LoadingButton
-          type="submit"
-          variant="contained"
-          size="large"
-          loading={isSubmitting}
-          sx={{
-            bgcolor: 'grey.800',
-            color: 'common.white',
-            borderRadius: 1,
-            px: 4,
-            py: 1.5,
-            '&:hover': {
-              bgcolor: 'grey.900',
-            },
-          }}
-          endIcon={<Iconify icon="eva:arrow-forward-fill" />}
-        >
-          Save & Continue
-        </LoadingButton>
-      </Box>
-
-      <KYCFooter />
     </Container>
   );
 }
