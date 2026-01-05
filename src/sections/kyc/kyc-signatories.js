@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { m } from 'framer-motion';
 // @mui
 import { styled } from '@mui/material/styles';
@@ -26,6 +26,7 @@ import { paths } from 'src/routes/paths';
 import KYCTitle from './kyc-title';
 import KYCFooter from './kyc-footer';
 import KYCAddSignatoriesForm from './kyc-add-signatories-form';
+import { useGetSignatories } from 'src/api/companyKyc';
 
 // ----------------------------------------------------------------------
 
@@ -60,18 +61,29 @@ const rows = [
   ),
 ];
 
-export default function KYCSignatories() {
+export default function KYCSignatories({ percent, setActiveStepId }) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { signatories, loading, refreshSignatories } = useGetSignatories();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const filteredRows = rows.filter((row) =>
+  const filteredRows = signatories.filter((row) =>
     Object.values(row).some(
       (value) => value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+
+  useEffect(() => {
+    if (!loading && signatories && signatories.length >= 1) {
+      percent(100);
+    }
+  }, [loading, percent, setActiveStepId, signatories]);
+
+  useEffect(() => {
+    refreshSignatories();
+  }, []);
 
   return (
     <Container sx={{ position: 'relative', py: { xs: 6, sm: 8, md: 10 } }}>
@@ -137,7 +149,14 @@ export default function KYCSignatories() {
               Add Signatory
             </Button>
 
-            <KYCAddSignatoriesForm open={open} onClose={handleClose} />
+            <KYCAddSignatoriesForm
+              open={open}
+              onClose={handleClose}
+              onSuccess={() => {
+                refreshSignatories();
+                setOpen(false);
+              }}
+            />
           </Box>
         </Box>
         <TableContainer component={Paper} sx={{ mb: 5 }}>
@@ -145,30 +164,72 @@ export default function KYCSignatories() {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell align="left">DIN</TableCell>
                 <TableCell align="left">Role</TableCell>
                 <TableCell align="left">Email</TableCell>
                 <TableCell align="left">Phone</TableCell>
-                <TableCell align="left">ID Proof</TableCell>
+                <TableCell align="left">DOB</TableCell>
+                <TableCell align="left">PAN</TableCell>
+                <TableCell align="left">Board Resolution</TableCell>
                 <TableCell align="left">Status</TableCell>
-
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
-              {filteredRows.map((row) => (
-                <TableRow key={row.din} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                  <TableCell component="th" scope="row">
-                    {row.name}
+              {filteredRows.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.fullName}</TableCell>
+
+                  <TableCell>{row.designationValue}</TableCell>
+
+                  <TableCell>{row.email}</TableCell>
+
+                  <TableCell>{row.phone}</TableCell>
+
+                  <TableCell>
+                    {row.submittedDateOfBirth
+                      ? new Date(row.submittedDateOfBirth).toLocaleDateString()
+                      : '-'}
                   </TableCell>
-                  <TableCell align="left">{row.din}</TableCell>
-                  <TableCell align="left">{row.role}</TableCell>
-                  <TableCell align="left">{row.email}</TableCell>
-                  <TableCell align="left">{row.phone}</TableCell>
-                  <TableCell align="left">{row.idProof}</TableCell>
-                  <TableCell align="left">{row.status}</TableCell>
+
+                  {/* PAN */}
+                  <TableCell>
+                    {row.panCardFile?.fileUrl ? (
+                      <a
+                        href={row.panCardFile.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#1976d2', textDecoration: 'underline' }}
+                      >
+                        View
+                      </a>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+
+                  {/* Board Resolution */}
+                  <TableCell>
+                    {row.boardResolutionFile?.fileUrl ? (
+                      <a
+                        href={row.boardResolutionFile.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#1976d2', textDecoration: 'underline' }}
+                      >
+                        View
+                      </a>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+
+                  {/* Status */}
+                  <TableCell>{row.status === 1 ? 'Verified' : 'Pending'}</TableCell>
+
+                  {/* Actions */}
                   <TableCell align="right">
-                    <IconButton color="error" aria-label="delete">
+                    <IconButton color="error">
                       <Iconify icon="eva:trash-2-outline" />
                     </IconButton>
                   </TableCell>
@@ -177,6 +238,18 @@ export default function KYCSignatories() {
             </TableBody>
           </Table>
         </TableContainer>
+        <Box sx={{ textAlign: 'right', mt: 3 }}>
+          <Button
+            variant="contained"
+            disabled={signatories.length < 1}
+            onClick={() => {
+              percent(100);
+              setActiveStepId();
+            }}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
       <KYCFooter />
     </Container>

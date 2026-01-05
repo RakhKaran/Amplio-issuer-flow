@@ -65,7 +65,7 @@ export default function JwtRegisterTrusteeByMobileView() {
     try {
       const res = await axiosInstance.post("/auth/send-phone-otp", {
         phone,
-        role: "trustee",
+        role: "company",
       });
 
       enqueueSnackbar(res.data.message, { variant: "success" });

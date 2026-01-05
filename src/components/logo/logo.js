@@ -6,6 +6,7 @@ import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 // routes
 import { RouterLink } from 'src/routes/components';
+import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -21,11 +22,12 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
   // OR using local (public folder)
   // -------------------------------------------------------
   const logo = (
-    <Box
-      component="img"
-      src="/logo/logo1.png"
-      sx={{ width: 150, cursor: 'pointer', ...sx }}
-    />
+    // <Box
+    //   component="img"
+    //   src="/logo/logo1.png"
+    //   sx={{ width: 150, cursor: 'pointer', ...sx }}
+    // />
+    <Typography>Logo</Typography>
   );
 
   // const logo = (

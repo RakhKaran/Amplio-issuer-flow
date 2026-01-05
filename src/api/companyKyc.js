@@ -3,13 +3,13 @@ import { useEffect, useMemo } from 'react';
 import { fetcher, endpoints } from 'src/utils/axios';
 
 export function useGetKycProgress(sessionId) {
-  const URL = sessionId ? endpoints.issuerKyc.kycProgress(sessionId) : null;
+  const URL = sessionId ? endpoints.companyKyc.kycProgress(sessionId) : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   useEffect(() => {
     if (data?.profile?.id) {
-      sessionStorage.setItem('trustee_user_id', data.profile.usersId);
+      sessionStorage.setItem('company_user_id', data.profile.usersId);
     }
   }, [data]);
 
@@ -29,10 +29,10 @@ export function useGetKycProgress(sessionId) {
 }
 
 export function useGetKycSection(section, route = '') {
-  const profileId = sessionStorage.getItem('trustee_user_id'); // ⬅️ get it directly
+  const profileId = sessionStorage.getItem('company_user_id'); // ⬅️ get it directly
 
   const URL =
-    section && profileId ? endpoints.issuerKyc.getSection(section, profileId, route) : null;
+    section && profileId ? endpoints.companyKyc.getSection(section, profileId, route) : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
     keepPreviousData: true,
@@ -48,10 +48,10 @@ export function useGetKycSection(section, route = '') {
 }
 
 export function useGetDetails() {
-  const profileId = sessionStorage.getItem('trustee_user_id'); // ⬅️ Directly read
+  const profileId = sessionStorage.getItem('company_user_id'); // ⬅️ Directly read
 
   const URL = profileId
-    ? endpoints.issuerKyc.getSection('trustee_bank_details', profileId, '')
+    ? endpoints.companyKyc.getSection('company_bank_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
@@ -74,10 +74,10 @@ export function useGetDetails() {
 }
 
 export function useGetSignatories() {
-  const profileId = sessionStorage.getItem('trustee_user_id');
+  const profileId = sessionStorage.getItem('company_user_id');
 
   const URL = profileId
-    ? endpoints.issuerKyc.getSection('trustee_authorized_signatories', profileId, '')
+    ? endpoints.companyKyc.getSection('company_authorized_signatories', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
@@ -98,8 +98,8 @@ export function useGetSignatories() {
   };
 }
 
-export function useGetDocuments(trusteeId) {
-  const URL = endpoints.issuerKyc.getDocuments;
+export function useGetDocuments(companyId) {
+  const URL = endpoints.companyKyc.getDocuments;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
@@ -120,7 +120,7 @@ export function useGetDocuments(trusteeId) {
 }
 
 export function useGetBankDetails() {
-  const URL = endpoints.issuerKyc.getBankDetails;
+  const URL = endpoints.companyKyc.getBankDetails;
 
   const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
@@ -143,7 +143,7 @@ export function useGetBankDetails() {
 }
 
 export function useGetBankDetail(id) {
-  const URL = id ? endpoints.issuerKyc.details(id) : null;
+  const URL = id ? endpoints.companyKyc.details(id) : null;
 
   const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
@@ -160,7 +160,7 @@ export function useGetBankDetail(id) {
 
 
 export default function useGetProfileData() {
-  const URL = endpoints.issuerKyc.getProfileData;
+  const URL = endpoints.companyKyc.getProfileData;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
     keepPreviousData: true,

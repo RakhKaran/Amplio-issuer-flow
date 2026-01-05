@@ -2,22 +2,22 @@ import useSWR from 'swr';
 import { useMemo } from 'react';
 // utils
 import { fetcher, endpoints } from 'src/utils/axios';
-import { identity } from 'lodash';
+import { idsector } from 'lodash';
 
 // ----------------------------------------------------------------------
 
-export function useGetEntityTypes() {
-    const URL = endpoints.entityType.list;
+export function useGetSectorTypes() {
+    const URL = endpoints.sectorType.list;
 
     const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
     const memoizedValue = useMemo(
         () => ({
-            EntityTypes: data || [],
-            EntityTypesLoading: isLoading,
-            EntityTypesError: error,
-            EntityTypesValidating: isValidating,
-            EntityTypesEmpty: !isLoading && (!data || data.length === 0),
+            SectorTypes: data || [],
+            SectorTypesLoading: isLoading,
+            SectorTypesError: error,
+            SectorTypesValidating: isValidating,
+            SectorTypesEmpty: !isLoading && (!data || data.length === 0),
         }),
         [data, error, isLoading, isValidating]
     );
@@ -27,17 +27,17 @@ export function useGetEntityTypes() {
 
 // ----------------------------------------------------------------------
 
-export function useGetEntityType(id) {
-    const URL = id ? endpoints.entityType.details(id) : null;
+export function useGetSectorType(id) {
+    const URL = id ? endpoints.sectorType.details(id) : null;
 
     const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
     const memoizedValue = useMemo(
         () => ({
-            entityType: data,
-            entityTypeLoading: isLoading,
-            entityTypeError: error,
-            entityTypeValidating: isValidating,
+            sectorType: data,
+            sectorTypeLoading: isLoading,
+            sectorTypeError: error,
+            sectorTypeValidating: isValidating,
         }),
         [data, error, isLoading, isValidating]
     );
@@ -47,8 +47,8 @@ export function useGetEntityType(id) {
 
 // ----------------------------------------------------------------------
 
-export function useFilterEntityTypes(queryString) {
-    const URL = queryString ? endpoints.entityType.filterList(queryString) : null;
+export function useFilterSectorTypes(queryString) {
+    const URL = queryString ? endpoints.sectorType.filterList(queryString) : null;
 
     const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
         keepPreviousData: true,
@@ -56,7 +56,7 @@ export function useFilterEntityTypes(queryString) {
 
     const memoizedValue = useMemo(
         () => ({
-            filteredEntityTypes: data || [],
+            filteredSectorTypes: data || [],
             filterLoading: isLoading,
             filterError: error,
             filterValidating: isValidating,
@@ -69,18 +69,18 @@ export function useFilterEntityTypes(queryString) {
 }
 
 
-export function useGetCompanyEntityTypes() {
-    const URL = endpoints.companyEntityType.list;
+export function useGetCompanySectorTypes() {
+    const URL = endpoints.companySectorType.list;
 
     const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
     const memoizedValue = useMemo(
         () => ({
-            EntityTypes: data || [],
-            EntityTypesLoading: isLoading,
-            EntityTypesError: error,
-            EntityTypesValidating: isValidating,
-            EntityTypesEmpty: !isLoading && (!data || data.length === 0),
+            SectorTypes: data || [],
+            SectorTypesLoading: isLoading,
+            SectorTypesError: error,
+            SectorTypesValidating: isValidating,
+            SectorTypesEmpty: !isLoading && (!data || data.length === 0),
         }),
         [data, error, isLoading, isValidating]
     );

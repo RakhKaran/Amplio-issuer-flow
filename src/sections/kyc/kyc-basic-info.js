@@ -31,17 +31,18 @@ import axiosInstance from 'src/utils/axios';
 import dayjs from 'dayjs';
 import RHFFileUploadBox from 'src/components/custom-file-upload/file-upload';
 import YupErrorMessage from 'src/components/error-field/yup-error-messages';
-import { useGetIssuerEntityTypes } from 'src/api/entityType';
+import { useGetCompanyEntityTypes } from 'src/api/entityType';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
-import { useGetKycProgress } from 'src/api/issuerKyc';
+import { useGetKycProgress } from 'src/api/companyKyc';
+import { useGetCompanySectorTypes } from 'src/api/sectorType';
 
 // ----------------------------------------------------------------------
 
 export default function KYCBasicInfo() {
   const { enqueueSnackbar } = useSnackbar();
   const router = useRouter();
-  const storedProfileId = sessionStorage.getItem('issuer_user_id');
+  const storedProfileId = sessionStorage.getItem('company_user_id');
 
   const sessionId = localStorage.getItem('sessionId');
   const { kycProgress, profileId: fetchedProfileId } = useGetKycProgress(sessionId);
@@ -54,7 +55,9 @@ export default function KYCBasicInfo() {
 
   // State to store mapped API values
   const [entityOptions, setEntityOptions] = useState([]);
-  const { EntityTypes, EntityTypesEmpty } = useGetIssuerEntityTypes();
+  const [sectorOptions, setSectorOptions] = useState([]);
+  const { EntityTypes, EntityTypesEmpty } = useGetCompanyEntityTypes();
+  const { SectorTypes, SectorTypesEmpty } = useGetCompanySectorTypes();
 
   const [humanInteraction, setHumanInteraction] = useState({
     companyName: false,
@@ -66,8 +69,6 @@ export default function KYCBasicInfo() {
     country: false,
     panNumber: false,
     panHoldersName: false,
-    sebiRegistrationNumber: false,
-    sebiValidityDate: false,
   });
 
   const handleHumanInteraction = (fieldName) => {
@@ -85,8 +86,6 @@ export default function KYCBasicInfo() {
     gstin: Yup.string().required('GSTIN is required'),
     dateOfIncorporation: Yup.date().required('Date of Incorporation is required'),
     msmeUdyamRegistrationNo: Yup.string().required('MSME Udyam Registration No is required'),
-    sebiRegistrationNumber: Yup.string().required('SEBI Registration Number is required'),
-    sebiValidityDate: Yup.date().required('SEBI Validity Date is required'),
     city: Yup.string().required('City is required'),
     state: Yup.string().required('State is required'),
     country: Yup.string().required('Country is required'),
@@ -94,6 +93,7 @@ export default function KYCBasicInfo() {
     panNumber: Yup.string().required('PAN Number is required'),
     panHoldersName: Yup.string().required("PAN Holder's Name is required"),
     companyEntityTypeId: Yup.string().required('Entity Type is required'),
+    companySectorTypeId: Yup.string().required('Sector Type is required'),
   });
 
   const defaultValues = useMemo(
@@ -103,8 +103,6 @@ export default function KYCBasicInfo() {
       gstin: '',
       dateOfIncorporation: null,
       msmeUdyamRegistrationNo: '',
-      sebiRegistrationNumber: '',
-      sebiValidityDate: null,
       city: '',
       state: '',
       country: 'India',
@@ -113,6 +111,7 @@ export default function KYCBasicInfo() {
       panHoldersName: '',
       panCardDocumentId: '',
       companyEntityTypeId: '',
+      companySectorTypeId: '',
       humanInteraction: { ...humanInteraction },
     }),
     [humanInteraction]
@@ -132,81 +131,15 @@ export default function KYCBasicInfo() {
     watch,
     formState: { isSubmitting, errors },
   } = methods;
+
+  const values = watch();
+  console.log('values',values);
   const panFile = useWatch({
     control: methods.control,
     name: 'panFile',
   });
 
   const isPanUploaded = Boolean(panFile?.id);
-
-  const handlePanUpload = async (file) => {
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-
-      const uploadRes = await axiosInstance.post('/files', uploadFormData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const uploaded = uploadRes?.data?.files?.[0];
-      if (!uploaded || !uploaded.id) {
-        throw new Error('PAN file upload failed');
-      }
-      setValue('panCardDocumentId', uploaded.id, { shouldValidate: true });
-
-      const extractRes = await axiosInstance.post('/extract/pan-info', uploadFormData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const panData = extractRes?.data?.data || extractRes?.data;
-
-      // Adjust these keys according to your actual API response
-      const panNumberFromApi = panData?.extractedPanNumber || '';
-      const panHolderNameFromApi = panData?.extractedPanHolderName || '';
-
-      if (!panNumberFromApi && !panHolderNameFromApi) {
-        // Treat as failure if nothing useful came back
-        setPanExtractionStatus('failed');
-        enqueueSnackbar(
-          "We couldn't fetch details from your PAN document. Please fill the details manually.",
-          { variant: 'error' }
-        );
-        return;
-      }
-
-      // Fill form values from extraction
-      if (panHolderNameFromApi) {
-        setValue('panHoldersName', panHolderNameFromApi, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-
-      if (panNumberFromApi) {
-        setValue('panNumber', panNumberFromApi, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-
-      // Save extracted details in state for final payload
-      const extracted = {
-        extractedIssuerName: panHolderNameFromApi || '',
-        extractedPanNumber: panNumberFromApi || '',
-      };
-
-      setExtractedPanDetails(extracted);
-      setPanExtractionStatus('success');
-
-      enqueueSnackbar('PAN details extracted successfully', { variant: 'success' });
-    } catch (error) {
-      console.error('Error in PAN upload/extraction:', error);
-      setPanExtractionStatus('failed');
-      enqueueSnackbar(
-        "We couldn't fetch details from your PAN document. Please fill the details manually.",
-        { variant: 'error' }
-      );
-    }
-  };
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
@@ -220,46 +153,40 @@ export default function KYCBasicInfo() {
 
       if (extractedPanDetails) {
         humanEdited =
-          extractedPanDetails.extractedIssuerName !== formData.panHoldersName ||
+          extractedPanDetails.extractedCompanyName !== formData.panHoldersName ||
           extractedPanDetails.extractedPanNumber !== formData.panNumber;
       }
 
       // Build extracted PAN object
       const extractedPan = extractedPanDetails
         ? {
-            extractedIssuerName: extractedPanDetails.extractedIssuerName || '',
+            extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
             extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
           }
         : {
-            extractedIssuerName: formData.panHoldersName,
+            extractedCompanyName: formData.panHoldersName,
             extractedPanNumber: formData.panNumber,
           };
 
       // Build submitted PAN object
       const submittedPan = humanEdited
         ? {
-            submittedIssuerName: formData.panHoldersName,
+            submittedCompanyName: formData.panHoldersName,
             submittedPanNumber: formData.panNumber,
           }
         : {
-            submittedIssuerName: formData.panHoldersName,
+            submittedCompanyName: formData.panHoldersName,
             submittedPanNumber: formData.panNumber,
           };
 
       // FINAL API PAYLOAD — 100% MATCHES THE API FORMAT YOU GAVE
       const payload = {
         sessionId,
-        legalEntityName: formData.companyName,
+        companyName: formData.companyName,
         CIN: formData.cin,
         GSTIN: formData.gstin,
         udyamRegistrationNumber: formData.msmeUdyamRegistrationNo,
-
         dateOfIncorporation: dateOfIncorporationStr,
-        sebiRegistrationNumber: formData.sebiRegistrationNumber,
-        sebiValidityDate: formData.sebiValidityDate
-          ? dayjs(formData.sebiValidityDate).format('YYYY-MM-DD')
-          : '',
-
         cityOfIncorporation: formData.city,
         stateOfIncorporation: formData.state,
         countryOfIncorporation: formData.country,
@@ -269,29 +196,30 @@ export default function KYCBasicInfo() {
         extractedPanDetails: extractedPan,
         submittedPanDetails: submittedPan,
 
-        panCardDocumentId: formData.panCardDocumentId,
-        issuerEntityTypesId: formData.companyEntityTypeId,
+        panCardDocumentId: formData.panFile.id,
+        companyEntityTypeId: formData.companyEntityTypeId,
+        companySectorTypeId: formData.companySectorTypeId,
       };
 
-      console.log('FINAL Issuer Registration Payload:', payload);
+      console.log('FINAL Company Registration Payload:', payload);
 
-      const response = await axiosInstance.post('/auth/issuer-registration', payload);
+      const response = await axiosInstance.post('/auth/company-registration', payload);
 
       if (response?.data?.success) {
         const usersId = response?.data?.usersId;
 
         // ✅ Store it so next page can access it
         if (usersId) {
-          sessionStorage.setItem('issuer_user_id', usersId);
+          sessionStorage.setItem('company_user_id', usersId);
         } else {
-          console.warn('No usersId found in issuer-registration response');
+          console.warn('No usersId found in /company-registration response');
         }
-        enqueueSnackbar(response.data.message || 'Issuer Registration Successful', {
+        enqueueSnackbar(response.data.message || 'Company Registration Successful', {
           variant: 'success',
         });
 
         reset();
-        router.push(paths.auth.kyc.issuerKyc);
+        router.push(paths.auth.kyc.companyKyc);
       } else {
         throw new Error(response?.data?.message || 'Registration failed');
       }
@@ -304,7 +232,7 @@ export default function KYCBasicInfo() {
   });
 
   const existingPAN = useMemo(() => {
-    const p = kycProgress?.profile?.issuerPanCards;
+    const p = kycProgress?.profile?.companyPanCards;
     if (!p || !p.panCardDocument) return null;
 
     return {
@@ -316,7 +244,7 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (fetchedProfileId) {
-      sessionStorage.setItem('issuer_user_id', fetchedProfileId);
+      sessionStorage.setItem('company_user_id', fetchedProfileId);
     }
   }, [fetchedProfileId]);
 
@@ -329,40 +257,44 @@ export default function KYCBasicInfo() {
   }, [EntityTypes, EntityTypesEmpty]);
 
   useEffect(() => {
+    if (SectorTypes && !SectorTypesEmpty) {
+      setSectorOptions(SectorTypes);
+    } else {
+      setSectorOptions([]);
+    }
+  }, [SectorTypes, SectorTypesEmpty]);
+
+  useEffect(() => {
     if (kycProgress?.profile) {
       const p = kycProgress.profile;
 
       reset({
         cin: p.CIN || '',
-        companyName: p.legalEntityName || '',
+        companyName: p.companyName || '',
         gstin: p.GSTIN || '',
         dateOfIncorporation: p.dateOfIncorporation ? dayjs(p.dateOfIncorporation).toDate() : null,
-
         msmeUdyamRegistrationNo: p.udyamRegistrationNumber || '',
-        sebiRegistrationNumber: p.sebiRegistrationNumber || '',
-        sebiValidityDate: p.sebiValidityDate ? dayjs(p.sebiValidityDate).toDate() : null,
-
         city: p.cityOfIncorporation || '',
         state: p.stateOfIncorporation || '',
         country: p.countryOfIncorporation || 'India',
-
         // PAN fields — your GET API does NOT return them
         panFile: null,
-        panCardDocumentId: p?.issuerPanCards?.panCardDocumentId || '',
+        panCardDocumentId: p?.companyPanCards?.panCardDocumentId || '',
 
         panNumber:
-          p?.issuerPanCards?.submittedPanNumber || p?.issuerPanCards?.extractedPanNumber || '',
+          p?.companyPanCards?.submittedPanNumber || p?.companyPanCards?.extractedPanNumber || '',
 
         panHoldersName:
-          p?.issuerPanCards?.submittedIssuerName || p?.issuerPanCards?.extractedIssuerName || '',
+          p?.companyPanCards?.submittedCompanyName || p?.companyPanCards?.extractedCompanyName || '',
 
-        companyEntityTypeId: p?.issuerEntityTypesId || '',
+        companyEntityTypeId: p?.companyEntityTypeId || '',
+        companySectorTypeId: p?.companySectorTypeId || '',
       });
-      if (p?.issuerPanCards?.panCardDocument) {
+      if (p?.companyPanCards?.panCardDocument) {
         const serverFile = {
-          name: p.issuerPanCards.panCardDocument.fileOriginalName,
-          url: p.issuerPanCards.panCardDocument.fileUrl,
-          id: p.issuerPanCards.panCardDocument.id,
+          name: p.companyPanCards.panCardDocument.fileOriginalName,
+          url: p.companyPanCards.panCardDocument.fileUrl,
+          id: p.companyPanCards.panCardDocument.id,
           isServerFile: true,
         };
 
@@ -370,10 +302,10 @@ export default function KYCBasicInfo() {
 
         // Also hydrate extractedPanDetails for humanEdited comparison
         setExtractedPanDetails({
-          extractedIssuerName:
-            p?.issuerPanCards?.extractedIssuerName || p?.issuerPanCards?.submittedIssuerName || '',
+          extractedCompanyName:
+            p?.companyPanCards?.extractedCompanyName || p?.companyPanCards?.submittedCompanyName || '',
           extractedPanNumber:
-            p?.issuerPanCards?.extractedPanNumber || p?.issuerPanCards?.submittedPanNumber || '',
+            p?.companyPanCards?.extractedPanNumber || p?.companyPanCards?.submittedPanNumber || '',
         });
       }
     }
@@ -572,35 +504,6 @@ export default function KYCBasicInfo() {
                 <RHFTextField name="gstin" label="GSTIN *" placeholder="Enter GSTIN" />
               </Grid>
               <Grid xs={12} md={4}>
-                <RHFTextField
-                  name="sebiRegistrationNumber"
-                  label="SEBI Registration Number *"
-                  placeholder="Enter Registration Number"
-                />
-              </Grid>
-
-              {/* NEXT ROW - 3 fields */}
-              <Grid xs={12} md={4}>
-                <Controller
-                  name="sebiValidityDate"
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <DatePicker
-                      label="SEBI Validity Date *"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: !!error,
-                          helperText: error?.message,
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid xs={12} md={4}>
                 <Controller
                   name="dateOfIncorporation"
                   control={control}
@@ -654,6 +557,16 @@ export default function KYCBasicInfo() {
                 <RHFSelect name="companyEntityTypeId" label="Entity Type *">
                   <MenuItem value="">Select Entity Type</MenuItem>
                   {entityOptions.map((opt) => (
+                    <MenuItem key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </RHFSelect>
+              </Grid>
+              <Grid xs={12} md={4}>
+                <RHFSelect name="companySectorTypeId" label="Sector Type *">
+                  <MenuItem value="">Select Sector Type</MenuItem>
+                  {sectorOptions.map((opt) => (
                     <MenuItem key={opt.id} value={opt.id}>
                       {opt.label}
                     </MenuItem>

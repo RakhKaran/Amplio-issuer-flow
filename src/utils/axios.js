@@ -68,20 +68,26 @@ export const endpoints = {
     filterList: (filter) => `/company-entity-types?filter=${filter}`,
     details: (id) => `/company-entity-types/${id}`,
   },
-  issuerKyc: {
-    kycProgress: (sessionId) => `/trustee-profiles/kyc-progress/${sessionId}`,
+  companyKyc: {
+    kycProgress: (sessionId) => `/company-profiles/kyc-progress/${sessionId}`,
     getSection: (section, profileId, route = '') =>
-      `/trustee-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
-    details: (id) => `/trustee-profiles/bank-details/${id}`,
-    getBankDetails: `/trustee-profiles/bank-details`,
-    getDocuments: `/trustee-profiles/documents`,
-    getProfileData: `/trustee-profiles/me`,
+      `/company-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
+    details: (id) => `/company-profiles/bank-details/${id}`,
+    getBankDetails: `/company-profiles/bank-details`,
+    getDocuments: `/company-profiles/documents`,
+    getProfileData: `/company-profiles/me`,
   },
-  issuerEntityType: {
+  companyEntityType: {
     list: '/trustee-entity-types',
     filterList: (filter) => `/trustee-entity-types?filter=${filter}`,
     details: (id) => `/trustee-entity-types/${id}`,
   },
+  companySectorType: {
+    list: '/company-sector-types',
+    filterList: (filter) => `/company-sector-types?filter=${filter}`,
+    details: (id) => `/company-sector-types/${id}`,
+  },
+  documentByScreen: (route) => `/screens/documents-by-screen/${encodeURIComponent(route)}`,
   companyInfo: {
     list: '/api/kyc/issuer_kyc/company-info/',
     filterList: (filter) => `/api/kyc/issuer_kyc/company-info/?filter=${filter}`,
