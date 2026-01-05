@@ -14,24 +14,9 @@ export const navConfig = [
     path: '/',
   },
   {
-    title: 'Bonds Library',
-    icon: <Iconify icon="solar:atom-bold-duotone" />,
-    path: paths.bondLibrary,
-  },
-  {
     title: 'Products',
     path: '/pages',
-    icon: <Iconify icon="solar:file-bold-duotone" />,
-    // children: [
-    //   {
-    //     items: [
-    //       { title: 'Corporate Bond', path: paths.products.corporate_bonds},
-    //       { title: 'Government Bond', path: paths.products.government_bonds },
-    //       { title: 'Listed Bond', path: paths.products.listed_bonds },
-    //       { title: 'Unlisted Bond', path: paths.products.unlisted_bonds },
-    //     ],
-    //   },
-    // ],    
+    icon: <Iconify icon="solar:file-bold-duotone" />,   
   },
   {
     title: 'Resources',

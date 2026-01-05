@@ -22,12 +22,12 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
   // OR using local (public folder)
   // -------------------------------------------------------
   const logo = (
-    // <Box
-    //   component="img"
-    //   src="/logo/logo1.png"
-    //   sx={{ width: 150, cursor: 'pointer', ...sx }}
-    // />
-    <Typography>Logo</Typography>
+    <Box
+      component="img"
+      // src="/logo/logo1.png"
+      alt="Logo"
+      sx={{ width: 150, cursor: 'pointer', ...sx }}
+    />
   );
 
   // const logo = (
