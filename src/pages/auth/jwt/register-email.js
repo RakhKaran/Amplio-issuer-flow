@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 // sections
-import JwtRegisterTrusteeByEmailView from 'src/sections/auth/jwt/jwt-register-email-trustee-view';
+import JwtRegisterCompanyByEmailView from 'src/sections/auth/jwt/jwt-register-email-company-view';
 
 // ----------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ export default function RegisterEmailPage() {
         <title> Jwt: Register</title>
       </Helmet>
 
-      <JwtRegisterTrusteeByEmailView />
+      <JwtRegisterCompanyByEmailView />
     </>
   );
 }
