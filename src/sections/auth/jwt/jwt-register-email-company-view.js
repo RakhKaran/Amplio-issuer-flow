@@ -16,9 +16,42 @@ import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 
-export default function JwtRegisterTrusteeByEmailView() {
+export default function JwtRegisterCompanyByEmailView() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
+
+  const redirectBasedOnProgress = async (sessionId) => {
+    try {
+      const res = await axiosInstance.get(`/company-profiles/kyc-progress/${sessionId}`);
+
+      const progress = res?.data?.currentProgress || [];
+      const profile = res?.data?.profile;
+
+      console.log('CURRENT PROGRESS:', progress);
+
+      if (profile?.usersId) {
+        sessionStorage.setItem('company_user_id', profile.usersId);
+      }
+
+      if (profile?.id) {
+        sessionStorage.setItem('company_profile_id', profile.id);
+      }
+
+      if (!progress.includes('company_kyc')) {
+        router.push(paths.auth.kyc.kycBasicInfo);
+        return;
+      }
+
+      router.push(paths.auth.kyc.companyKyc);
+      return;
+
+    } catch (err) {
+      console.error('KYC Progress Fetch Error:', err);
+      enqueueSnackbar('Unable to fetch KYC progress', { variant: 'error' });
+
+      router.push(paths.kycBasicInfo);
+    }
+  };
 
   const [errorMsg, setErrorMsg] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -98,8 +131,9 @@ export default function JwtRegisterTrusteeByEmailView() {
       });
 
       enqueueSnackbar(res.data.message || 'Email Verified!', { variant: 'success' });
+      await redirectBasedOnProgress(sessionId);
 
-      router.push(paths.auth.kyc.kycBasicInfo);
+      // router.push(paths.auth.kyc.kycBasicInfo);
     } catch (err) {
       setErrorMsg(err?.response?.data?.message || 'Invalid OTP');
     }

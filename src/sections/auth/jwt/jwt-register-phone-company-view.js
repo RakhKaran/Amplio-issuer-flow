@@ -16,7 +16,7 @@ import axiosInstance from 'src/utils/axios';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 
-export default function JwtRegisterTrusteeByMobileView() {
+export default function JwtRegisterCompanyByMobileView() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
 

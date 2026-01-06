@@ -32,7 +32,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 // ----------------------------------------------------------------------
 
-export default function KYCBankDetails({ percent, setActiveStepId }) {
+export default function KYCBankDetails({
+  percent,
+  setActiveStepId,
+  dataInitializedSteps,
+  setDataInitializedSteps
+}) {
   const router = useRouter();
   const { Details: bankDetails, Loading: bankLoading } = useGetDetails();
 
@@ -199,7 +204,6 @@ export default function KYCBankDetails({ percent, setActiveStepId }) {
 
   useEffect(() => {
     if (bankDetails?.length > 0) {
-      setActiveStepId();
       reset({
         documentType: bankDetails[0]?.bankAccountProofType === 0 ? 'cheque' : 'bank_statement',
         bankName: bankDetails[0]?.bankName || '',
@@ -212,6 +216,10 @@ export default function KYCBankDetails({ percent, setActiveStepId }) {
         bankAddress: bankDetails[0]?.bankAddress || '',
         bankShortCode: bankDetails[0]?.bankShortCode || '',
       });
+      if (!dataInitializedSteps.includes('kyc_bank_details')) {
+        setDataInitializedSteps();
+        setActiveStepId();
+      }
     }
   }, [bankDetails, reset]);
 

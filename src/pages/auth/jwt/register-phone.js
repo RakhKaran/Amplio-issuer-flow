@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 // sections
 import { JwtRegisterView } from 'src/sections/auth/jwt';
-import JwtRegisterTrusteeByMobileView from 'src/sections/auth/jwt/jwt-register-phone-trustee-view';
+import JwtRegisterCompanyByMobileView from 'src/sections/auth/jwt/jwt-register-phone-company-view';
 
 // ----------------------------------------------------------------------
 
@@ -12,7 +12,7 @@ export default function RegisterPhonePage() {
         <title> Jwt: Register</title>
       </Helmet>
 
-      <JwtRegisterTrusteeByMobileView />
+      <JwtRegisterCompanyByMobileView />
     </>
   );
 }

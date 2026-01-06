@@ -28,7 +28,12 @@ import { useGetDocumentsByScreen } from 'src/api/documentsByScreen';
 
 // =====================================================================
 
-export default function KYCCompanyDetails({ percent, setActiveStepId }) {
+export default function KYCCompanyDetails({
+  percent,
+  setActiveStepId,
+  dataInitializedSteps,
+  setDataInitializedSteps,
+}) {
   const { kycSectionData, kycSectionLoading } = useGetKycSection(
     'company_documents',
     '/company-kyc/company-details'
@@ -151,8 +156,11 @@ export default function KYCCompanyDetails({ percent, setActiveStepId }) {
       : 'moa';
 
     reset(initialValues);
-    setActiveStepId();
-  }, [kycSectionData, kycSectionLoading, DOCUMENT_MAP]);
+    if (!dataInitializedSteps.includes('kyc_company_documents')) {
+      setDataInitializedSteps();
+      setActiveStepId();
+    }
+  }, [kycSectionData, kycSectionLoading, DOCUMENT_MAP, reset, setDataInitializedSteps, dataInitializedSteps, setActiveStepId, FIELD_MAP]);
 
   // =====================================================================
   // Percent calculation

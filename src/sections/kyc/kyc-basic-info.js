@@ -90,8 +90,14 @@ export default function KYCBasicInfo() {
     state: Yup.string().required('State is required'),
     country: Yup.string().required('Country is required'),
     panFile: Yup.mixed().required('PAN file is required'),
-    panNumber: Yup.string().required('PAN Number is required'),
-    panHoldersName: Yup.string().required("PAN Holder's Name is required"),
+    panNumber: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format')
+      .required('PAN Number is required'),
+    panHoldersName: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .required("PAN Holder's Name is required")
+      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     companyEntityTypeId: Yup.string().required('Entity Type is required'),
     companySectorTypeId: Yup.string().required('Sector Type is required'),
   });
@@ -133,7 +139,7 @@ export default function KYCBasicInfo() {
   } = methods;
 
   const values = watch();
-  console.log('values',values);
+  console.log('values', values);
   const panFile = useWatch({
     control: methods.control,
     name: 'panFile',
@@ -278,23 +284,26 @@ export default function KYCBasicInfo() {
         state: p.stateOfIncorporation || '',
         country: p.countryOfIncorporation || 'India',
         // PAN fields — your GET API does NOT return them
-        panFile: null,
+        panFile: p?.companyPanCards?.panCardDocument?.fileUrl || null,
         panCardDocumentId: p?.companyPanCards?.panCardDocumentId || '',
 
         panNumber:
           p?.companyPanCards?.submittedPanNumber || p?.companyPanCards?.extractedPanNumber || '',
 
         panHoldersName:
-          p?.companyPanCards?.submittedCompanyName || p?.companyPanCards?.extractedCompanyName || '',
+          p?.companyPanCards?.submittedCompanyName ||
+          p?.companyPanCards?.extractedCompanyName ||
+          '',
 
         companyEntityTypeId: p?.companyEntityTypeId || '',
         companySectorTypeId: p?.companySectorTypeId || '',
       });
       if (p?.companyPanCards?.panCardDocument) {
         const serverFile = {
-          name: p.companyPanCards.panCardDocument.fileOriginalName,
-          url: p.companyPanCards.panCardDocument.fileUrl,
+          fileOriginalName: p.companyPanCards.panCardDocument.fileOriginalName,
+          fileUrl: p.companyPanCards.panCardDocument.fileUrl,
           id: p.companyPanCards.panCardDocument.id,
+          fileType: p.companyPanCards.panCardDocument.fileType,
           isServerFile: true,
         };
 
@@ -303,7 +312,9 @@ export default function KYCBasicInfo() {
         // Also hydrate extractedPanDetails for humanEdited comparison
         setExtractedPanDetails({
           extractedCompanyName:
-            p?.companyPanCards?.extractedCompanyName || p?.companyPanCards?.submittedCompanyName || '',
+            p?.companyPanCards?.extractedCompanyName ||
+            p?.companyPanCards?.submittedCompanyName ||
+            '',
           extractedPanNumber:
             p?.companyPanCards?.extractedPanNumber || p?.companyPanCards?.submittedPanNumber || '',
         });
@@ -599,6 +610,7 @@ export default function KYCBasicInfo() {
                   label="PAN Number *"
                   placeholder="Enter PAN Number"
                   disabled={!isPanUploaded}
+                  inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
               </Grid>
 
@@ -608,6 +620,7 @@ export default function KYCBasicInfo() {
                   label="PAN Holder Name *"
                   placeholder="Enter Name"
                   disabled={!isPanUploaded}
+                  inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
               </Grid>
             </Grid>

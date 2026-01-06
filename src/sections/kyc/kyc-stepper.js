@@ -19,7 +19,7 @@ export default function Stepper() {
   ];
 
   const [activeStepId, setActiveStepId] = useState('kyc_company_documents');
-
+  const [dataInitializedSteps, setDataInitializedSteps] = useState([]);
   const [stepsProgress, setStepsProgress] = useState({
     kyc_company_documents: { percent: 0 },
     kyc_bank_details: { percent: 0 },
@@ -51,6 +51,10 @@ export default function Stepper() {
           <KYCCompanyDetails
             percent={(p) => updateStepPercent('kyc_company_documents', p)}
             setActiveStepId={() => setActiveStepId('kyc_bank_details')}
+            dataInitializedSteps={dataInitializedSteps}
+            setDataInitializedSteps={() =>
+              setDataInitializedSteps((prev) => [...prev, 'kyc_company_documents'])
+            }
           />
         );
 
@@ -59,6 +63,10 @@ export default function Stepper() {
           <KYCBankDetails
             percent={(p) => updateStepPercent('kyc_bank_details', p)}
             setActiveStepId={() => setActiveStepId('kyc_signatories')}
+            dataInitializedSteps={dataInitializedSteps}
+            setDataInitializedSteps={() =>
+              setDataInitializedSteps((prev) => [...prev, 'kyc_bank_details'])
+            }
           />
         );
 
@@ -67,6 +75,10 @@ export default function Stepper() {
           <KYCSignatories
             percent={(p) => updateStepPercent('kyc_signatories', p)}
             setActiveStepId={() => router.push(paths.auth.kyc.kycPending)}
+            dataInitializedSteps={dataInitializedSteps}
+            setDataInitializedSteps={() =>
+              setDataInitializedSteps((prev) => [...prev, 'kyc_signatories'])
+            }
           />
         );
 
