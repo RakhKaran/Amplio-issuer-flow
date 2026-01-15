@@ -18,7 +18,7 @@ const ROOTS = {
 // ----------------------------------------------------------------------
 
 export const paths = {
-  kyc: '/kyc',
+  // kyc: '/kyc',
   kycBasicInfo: '/kyc/basic-info',
   kycCompanyDetails: '/kyc/company-details',
   KYCBankDetails: '/kyc/bank-details',
@@ -269,4 +269,11 @@ export const paths = {
     //   },
     // },
   },
+  kyc:{
+    root: ROOTS.KYC,
+    invoiceFinancingInitialize: `${ROOTS.KYC}/invoice-financing/initialize`,
+    invoiceFinancingCreate: `${ROOTS.KYC}/invoice-financing/create`,
+    invoiceFinancingPending: `${ROOTS.KYC}/invoice-financing/pending`,
+    invoiceFinancingSuccess: `${ROOTS.KYC}/invoice-financing/success`,
+  }
 };

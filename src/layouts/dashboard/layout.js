@@ -27,6 +27,7 @@ export default function DashboardLayout({ children }) {
   const isMini = settings.themeLayout === 'mini';
 
   const renderNavMini = <NavMini />;
+  
 
   const renderHorizontal = <NavHorizontal />;
 
