@@ -8,6 +8,7 @@ import { mainRoutes, HomePage } from './main';
 import { authRoutes } from './auth';
 import { authDemoRoutes } from './auth-demo';
 import { dashboardRoutes } from './dashboard';
+import { kycRoutes } from './kyc';
 import { componentsRoutes } from './components';
 
 // ----------------------------------------------------------------------
@@ -38,6 +39,7 @@ export default function Router() {
 
     // Dashboard routes
     ...dashboardRoutes,
+    ...kycRoutes,
 
     // Main routes
     ...mainRoutes,
