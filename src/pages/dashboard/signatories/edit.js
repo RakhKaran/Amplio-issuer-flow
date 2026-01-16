@@ -8,7 +8,7 @@ export default function SignatoriesEditPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard: Dashboard: Job Edit</title>
+        <title> Dashboard: Dashboard: Signatoires Edit</title>
       </Helmet>
 
       <SignatoriesEditView />
