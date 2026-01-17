@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import { AuthGuard } from 'src/auth/guard';
+import { AuthGuard, KycGuard } from 'src/auth/guard';
 import { LoadingScreen } from 'src/components/loading-screen';
 import KycLayout from 'src/layouts/kyc';
 
@@ -9,29 +9,31 @@ import KycLayout from 'src/layouts/kyc';
 // const InvoiceFinancingCreatePage = lazy(() => import('src/pages/kyc/invoice-financing/create'));
 // const InvoiceFinancingPendingPage = lazy(() => import('src/pages/kyc/invoice-financing/pending'));
 // const InvoiceFinancingSuccessPage = lazy(() => import('src/pages/kyc/invoice-financing/success'));
+const InitialPage = lazy(() => import('src/pages/business-kyc/show'));
+const BusinessKycPage = lazy(() => import('src/pages/business-kyc/kyc'));
 
 export const kycRoutes = [
   {
     path: 'kyc',
     element: (
       <AuthGuard>
-        <KycLayout>
-          <Suspense fallback={<LoadingScreen />}>
-            <Outlet />
-          </Suspense>
-        </KycLayout>
+        <KycGuard>
+          <KycLayout>
+            <Suspense fallback={<LoadingScreen />}>
+              <Outlet />
+            </Suspense>
+          </KycLayout>
+        </KycGuard>
       </AuthGuard>
     ),
     children: [
-    //   { index: true, element: <KycHomePage /> },
+      { element: <InitialPage />, index: true },
 
       {
-        path: 'invoice-financing',
+        path: 'invoiceFinancing',
         children: [
-        //   { path: 'initialize', element: <InvoiceFinancingInitPage /> },
-        //   { path: 'create', element: <InvoiceFinancingCreatePage /> },
-        //   { path: 'pending', element: <InvoiceFinancingPendingPage /> },
-        //   { path: 'success', element: <InvoiceFinancingSuccessPage /> },
+          { path: 'initialize', element: <InitialPage /> },
+          { path: 'create', element: <BusinessKycPage /> },
         ],
       },
     ],

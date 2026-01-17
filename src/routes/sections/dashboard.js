@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 // auth
-import { AuthGuard } from 'src/auth/guard';
+import { AuthGuard, KycGuard } from 'src/auth/guard';
 // layouts
 import DashboardLayout from 'src/layouts/dashboard';
 // components
@@ -41,7 +41,7 @@ const UserEditPage = lazy(() => import('src/pages/dashboard/user/edit'));
 
 // COMPANY PROFILE
 const CompanyProfilePage = lazy(() => import('src/pages/dashboard/company/profile'));
-const NewBankPage = lazy(() => import('src/pages/dashboard/company/new'))
+const NewBankPage = lazy(() => import('src/pages/dashboard/company/new'));
 
 // COMPANY
 const ROIGuidancePage = lazy(() => import('src/pages/dashboard/issure-services/roi'));
@@ -49,16 +49,18 @@ const ROIFundFormPage = lazy(() => import('src/pages/dashboard/issure-services/r
 const AfterCompleteRoiStagePage = lazy(() => import('src/pages/dashboard/issure-services/view'));
 
 //
-const MyBondCreatePage = lazy(() => import('src/pages/dashboard/mybond/create'))
-const MyBondNewIssuePage = lazy(() => import('src/pages/dashboard/mybond/bond-issue'))
-const IntermediateComparePage = lazy(() => import('src/pages/dashboard/mybond/comapre'))
+const MyBondCreatePage = lazy(() => import('src/pages/dashboard/mybond/create'));
+const MyBondNewIssuePage = lazy(() => import('src/pages/dashboard/mybond/bond-issue'));
+const IntermediateComparePage = lazy(() => import('src/pages/dashboard/mybond/comapre'));
 
 // WORKFLOW
 const ReactFlowPage = lazy(() => import('src/pages/dashboard/react-flow/board'));
 // DOCUMENT DRAFTING
-const DocumentDraftingFormPage = lazy(() => import('src/pages/dashboard/document-drafting/document-drafting-forms'))
-const DocumentDraftingListPage = lazy(()=> import('src/pages/dashboard/document-drafting/list'));
-const DocumentDraftingViewPage = lazy(()=> import('src/pages/dashboard/document-drafting/view'));
+const DocumentDraftingFormPage = lazy(() =>
+  import('src/pages/dashboard/document-drafting/document-drafting-forms')
+);
+const DocumentDraftingListPage = lazy(() => import('src/pages/dashboard/document-drafting/list'));
+const DocumentDraftingViewPage = lazy(() => import('src/pages/dashboard/document-drafting/view'));
 // SCHEDULER
 const SchedulerNewPage = lazy(() => import('src/pages/dashboard/scheduler/new'));
 const SchedulerListPage = lazy(() => import('src/pages/dashboard/scheduler/list'));
@@ -73,14 +75,14 @@ const DesignationViewPage = lazy(() => import('src/pages/dashboard/designation/v
 const BlogPostsPage = lazy(() => import('src/pages/dashboard/post/list'));
 const BlogPostPage = lazy(() => import('src/pages/dashboard/post/details'));
 const BlogNewPostPage = lazy(() => import('src/pages/dashboard/post/new'));
-const BlogEditPostPage = lazy(() => import('src/pages/dashboard/post/edit'))
+const BlogEditPostPage = lazy(() => import('src/pages/dashboard/post/edit'));
 // Trusteeee
 const TrusteeListPage = lazy(() => import('src/pages/dashboard/trustee/list'));
 const TrusteeDetailsPage = lazy(() => import('src/pages/dashboard/trustee/details'));
 const TrusteeEditPage = lazy(() => import('src/pages/dashboard/trustee/edit'));
-const TrusteeComparePage = lazy(() => import('src/pages/dashboard/trustee/comapre'))
+const TrusteeComparePage = lazy(() => import('src/pages/dashboard/trustee/comapre'));
 // BANK DETAILS
-const BankDetailsPage =  lazy(()=> import('src/pages/dashboard/bank-details/details'))
+const BankDetailsPage = lazy(() => import('src/pages/dashboard/bank-details/details'));
 // JOB
 const JobDetailsPage = lazy(() => import('src/pages/dashboard/job/details'));
 const JobListPage = lazy(() => import('src/pages/dashboard/job/list'));
@@ -90,7 +92,7 @@ const JobEditPage = lazy(() => import('src/pages/dashboard/job/edit'));
 const SignatoriesCreatePage = lazy(() => import('src/pages/dashboard/signatories/new'));
 const SignatoriesListPage = lazy(() => import('src/pages/dashboard/signatories/list'));
 const SignatoriesEditPage = lazy(() => import('src/pages/dashboard/signatories/edit'));
-const SignatoriesDetailsPage = lazy(()=> import('src/pages/dashboard/signatories/details'))
+const SignatoriesDetailsPage = lazy(() => import('src/pages/dashboard/signatories/details'));
 // TOUR
 const TourDetailsPage = lazy(() => import('src/pages/dashboard/tour/details'));
 const TourListPage = lazy(() => import('src/pages/dashboard/tour/list'));
@@ -108,6 +110,8 @@ const PermissionDeniedPage = lazy(() => import('src/pages/dashboard/permission')
 // BLANK PAGE
 const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
 
+const InitialPage = lazy(() => import('src/pages/business-kyc/show'));
+
 // ----------------------------------------------------------------------
 
 export const dashboardRoutes = [
@@ -115,11 +119,13 @@ export const dashboardRoutes = [
     path: 'dashboard',
     element: (
       <AuthGuard>
-        <DashboardLayout>
-          <Suspense fallback={<LoadingScreen />}>
-            <Outlet />
-          </Suspense>
-        </DashboardLayout>
+        <KycGuard>
+          <DashboardLayout>
+            <Suspense fallback={<LoadingScreen />}>
+              <Outlet />
+            </Suspense>
+          </DashboardLayout>
+        </KycGuard>
       </AuthGuard>
     ),
     children: [
@@ -129,6 +135,7 @@ export const dashboardRoutes = [
       // { path: 'banking', element: <OverviewBankingPage /> },
       // { path: 'booking', element: <OverviewBookingPage /> },
       // { path: 'file', element: <OverviewFilePage /> },
+      { path: 'initial', element: <InitialPage /> },
       {
         path: 'user',
         children: [
@@ -150,12 +157,9 @@ export const dashboardRoutes = [
           // { path: 'view', element: <BankViewPage /> }
         ],
       },
-        {
+      {
         path: 'bankDetails',
-        children: [
- 
-          { path: ':id', element: <BankDetailsPage /> }
-        ],
+        children: [{ path: ':id', element: <BankDetailsPage /> }],
       },
       {
         path: 'issureservices',
@@ -163,7 +167,7 @@ export const dashboardRoutes = [
           { element: <ROIGuidancePage />, index: true },
           { path: 'roi', element: <ROIGuidancePage /> },
           { path: 'fund-position-form/:applicationId', element: <ROIFundFormPage /> },
-          {path:'view', element:<AfterCompleteRoiStagePage/>},
+          { path: 'view', element: <AfterCompleteRoiStagePage /> },
         ],
       },
       {
@@ -221,8 +225,8 @@ export const dashboardRoutes = [
         children: [
           { element: <DocumentDraftingFormPage />, index: true },
           { path: 'document-drafting', element: <DocumentDraftingFormPage /> },
-          {path: 'list', element:<DocumentDraftingListPage/>},
-          {path: ':id', element:<DocumentDraftingViewPage/>}
+          { path: 'list', element: <DocumentDraftingListPage /> },
+          { path: ':id', element: <DocumentDraftingViewPage /> },
         ],
       },
       {

@@ -98,6 +98,11 @@ export const endpoints = {
     filterList: (filter) => `/company-profiles/authorize-signatory?filter=${filter}`,
     details: (signatoryId) => `/company-profiles/authorize-signatory/${signatoryId}`,
   },
+  clientdetails: {
+    list: '/company-profiles/authorize-signatory',
+    filterList: (filter) => `/company-profiles/authorize-signatory?filter=${filter}`,
+    details: (signatoryId) => `/company-profiles/authorize-signatory/${signatoryId}`,
+  },
   designation: {
     list: '/designations',
     filterList: (filter) => `/designations?filter=${filter}`,
@@ -107,6 +112,12 @@ export const endpoints = {
     list: '/bond-estimations',
     filterList: (filter) => `/bond-estimations?filter=${filter}`,
     details: (applicationId) => `/bond-estimations/${applicationId}`,
+  },
+  bondApplications: {
+    list: '/bond-applications',
+    filterList: (filter) => `/bond-applications?filter=${filter}`,
+    details: (applicationId) => `/bond-applications/${applicationId}`,
+    dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
   },
   creditRatingAgencies: {
     list: '/credit-rating-agencies',

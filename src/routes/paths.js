@@ -2,7 +2,6 @@
 import { paramCase } from 'src/utils/change-case';
 import { _id, _postTitles } from 'src/_mock/assets';
 
-
 // ----------------------------------------------------------------------
 
 const MOCK_ID = _id[1];
@@ -13,6 +12,7 @@ const ROOTS = {
   AUTH: '/auth',
   AUTH_DEMO: '/auth-demo',
   DASHBOARD: '/dashboard',
+  KYC: '/kyc',
 };
 
 // ----------------------------------------------------------------------
@@ -26,9 +26,6 @@ export const paths = {
   KYCSucessfull: '/kyc/sucessfull',
   KYCSignatories: '/kyc/signatories',
   KYCPending: '/kyc/pending',
-
-
-
 
   // kycCompanyDetails: '/kyc/kyc-company-details',
   kycAddressInfo: '/kyc/kyc-address-info',
@@ -95,7 +92,7 @@ export const paths = {
       companyKyc: `${ROOTS.AUTH}/kyc/company-kyc`,
       kycBasicInfo: `${ROOTS.AUTH}/kyc/basic-info`,
       kycSuccessful: `${ROOTS.AUTH}/kyc/kyc-successful`,
-      kycPending: `${ROOTS.AUTH}/kyc/kyc-pending`
+      kycPending: `${ROOTS.AUTH}/kyc/kyc-pending`,
     },
   },
   authDemo: {
@@ -121,6 +118,7 @@ export const paths = {
     general: {
       analytics: `${ROOTS.DASHBOARD}/analytics`,
     },
+    initial: '/initial',
 
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
@@ -150,7 +148,8 @@ export const paths = {
     issureservices: {
       root: `${ROOTS.DASHBOARD}/issureservices`,
       roi: `${ROOTS.DASHBOARD}/issureservices/roi`,
-      roifundform: (applicationId) => `${ROOTS.DASHBOARD}/issureservices/fund-position-form/${applicationId}`,
+      roifundform: (applicationId) =>
+        `${ROOTS.DASHBOARD}/issureservices/fund-position-form/${applicationId}`,
       view: `${ROOTS.DASHBOARD}/issureservices/view`,
     },
     trustee: {
@@ -158,7 +157,7 @@ export const paths = {
       list: `${ROOTS.DASHBOARD}/trustee/list`,
       details: `${ROOTS.DASHBOARD}/trustee/details`,
       update: `${ROOTS.DASHBOARD}/trustee/update`,
-      compare: `${ROOTS.DASHBOARD}/trustee/compare`
+      compare: `${ROOTS.DASHBOARD}/trustee/compare`,
     },
     documentDrafting: {
       root: `${ROOTS.DASHBOARD}/documentDrafting`,
@@ -172,7 +171,7 @@ export const paths = {
       create: `${ROOTS.DASHBOARD}/mybond/create`,
       bondIssue: `${ROOTS.DASHBOARD}/mybond/bond-issue`,
       investor: `${ROOTS.DASHBOARD}/mybond/investor`,
-      compare: `${ROOTS.DASHBOARD}/mybond/compare`
+      compare: `${ROOTS.DASHBOARD}/mybond/compare`,
     },
     signatories: {
       root: `${ROOTS.DASHBOARD}/signatories`,
@@ -269,11 +268,14 @@ export const paths = {
     //   },
     // },
   },
-  kyc:{
+  kyc: {
     root: ROOTS.KYC,
-    invoiceFinancingInitialize: `${ROOTS.KYC}/invoice-financing/initialize`,
-    invoiceFinancingCreate: `${ROOTS.KYC}/invoice-financing/create`,
-    invoiceFinancingPending: `${ROOTS.KYC}/invoice-financing/pending`,
-    invoiceFinancingSuccess: `${ROOTS.KYC}/invoice-financing/success`,
-  }
+    invoiceFinancing: {
+      root: `${ROOTS.KYC}/invoiceFinancing`,
+      initialize: `${ROOTS.KYC}/invoiceFinancing/initialize`,
+      create: `${ROOTS.KYC}/invoiceFinancing/create`,
+      pending: `${ROOTS.KYC}/invoiceFinancing/pending`,
+      success: `${ROOTS.KYC}/invoiceFinancing/success`,
+    },
+  },
 };

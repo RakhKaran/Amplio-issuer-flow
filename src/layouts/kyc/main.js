@@ -48,6 +48,7 @@ export default function Main({ children, sx, ...other }) {
       sx={{
         flexGrow: 1,
         minHeight: 1,
+        margin: 'auto',
         display: 'flex',
         flexDirection: 'column',
         py: `${HEADER.H_MOBILE + SPACING}px`,
