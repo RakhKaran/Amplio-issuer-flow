@@ -226,12 +226,13 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
       // );
 
       // Save to parent component (which saves to localStorage)
+      setPercent(20);
+      setProgress(true);
       onSave?.(financialsData);
 
       enqueueSnackbar('GSTR-9 saved successfully', {
         variant: 'success',
       });
-      setProgress(true);
     } catch (error) {
       console.error('Error while saving financials:', error);
       enqueueSnackbar('Something went wrong while saving audited financials', {

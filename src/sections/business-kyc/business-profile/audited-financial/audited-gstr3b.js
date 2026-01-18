@@ -54,7 +54,13 @@ const StyledDropZone = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function AuditedGST3B({ currentBaseYear, currentData, setPercent, setProgress, onSave }) {
+export default function AuditedGST3B({
+  currentBaseYear,
+  currentData,
+  setPercent,
+  setProgress,
+  onSave,
+}) {
   // Commented out API integration
   // const params = useParams();
   // const { applicationId } = params;
@@ -278,12 +284,12 @@ export default function AuditedGST3B({ currentBaseYear, currentData, setPercent,
       // );
 
       // Save to parent component (which saves to localStorage)
+      setPercent(20);
+      setProgress(true);
       onSave?.(financialsData);
-
       enqueueSnackbar('GSTR-3B saved successfully', {
         variant: 'success',
       });
-      setProgress(true);
     } catch (error) {
       console.error('Error while saving financials:', error);
       enqueueSnackbar('Something went wrong while saving audited financials', {

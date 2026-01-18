@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 
 export default function BusinessProfileMain({ setActiveStepId, percent, saveStepData }) {
   const { enqueueSnackbar } = useSnackbar();
-  
+
   // Load saved data from localStorage
   const [savedData, setSavedData] = useState(() => {
     try {
@@ -28,7 +28,9 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
   const [gstr9Done, setGstr9Done] = useState(savedData?.gstr9Done || false);
   const [gstr3bDone, setGstr3bDone] = useState(savedData?.gstr3bDone || false);
 
-  const [businessProfilePercent, setBusinessProfilePercent] = useState(0);
+  const [businessProfilePercent, setBusinessProfilePercent] = useState(
+    savedData?.businessProfilePercent || 0
+  );
   const [financialPercent, setFinancialPercent] = useState(savedData?.financialPercent || 0);
   const [itrPercent, setItrPercent] = useState(savedData?.itrPercent || 0);
   const [gstr9Percent, setGstr9Percent] = useState(savedData?.gstr9Percent || 0);
@@ -52,19 +54,53 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
       (gstr3bPercent / 100) * gstr3bWeight;
 
     return Math.round(total);
-  }, [isBaseYearDone, businessProfilePercent, financialPercent, itrPercent, gstr9Percent, gstr3bPercent]);
+  }, [
+    isBaseYearDone,
+    businessProfilePercent,
+    financialPercent,
+    itrPercent,
+    gstr9Percent,
+    gstr3bPercent,
+  ]);
 
   // Update progress when any field changes
+  // useEffect(() => {
+  //   const overallProgress = calculateOverallProgress();
+  //   percent?.(overallProgress);
+  // }, [calculateOverallProgress, percent]);
+  const isStepComplete =
+    isBaseYearDone &&
+    businessProfilePercent === 100 &&
+    financialDone &&
+    itrDone &&
+    gstr9Done &&
+    gstr3bDone;
+
   useEffect(() => {
-    const overallProgress = calculateOverallProgress();
-    percent?.(overallProgress);
-  }, [calculateOverallProgress, percent]);
+    percent?.(isStepComplete ? 100 : calculateOverallProgress());
+  }, [isStepComplete]);
 
   // Save data to localStorage and stepper
-  const handleSaveData = useCallback((data) => {
-    const dataToSave = {
-      ...savedData,
-      ...data,
+  const handleSaveData = useCallback(
+    (data) => {
+      const dataToSave = {
+        ...savedData,
+        ...data,
+        isBaseYearDone,
+        financialDone,
+        itrDone,
+        gstr9Done,
+        gstr3bDone,
+        businessProfilePercent,
+        financialPercent,
+        itrPercent,
+        gstr9Percent,
+        gstr3bPercent,
+      };
+      saveStepData?.(dataToSave);
+    },
+    [
+      savedData,
       isBaseYearDone,
       financialDone,
       itrDone,
@@ -75,38 +111,36 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
       itrPercent,
       gstr9Percent,
       gstr3bPercent,
-    };
-    saveStepData?.(dataToSave);
-  }, [savedData, isBaseYearDone, financialDone, itrDone, gstr9Done, gstr3bDone, 
-      businessProfilePercent, financialPercent, itrPercent, gstr9Percent, gstr3bPercent, saveStepData]);
-
-  // Save whenever any state changes
-  useEffect(() => {
-    handleSaveData({});
-  }, [isBaseYearDone, financialDone, itrDone, gstr9Done, gstr3bDone, 
-      businessProfilePercent, financialPercent, itrPercent, gstr9Percent, gstr3bPercent]);
-
+      saveStepData,
+    ]
+  );
   // Handle business profile save
-  const handleBusinessProfileSave = useCallback((data) => {
-    handleSaveData({ businessProfile: data });
-    enqueueSnackbar('Business profile saved successfully', { variant: 'success' });
-  }, [handleSaveData, enqueueSnackbar]);
+  const handleBusinessProfileSave = useCallback(
+    (data) => {
+      handleSaveData({ businessProfile: data });
+      enqueueSnackbar('Business profile saved successfully', { variant: 'success' });
+    },
+    [handleSaveData, enqueueSnackbar]
+  );
 
   // Handle audited financial document updates
-  const handleFinancialUpdate = useCallback((updates) => {
-    if (updates.isBaseYearDone !== undefined) setIsBaseYearDone(updates.isBaseYearDone);
-    if (updates.financialDone !== undefined) setFinancialDone(updates.financialDone);
-    if (updates.itrDone !== undefined) setItrDone(updates.itrDone);
-    if (updates.gstr9Done !== undefined) setGstr9Done(updates.gstr9Done);
-    if (updates.gstr3bDone !== undefined) setGstr3bDone(updates.gstr3bDone);
-    if (updates.financialPercent !== undefined) setFinancialPercent(updates.financialPercent);
-    if (updates.itrPercent !== undefined) setItrPercent(updates.itrPercent);
-    if (updates.gstr9Percent !== undefined) setGstr9Percent(updates.gstr9Percent);
-    if (updates.gstr3bPercent !== undefined) setGstr3bPercent(updates.gstr3bPercent);
-    if (updates.auditedFinancial) {
-      handleSaveData({ auditedFinancial: updates.auditedFinancial });
-    }
-  }, [handleSaveData]);
+  const handleFinancialUpdate = useCallback(
+    (updates) => {
+      if (updates.isBaseYearDone !== undefined) setIsBaseYearDone(updates.isBaseYearDone);
+      if (updates.financialDone !== undefined) setFinancialDone(updates.financialDone);
+      if (updates.itrDone !== undefined) setItrDone(updates.itrDone);
+      if (updates.gstr9Done !== undefined) setGstr9Done(updates.gstr9Done);
+      if (updates.gstr3bDone !== undefined) setGstr3bDone(updates.gstr3bDone);
+      if (updates.financialPercent !== undefined) setFinancialPercent(updates.financialPercent);
+      if (updates.itrPercent !== undefined) setItrPercent(updates.itrPercent);
+      if (updates.gstr9Percent !== undefined) setGstr9Percent(updates.gstr9Percent);
+      if (updates.gstr3bPercent !== undefined) setGstr3bPercent(updates.gstr3bPercent);
+      if (updates.auditedFinancial) {
+        handleSaveData({ auditedFinancial: updates.auditedFinancial });
+      }
+    },
+    [handleSaveData]
+  );
 
   // ✅ Single source of truth
   const handleNextClick = () => {

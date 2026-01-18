@@ -232,12 +232,12 @@ export default function AuditedFinancialStatement({
       // );
 
       // Save to parent component (which saves to localStorage)
+      setProgress(true);
+      setPercent(20);
       onSave?.(financialsData);
-
       enqueueSnackbar('Audited financial statements saved successfully', {
         variant: 'success',
       });
-      setProgress(true);
     } catch (error) {
       enqueueSnackbar('Something went wrong while saving audited financials', {
         variant: 'error',
@@ -246,9 +246,23 @@ export default function AuditedFinancialStatement({
     }
   };
 
-  // -----------------------------
-  // Render
-  // -----------------------------
+  useEffect(() => {
+  if (currentData?.length) {
+    // calculate completion from restored data
+    let score = 0;
+
+    if (currentData[0]?.auditorName) score += 5;
+
+    const docs = currentData.length;
+    if (docs > 0) {
+      score += 15; // files + dates already present
+    }
+
+    setPercent(20);
+    setProgress(true);
+  }
+}, [currentData, setPercent, setProgress]);
+
   return (
     <Container disableGutters>
       <Grid

@@ -38,13 +38,14 @@ export default function AddGuarantorForm({
     onClose,
     onSuccess,
     companyId,
-    currentUser,
-    isViewMode,
+    currentGurantor,
+    // isViewMode,
     isEditMode,
 }) {
     const { enqueueSnackbar } = useSnackbar();
     const [extractedPan, setExtractedPan] = useState(null);
     const [panExtractionStatus, setPanExtractionStatus] = useState('idle');
+    const isViewMode = currentGurantor;
 
     const NewUserSchema = Yup.object().shape({
         guarantorName: Yup.string().required('Name is required'),
@@ -101,16 +102,16 @@ export default function AddGuarantorForm({
 
     const defaultValues = useMemo(
         () => ({
-            guarantorName: currentUser?.guarantorName || '',
-            email: currentUser?.email || '',
-            phoneNumber: currentUser?.phone || '',
-            cin: currentUser?.cin || '',
-            guarantorAmountLimit: currentUser?.guarantorAmountLimit || '',
-            guarantorType: currentUser?.guarantorType || 'Corporate',
-            fullName: currentUser?.fullName || '',
-            estimetedNetWorth: currentUser?.estimetedNetWorth || '',
-            panNumber: currentUser?.panNumber || '',
-            adharNumber: currentUser?.adharNumber || '',
+            guarantorName: currentGurantor?.guarantorName || '',
+            email: currentGurantor?.email || '',
+            phoneNumber: currentGurantor?.phone || '',
+            cin: currentGurantor?.cin || '',
+            guarantorAmountLimit: currentGurantor?.guarantorAmountLimit || '',
+            guarantorType: currentGurantor?.guarantorType || 'Corporate',
+            fullName: currentGurantor?.fullName || '',
+            estimetedNetWorth: currentGurantor?.estimetedNetWorth || '',
+            panNumber: currentGurantor?.panNumber || '',
+            adharNumber: currentGurantor?.adharNumber || '',
             adharCardFile: '',
             panCardFile: '',
             // customDesignation: '',
@@ -119,7 +120,7 @@ export default function AddGuarantorForm({
             // submittedPanNumber: '',
             // submittedDateOfBirth: '',
         }),
-        [currentUser]
+        [currentGurantor]
     );
 
     const methods = useForm({
@@ -250,7 +251,7 @@ export default function AddGuarantorForm({
 
     useEffect(() => {
         reset(defaultValues);
-    }, [currentUser, defaultValues, reset]);
+    }, [currentGurantor, defaultValues, reset]);
 
     // useEffect(() => {
     //     if (!panFile?.id) return;
@@ -487,7 +488,7 @@ export default function AddGuarantorForm({
 }
 
 AddGuarantorForm.propTypes = {
-    currentUser: PropTypes.object,
+    currentGurantor: PropTypes.object,
     onClose: PropTypes.func.isRequired,
     onSuccess: PropTypes.func,
     open: PropTypes.bool.isRequired,

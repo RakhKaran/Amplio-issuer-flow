@@ -13,7 +13,7 @@ export default function Stepper() {
   const { applicationId } = params;
 
   const [applicationData, setApplicationData] = useState(null);
-  const { bondApplication, bondApplicationLoading } = useGetBondApplication(applicationId);
+  // const { bondApplication, bondApplicationLoading } = useGetBondApplication(applicationId);
   const [dataInitialized, setDataInitialized] = useState(false);
 
   const [activeStepId, setActiveStepId] = useState('business_Profile_Finance');
@@ -180,11 +180,11 @@ export default function Stepper() {
   //   }
   // }, [bondApplication, bondApplicationLoading, dataInitialized]);
 
-  useEffect(() => {
-    if (bondApplication && !bondApplicationLoading) {
-      setApplicationData(bondApplication);
-    }
-  }, [bondApplication, bondApplicationLoading]);
+  // useEffect(() => {
+  //   if (bondApplication && !bondApplicationLoading) {
+  //     setApplicationData(bondApplication);
+  //   }
+  // }, [bondApplication, bondApplicationLoading]);
 
   const renderForm = () => {
     switch (activeStepId) {
@@ -226,110 +226,6 @@ export default function Stepper() {
       //     <BorrowingDetails
       //       percent={(p) => updateStepPercent('borrowing_details', p)}
       //       setActiveStepId={setActiveStepId}
-      //     />
-      //   );
-
-      // case 'collateral_assets':
-      //   return (
-      //     <CollateralAssets
-      //       percent={(p) => updateStepPercent('collateral_assets', p)}
-      //       setActiveStepId={setActiveStepId}
-      //     />
-      //   );
-
-      // case 'financial_details':
-      //   return (
-      //     <FinancialProfitableMainFile
-      //       percent={(p) => updateStepPercent('financial_details', p)}
-      //       setActiveStepId={setActiveStepId}
-      //     />
-      //   );
-
-      // case 'credit_rating':
-      //   return (
-      //     <CreditRating
-      //       currentIssue={formData.my_bond_new_issue}
-      //       percent={(p) => updateStepPercent('credit_rating', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(data) => saveStepData('credit_rating', data)}
-      //     />
-      //   );
-
-      // // case 'preliminary_bond_requirements':
-      // //   return (
-      // //     <PriliminaryAndCollateralView
-      // //       currentPrliminaryRequirements={
-      // //         formData.preliminary_bond_requirements?.preliminaryData || null
-      // //       }
-      // //       currentCollateral={formData.preliminary_bond_requirements?.collateralData || null}
-      // //       percent={(p) => updateStepPercent('preliminary_bond_requirements', p)}
-      // //       setActiveStepId={setActiveStepId}
-      // //       saveStepData={(section, data) =>
-      // //         saveStepData('preliminary_bond_requirements', { [section]: data })
-      // //       }
-      // //     />
-      // //   );
-
-      // case 'regulatory_filing':
-      //   return (
-      //     <RegulatoryFilingMain
-      //       currentPAS4Regulatory={formData.regulatory_filing?.pas4}
-      //       currentTermSheetRegulatory={formData.regulatory_filing?.sebiApprovals}
-      //       currentInformationMemorandumRegulatory={formData.regulatory_filing?.memorandum}
-      //       percent={(p) => updateStepPercent('regulatory_filing', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(data) => saveStepData('regulatory_filing', data)}
-      //     />
-      //   );
-
-      // case 'trustee_due_diligence':
-      //   return (
-      //     <TrusteeDueDiligence
-      //       currentData={formData?.trustee_due_diligence}
-      //       percent={(p) => updateStepPercent('trustee_due_diligence', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(data) => saveStepData('trustee_due_diligence', data)}
-      //     />
-      //   );
-
-      // case 'principle_listing_approval':
-      //   return (
-      //     <InPrincipleApproval
-      //       currentData={formData?.principle_listing_approval}
-      //       percent={(p) => updateStepPercent('principle_listing_approval', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(data) => saveStepData('principle_listing_approval', data)}
-      //     />
-      //   );
-
-      // case 'isin_activation':
-      //   return (
-      //     <IsinActivationMain
-      //       currentIsin={formData.isin_activation?.isin_activation || {}}
-      //       currentDemat={formData.isin_activation?.demat_credit_details || {}}
-      //       currentTrusteeApproval={formData.isin_activation?.trustee_sebi_approval || {}}
-      //       percent={(p) => updateStepPercent('isin_activation', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(section, data) => saveStepData('isin_activation', { [section]: data })}
-      //     />
-      //   );
-
-      // case 'execute_document':
-      //   return (
-      //     <ExecuteDocument
-      //       currentExecuteDocument={formData.execute_document}
-      //       percent={(p) => updateStepPercent('execute_document', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(data) => saveStepData('execute_document', data)}
-      //     />
-      //   );
-      // case 'launch_issue':
-      //   return (
-      //     <LaunchIssue
-      //       currentLaunchIssue={formData.launch_issue}
-      //       percent={(p) => updateStepPercent('launch_issue', p)}
-      //       setActiveStepId={setActiveStepId}
-      //       saveStepData={(data) => saveStepData('launch_issue', data)}
       //     />
       //   );
 

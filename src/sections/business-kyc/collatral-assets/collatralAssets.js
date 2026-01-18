@@ -183,6 +183,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
         // setApprovalScreen(true);
         // setActiveStepId('financial_details');
         // estimationReport();
+        setActiveStepId();
         estimationReport(applicationId);
       }
     } catch (error) {

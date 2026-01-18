@@ -21,7 +21,6 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // api
 import { RouterLink } from 'src/routes/components';
 
-
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -41,15 +40,11 @@ import {
 } from 'src/components/table';
 //
 
-import { useGetSignatories } from 'src/api/signatories';
-
 import GuarantorTableRow from '../guarantor-table-row';
 import GuarantorTableFiltersResult from '../guarantor-table-filters-result';
 import GuarantorTableToolbar from '../guarantor-table-toolbar';
 import { Box, Typography } from '@mui/material';
 import AddGuarantorForm from '../add-guarantor';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -69,7 +64,7 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function GuarantorListView() {
+export default function GuarantorListView({ setActiveStepId, percent }) {
   const table = useTable();
 
   const settings = useSettingsContext();
@@ -77,34 +72,28 @@ export default function GuarantorListView() {
   const confirm = useBoolean();
   const [openAddGuarantor, setOpenAddGuarantor] = useState(false);
   const [selectedGuarantor, setSelectedGuarantor] = useState(null);
-  const [mode, setMode] = useState('add');
-
+  const [tableData, setTableData] = useState([]);
 
   const handleOpenAddGuarantor = () => {
     setSelectedGuarantor(null);
-    setMode('add');
     setOpenAddGuarantor(true);
   };
 
   const handleViewGuarantor = (row) => {
     setSelectedGuarantor(row);
-    setMode('view');
     setOpenAddGuarantor(true);
   };
 
-  const { Signatories } = useGetSignatories();
-  console.log(Signatories);
-
   const handleViewRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.signatories.details(id));
+      router.push(paths.dashboard.tableData.details(id));
     },
     [router]
   );
 
   const handleEditRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.signatories.edit(id));
+      router.push(paths.dashboard.tableData.edit(id));
     },
     [router]
   );
@@ -112,7 +101,7 @@ export default function GuarantorListView() {
   const [filters, setFilters] = useState(defaultFilters);
 
   const dataFiltered = applyFilter({
-    inputData: Signatories,
+    inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters,
   });
@@ -143,11 +132,11 @@ export default function GuarantorListView() {
 
   const handleDeleteRows = useCallback(() => {
     table.onUpdatePageDeleteRows({
-      totalRows: Signatories.length,
+      totalRows: tableData.length,
       totalRowsInPage: dataInPage.length,
       totalRowsFiltered: dataFiltered.length,
     });
-  }, [dataFiltered.length, dataInPage.length, Signatories.length, table]);
+  }, [dataFiltered.length, dataInPage.length, tableData.length, table]);
 
   const handleFilterStatus = useCallback(
     (event, newValue) => {
@@ -167,17 +156,17 @@ export default function GuarantorListView() {
           heading="List"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Signatories', href: paths.dashboard.signatories.list },
+            { name: 'tableData', href: paths.dashboard.tableData.list },
             { name: 'List' },
           ]}
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.signatories.new}
+              href={paths.dashboard.tableData.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New Signatories
+              New tableData
             </Button>
           }
           sx={{
@@ -195,7 +184,7 @@ export default function GuarantorListView() {
           }}
         >
           {/* Left side label */}
-          <Typography variant="h4" color='primary'>
+          <Typography variant="h4" color="primary">
             Add Guarantor
           </Typography>
 
@@ -208,7 +197,6 @@ export default function GuarantorListView() {
           >
             Add Guarantor
           </Button>
-
         </Box>
 
         <Card>
@@ -241,11 +229,11 @@ export default function GuarantorListView() {
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
-              rowCount={Signatories.length}
+              rowCount={tableData.length}
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  Signatories.map((row) => row.id)
+                  tableData.map((row) => row.id)
                 )
               }
               action={
@@ -257,20 +245,19 @@ export default function GuarantorListView() {
               }
             />
 
-
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                 <TableHeadCustom
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={Signatories.length}
+                  rowCount={tableData.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      Signatories.map((row) => row.id)
+                      tableData.map((row) => row.id)
                     )
                   }
                   showCheckbox={false}
@@ -296,7 +283,7 @@ export default function GuarantorListView() {
 
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, Signatories.length)}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
                   />
 
                   <TableNoData notFound={notFound} />
@@ -315,15 +302,26 @@ export default function GuarantorListView() {
             onChangeDense={table.onChangeDense}
           />
         </Card>
+
+        <Box sx={{ textAlign: 'right', mt: 3 }}>
+          <Button
+            variant="contained"
+            disabled={tableData.length < 1}
+            onClick={() => {
+              percent(100);
+              setActiveStepId();
+            }}
+          >
+            Next
+          </Button>
+        </Box>
       </Container>
 
       <AddGuarantorForm
         open={openAddGuarantor}
         onClose={() => setOpenAddGuarantor(false)}
-        currentUser={selectedGuarantor}
-        isViewMode={mode === 'view'}
+        currentGurantor={selectedGuarantor}
       />
-
 
       <ConfirmDialog
         open={confirm.value}

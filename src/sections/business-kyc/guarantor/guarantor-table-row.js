@@ -28,10 +28,10 @@ export default function GuarantorTableRow({ row, selected, onSelectRow, onViewRo
 
   return (
     <TableRow hover selected={selected}>
-      <TableCell>{guarantorName || 'NA'}</TableCell>
+      <TableCell>{guarantorName }</TableCell>
 
-      <TableCell>{guarantorType || 'NA'}</TableCell>
-      <TableCell>{GaurantorAmountLimit || 'NA'}</TableCell>
+      <TableCell>{guarantorType }</TableCell>
+      <TableCell>{GaurantorAmountLimit }</TableCell>
       <TableCell>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Tooltip title="View" placement="top" arrow>

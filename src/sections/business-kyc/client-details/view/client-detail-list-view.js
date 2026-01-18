@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -44,6 +44,7 @@ import ClientDetailTableToolbar from '../clinet-deatail-table-toolbar';
 import ClientDetailTableRow from '../client-detail-table-row';
 import ClientBusinessProfileForm from '../client-profile-form';
 import { useGetClientDetail } from 'src/api/clientDetail';
+import { Box } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -120,7 +121,7 @@ const DUMMY_CLIENT_DETAILS = [
 
 // ----------------------------------------------------------------------
 
-export default function ClientDetailListView() {
+export default function ClientDetailListView({ percent, setActiveStepId }) {
   const table = useTable();
 
   const settings = useSettingsContext();
@@ -210,6 +211,12 @@ export default function ClientDetailListView() {
     setFilters(defaultFilters);
   }, []);
 
+  useEffect(() => {
+    if (ClientDetail && ClientDetail.length >= 1) {
+      percent(100);
+    }
+  }, [percent, setActiveStepId, ClientDetail]);
+
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -231,11 +238,11 @@ export default function ClientDetailListView() {
               startIcon={<Iconify icon="mingcute:add-line" />}
               color="primary"
               sx={{
-              '&:hover': {
-                backgroundColor: 'primary.main',
-                boxShadow: 'none',
-              },
-            }}
+                '&:hover': {
+                  backgroundColor: 'primary.main',
+                  boxShadow: 'none',
+                },
+              }}
             >
               Add New Client
             </Button>
@@ -360,6 +367,19 @@ export default function ClientDetailListView() {
             onChangeDense={table.onChangeDense}
           />
         </Card>
+
+        <Box sx={{ textAlign: 'right', mt: 3 }}>
+          <Button
+            variant="contained"
+            disabled={ClientDetail.length < 1}
+            onClick={() => {
+              percent(100);
+              setActiveStepId();
+            }}
+          >
+            Next
+          </Button>
+        </Box>
       </Container>
 
       <ConfirmDialog

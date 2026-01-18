@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -41,49 +41,65 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
   });
 
   // ✅ Default Values with saved data
-  const defaultValues = useMemo(
-    () => ({
-      yearsInBusiness: savedData?.yearsInBusiness || '',
-      lastYearTurnover: savedData?.lastYearTurnover || '',
-      projectedTurnover: savedData?.projectedTurnover || '',
-      ebitdaMargin: savedData?.ebitdaMargin || '',
-    }),
-    [savedData]
-  );
+  // const defaultValues = useMemo(
+  //   () => ({
+  //     yearsInBusiness: savedData?.yearsInBusiness || '',
+  //     lastYearTurnover: savedData?.lastYearTurnover || '',
+  //     projectedTurnover: savedData?.projectedTurnover || '',
+  //     ebitdaMargin: savedData?.ebitdaMargin || '',
+  //   }),
+  //   [savedData]
+  // );
 
+  console.log('Business Profile - Saved Data:', savedData);
   // ✅ React Hook Form Methods
   const methods = useForm({
     resolver: yupResolver(BusinessProfileSchema),
-    defaultValues,
   });
 
-  const {
-    handleSubmit,
-    watch,
-    formState: { isSubmitting, errors },
-  } = methods;
-
+  const { handleSubmit, watch, reset } = methods;
   const values = watch();
 
-  // Calculate progress based on filled fields
   useEffect(() => {
+    if (!savedData?.data) return;
+
+    reset({
+      yearsInBusiness: savedData.data.yearsInBusiness ?? '',
+      lastYearTurnover: savedData.data.lastYearTurnover ?? '',
+      projectedTurnover: savedData.data.projectedTurnover ?? '',
+      ebitdaMargin: savedData.data.ebitdaMargin ?? '',
+    });
+
+    onProgressChange?.(savedData.percent ?? 0);
+  }, [savedData, reset]);
+
+  useEffect(() => {
+      onProgressChange?.(calculateProgress(values));
+  }, [values]);
+
+  const calculateProgress = (vals) => {
     let completed = 0;
     const totalFields = 4;
 
-    if (values.yearsInBusiness && values.yearsInBusiness !== '') completed++;
-    if (values.lastYearTurnover && values.lastYearTurnover !== '') completed++;
-    if (values.projectedTurnover && values.projectedTurnover !== '') completed++;
-    if (values.ebitdaMargin && values.ebitdaMargin !== '') completed++;
+    if (vals.yearsInBusiness) completed++;
+    if (vals.lastYearTurnover) completed++;
+    if (vals.projectedTurnover) completed++;
+    if (vals.ebitdaMargin) completed++;
 
-    const progress = (completed / totalFields) * 100;
-    onProgressChange?.(progress);
-  }, [values, onProgressChange]);
+    return Math.round((completed / totalFields) * 100);
+  };
 
   // ✅ Submit Handler
   const onSubmit = async (data) => {
     try {
-      // Call parent save handler - form validation is handled by react-hook-form
-      onSave?.(data);
+      const percent = calculateProgress(data);
+
+      onSave?.({
+        data,
+        percent,
+      });
+
+      onProgressChange?.(percent);
     } catch (error) {
       enqueueSnackbar('Something went wrong', { variant: 'error' });
     }
@@ -142,7 +158,6 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
                 },
               }}
               color="primary"
-              loading={isSubmitting}
             >
               Save
             </LoadingButton>

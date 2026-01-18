@@ -232,12 +232,12 @@ export default function AuditedIncomeTaxReturn({
       // );
 
       // Save to parent component (which saves to localStorage)
+      setPercent(20);
+      setProgress(true);
       onSave?.(financialsData);
-
       enqueueSnackbar('Income tax returns saved successfully', {
         variant: 'success',
       });
-      setProgress(true);
     } catch (error) {
       console.error('Error while saving financials:', error);
       enqueueSnackbar('Something went wrong while saving audited financials', {
