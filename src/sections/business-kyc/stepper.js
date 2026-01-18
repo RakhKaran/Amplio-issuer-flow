@@ -7,6 +7,7 @@ import BusinessProfileMain from './business-profile/business-profile-main';
 import ClientDetailListView from './client-details/view/client-detail-list-view';
 import CollateralAssets from './collatral-assets/collatralAssets';
 import GuarantorListView from './guarantor/view/guarantor-list-view';
+import ReviewAndSubmitPage from './review & submit/review-and-submit';
 
 export default function Stepper() {
   const params = useParams();
@@ -221,13 +222,13 @@ export default function Stepper() {
           />
         );
 
-      // case 'review_and_submit':
-      //   return (
-      //     <BorrowingDetails
-      //       percent={(p) => updateStepPercent('borrowing_details', p)}
-      //       setActiveStepId={setActiveStepId}
-      //     />
-      //   );
+      case 'review_and_submit':
+        return (
+          <ReviewAndSubmitPage
+            percent={(p) => updateStepPercent('review_and_submit', p)}
+            setActiveStepId={setActiveStepId}
+          />
+        );
 
       default:
         return <Box>Done</Box>;
