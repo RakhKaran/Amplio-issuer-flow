@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Box, Card, Stack, Typography } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Stack } from '@mui/material';
 import ProgressStepper from 'src/components/progress-stepper/ProgressStepper';
-import { useParams } from 'src/routes/hook';
-import { useGetBondApplication } from 'src/api/bondApplications';
+// import { useParams } from 'src/routes/hook';
+// import { useGetBondApplication } from 'src/api/bondApplications';
 import BusinessProfileMain from './business-profile/business-profile-main';
 import ClientDetailListView from './client-details/view/client-detail-list-view';
 import CollateralAssets from './collatral-assets/collatralAssets';
@@ -10,12 +10,12 @@ import GuarantorListView from './guarantor/view/guarantor-list-view';
 import ReviewAndSubmitPage from './review & submit/review-and-submit';
 
 export default function Stepper() {
-  const params = useParams();
-  const { applicationId } = params;
+  // const params = useParams();
+  // const { applicationId } = params;
 
-  const [applicationData, setApplicationData] = useState(null);
+  // const [applicationData, setApplicationData] = useState(null);
   // const { bondApplication, bondApplicationLoading } = useGetBondApplication(applicationId);
-  const [dataInitialized, setDataInitialized] = useState(false);
+  // const [dataInitialized, setDataInitialized] = useState(false);
 
   const [activeStepId, setActiveStepId] = useState('business_Profile_Finance');
   const [formData, setFormData] = useState({
@@ -62,25 +62,69 @@ export default function Stepper() {
     review_and_submit: { percent: 0 },
   });
 
+  // CRITICAL FIX: Track if data has been loaded from localStorage
+  // This prevents saving empty/default state before loading is complete
+  const dataLoadedRef = useRef(false);
+
+  // Load data from localStorage after component mounts
   useEffect(() => {
     const savedStep = localStorage.getItem('activeStepId');
     const savedForm = localStorage.getItem('formData');
     const savedProgress = localStorage.getItem('stepsProgress');
 
-    // Validate saved step exists in steps array
-    if (savedStep && steps.find((s) => s.id === savedStep)) {
-      setActiveStepId(savedStep);
+    if (savedStep) setActiveStepId(savedStep);
+    
+    // CRITICAL: Only update formData if savedForm exists and has data
+    // This prevents overwriting with empty state
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm);
+        // Preserve ALL existing data - ensure all step keys exist with actual saved data
+        const loadedFormData = {
+          business_Profile_Finance: parsed.business_Profile_Finance || {},
+          client_details: parsed.client_details || {},
+          collateral_assets_verification: parsed.collateral_assets_verification || {},
+          guarantor_details: parsed.guarantor_details || {},
+          review_and_submit: parsed.review_and_submit || {},
+        };
+        
+        // Only set if we actually have data to preserve
+        setFormData(loadedFormData);
+      } catch (error) {
+        console.error('Error parsing formData from localStorage:', error);
+      }
     }
-    if (savedForm) setFormData(JSON.parse(savedForm));
-    if (savedProgress) setStepsProgress(JSON.parse(savedProgress));
+    
+    if (savedProgress) {
+      try {
+        const parsed = JSON.parse(savedProgress);
+        setStepsProgress({
+          business_Profile_Finance: parsed.business_Profile_Finance || { percent: 0 },
+          client_details: parsed.client_details || { percent: 0 },
+          collateral_assets_verification: parsed.collateral_assets_verification || { percent: 0 },
+          guarantor_details: parsed.guarantor_details || { percent: 0 },
+          review_and_submit: parsed.review_and_submit || { percent: 0 },
+        });
+      } catch (error) {
+        console.error('Error parsing stepsProgress from localStorage:', error);
+      }
+    }
+    
+    // Mark data as loaded IMMEDIATELY after setting state
+    // The state update will be processed in the next render cycle
+    dataLoadedRef.current = true;
   }, []);
 
   useEffect(() => {
     localStorage.setItem('activeStepId', activeStepId);
   }, [activeStepId]);
 
+  // CRITICAL FIX: Only save formData to localStorage AFTER initial load is complete
+  // This prevents overwriting localStorage with empty state before data is loaded
   useEffect(() => {
-    localStorage.setItem('formData', JSON.stringify(formData));
+    if (dataLoadedRef.current) {
+      localStorage.setItem('formData', JSON.stringify(formData));
+    }
   }, [formData]);
 
   useEffect(() => {
@@ -90,18 +134,50 @@ export default function Stepper() {
   const updateStepPercent = (stepId, percent) => {
     setStepsProgress((prev) => ({
       ...prev,
-      [stepId]: { percent },
+      [stepId]: {
+        ...(prev[stepId] || {}),
+        percent,
+      },
     }));
   };
 
+  // const saveStepData = (stepId, data) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [stepId]: {
+  //       ...(prev[stepId] || {}),
+  //       ...data, // merge new fields with old
+  //     },
+  //   }));
+  // };
   const saveStepData = (stepId, data) => {
-    setFormData((prev) => ({
-      ...prev,
-      [stepId]: {
-        ...(prev[stepId] || {}),
-        ...data, // merge new fields with old
-      },
-    }));
+    setFormData((prev) => {
+      let localStorageState = prev;
+      try {
+        const saved = localStorage.getItem('formData');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          localStorageState = {
+            business_Profile_Finance: parsed.business_Profile_Finance || prev.business_Profile_Finance || {},
+            client_details: parsed.client_details || prev.client_details || {},
+            collateral_assets_verification: parsed.collateral_assets_verification || prev.collateral_assets_verification || {},
+            guarantor_details: parsed.guarantor_details || prev.guarantor_details || {},
+            review_and_submit: parsed.review_and_submit || prev.review_and_submit || {},
+          };
+        }
+      } catch (error) {
+        console.error('Error reading localStorage in saveStepData:', error);
+      }
+      
+      // Now merge the new data into the merged state
+      return {
+        ...localStorageState,
+        [stepId]: {
+          ...(localStorageState[stepId] || {}),
+          ...data, // merge new fields with old - preserves existing fields in this step
+        },
+      };
+    });
   };
 
   const handleStepClick = (stepId) => {

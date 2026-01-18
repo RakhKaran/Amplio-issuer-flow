@@ -74,7 +74,7 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
   }, [savedData, reset]);
 
   useEffect(() => {
-      onProgressChange?.(calculateProgress(values));
+    onProgressChange?.(calculateProgress(values));
   }, [values]);
 
   const calculateProgress = (vals) => {

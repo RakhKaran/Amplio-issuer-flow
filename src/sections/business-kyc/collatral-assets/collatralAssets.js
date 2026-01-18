@@ -23,6 +23,26 @@ import * as Yup from 'yup';
 import { useParams, useRouter } from 'src/routes/hook';
 import { paths } from 'src/routes/paths';
 
+// ✅ Dummy dropdown data (TEMP until API is ready)
+const DUMMY_CHARGE_TYPES = [
+  { id: 'ct_1', label: 'First Charge' },
+  { id: 'ct_2', label: 'Second Charge' },
+  { id: 'ct_3', label: 'Pari Passu Charge' },
+];
+
+const DUMMY_COLLATERAL_TYPES = [
+  { id: 'col_1', label: 'Land & Building' },
+  { id: 'col_2', label: 'Plant & Machinery' },
+  { id: 'col_3', label: 'Inventory / Stock' },
+  { id: 'col_4', label: 'Receivables' },
+];
+
+const DUMMY_OWNERSHIP_TYPES = [
+  { id: 'own_1', label: 'Owned' },
+  { id: 'own_2', label: 'Leased' },
+  { id: 'own_3', label: 'Hypothecated' },
+];
+
 export default function CollateralAssets({ percent, setActiveStepId, currentCollateralAssets }) {
   const params = useParams();
   const { applicationId } = params;
@@ -120,6 +140,46 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
     control,
     name: 'collateralAssets',
   });
+
+  const COLLATERAL_PROGRESS_FIELDS = [
+    'collateralType',
+    'chargeType',
+    'description',
+    'estimatedValue',
+    'ownershipType',
+    'securityDocRef',
+    'trustName',
+    'valuationDate',
+    'securityDocument',
+  ];
+
+  const calculatePercent = useCallback(() => {
+    const asset = values.collateralAssets?.[0];
+    if (!asset) {
+      percent?.(0);
+      return;
+    }
+
+    const filledCount = COLLATERAL_PROGRESS_FIELDS.reduce((count, field) => {
+      const value = asset[field];
+
+      if (value instanceof Date) return count + 1;
+      if (typeof value === 'number') return count + 1;
+      if (typeof value === 'string' && value.trim() !== '') return count + 1;
+      if (value && typeof value === 'object') return count + 1;
+
+      return count;
+    }, 0);
+
+    const percentValue = Math.round((filledCount / COLLATERAL_PROGRESS_FIELDS.length) * 100);
+
+    percent?.(percentValue);
+  }, [values.collateralAssets, percent]);
+
+  useEffect(() => {
+    calculatePercent();
+  }, [calculatePercent]);
+
   useEffect(() => {
     // if no existing collateral and no fields rendered
     if ((!currentCollateralAssets || currentCollateralAssets.length === 0) && fields.length === 0) {
@@ -155,74 +215,115 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
     });
   };
 
-  const onSubmit = handleSubmit(async (data) => {
+  // Load collateral assets from localStorage
+  useEffect(() => {
     try {
-      const payload = data.collateralAssets.map((asset) => ({
-        estimatedValue: asset.estimatedValue,
-        securityDocumentRef: asset.securityDocRef,
-        trustName: asset.trustName,
-        valuationDate: asset.valuationDate,
-        description: asset.description,
-        collateralTypesId: asset.collateralType,
-        chargeTypesId: asset.chargeType,
-        ownershipTypesId: asset.ownershipType,
-        remark: asset.remark,
-        isActive: true,
-        isDeleted: false,
-        securityDocumentId: asset.securityDocument.id,
-        // bondIssueEstimationId: applicationId,
-      }));
-
-      const response = await axiosInstance.patch(
-        `/bond-estimations/collateral-assets/${applicationId}`,
-        payload
-      );
-
-      if (response?.data?.success) {
-        enqueueSnackbar('Collateral assets submitted', { variant: 'success' });
-        // setApprovalScreen(true);
-        // setActiveStepId('financial_details');
-        // estimationReport();
-        setActiveStepId();
-        estimationReport(applicationId);
+      const saved = localStorage.getItem('formData');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const savedCollateralAssets = parsed.collateral_assets_verification?.collateralAssets || [];
+        if (savedCollateralAssets.length > 0) {
+          reset({
+            collateralAssets: savedCollateralAssets.map((asset) => ({
+              ...asset,
+              ownershipType: asset?.ownershipTypesId || asset?.ownershipType || '',
+              collateralType: asset?.collateralTypesId || asset?.collateralType || '',
+              chargeType: asset?.chargeTypesId || asset?.chargeType || '',
+              securityDocRef: asset?.securityDocumentRef || asset?.securityDocRef || '',
+              valuationDate: asset?.valuationDate
+                ? asset.valuationDate instanceof Date
+                  ? asset.valuationDate
+                  : new Date(asset.valuationDate)
+                : null,
+            })),
+          });
+        }
       }
     } catch (error) {
-      console.error('Error while submitting collateral assets form :', error);
+      console.error('Error loading collateral assets:', error);
+    }
+  }, [reset]);
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      // Store full form data in localStorage
+      const saved = localStorage.getItem('formData');
+      const formData = saved ? JSON.parse(saved) : {};
+
+      // Save full collateral assets data
+      formData.collateral_assets_verification = {
+        collateralAssets: data.collateralAssets.map((asset) => ({
+          ...asset, // Store all fields
+          estimatedValue: asset.estimatedValue,
+          securityDocumentRef: asset.securityDocRef,
+          trustName: asset.trustName,
+          valuationDate: asset.valuationDate,
+          description: asset.description,
+          collateralTypesId: asset.collateralType,
+          chargeTypesId: asset.chargeType,
+          ownershipTypesId: asset.ownershipType,
+          remark: asset.remark,
+          securityDocument: asset.securityDocument, // Store full document object
+          isActive: true,
+          isDeleted: false,
+          // Store document ID if exists
+          securityDocumentId:
+            asset.securityDocument?.id || asset.securityDocument?.files?.[0]?.id || null,
+        })),
+      };
+
+      localStorage.setItem('formData', JSON.stringify(formData));
+
+      // Commented out API call
+      // const payload = data.collateralAssets.map((asset) => ({
+      //   estimatedValue: asset.estimatedValue,
+      //   securityDocumentRef: asset.securityDocRef,
+      //   trustName: asset.trustName,
+      //   valuationDate: asset.valuationDate,
+      //   description: asset.description,
+      //   collateralTypesId: asset.collateralType,
+      //   chargeTypesId: asset.chargeType,
+      //   ownershipTypesId: asset.ownershipType,
+      //   remark: asset.remark,
+      //   isActive: true,
+      //   isDeleted: false,
+      //   securityDocumentId: asset.securityDocument.id,
+      // }));
+
+      // const response = await axiosInstance.patch(
+      //   `/bond-estimations/collateral-assets/${applicationId}`,
+      //   payload
+      // );
+
+      // if (response?.data?.success) {
+      enqueueSnackbar('Collateral assets saved successfully', { variant: 'success' });
+      // Update progress to 100%
+      percent?.(100);
+      setActiveStepId();
+      // }
+    } catch (error) {
+      console.error('Error while saving collateral assets:', error);
+      enqueueSnackbar('Error saving collateral assets', { variant: 'error' });
     }
   });
 
-  const calculatePercent = () => {
-    let completed = 0;
-    if (values.collateralAssets?.length > 0) completed++;
-    if (values.collateralAssets[0]?.collateralType) completed++;
-    if (values.collateralAssets[0]?.chargeType) completed++;
-    if (values.collateralAssets[0]?.description) completed++;
-    if (values.collateralAssets[0]?.estimatedValue) completed++;
-    if (values.collateralAssets[0]?.ownershipType) completed++;
-    if (values.collateralAssets[0]?.securityDocRef) completed++;
-    if (values.collateralAssets[0]?.trustName) completed++;
-    if (values.collateralAssets[0]?.valuationDate) completed++;
-    if (values.collateralAssets[0]?.securityDocument) completed++;
-    // if (values.collateralAssets[0]?.assetCoverCertificate) completed++;
-    // if (values.collateralAssets[0]?.valuationReport) completed++;
-
-    const TOTAL = 10;
-
-    const percentVal = (completed / TOTAL) * 100;
-
-    percent?.(percentVal);
-  };
+  useEffect(() => {
+    setChargeTypesData(DUMMY_CHARGE_TYPES);
+    setCollateralTypesData(DUMMY_COLLATERAL_TYPES);
+    setOwnershipTypesData(DUMMY_OWNERSHIP_TYPES);
+  }, []);
 
   useEffect(() => {
     calculatePercent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.collateralAssets]);
 
-  useEffect(() => {
-    if (currentCollateralAssets) {
-      reset(defaultValues);
-    }
-  }, [currentCollateralAssets, reset, defaultValues]);
+  // Removed - now loading from localStorage in the effect above
+  // useEffect(() => {
+  //   if (currentCollateralAssets) {
+  //     reset(defaultValues);
+  //   }
+  // }, [currentCollateralAssets, reset, defaultValues]);
 
   // useEffect(() => {
   //     if (chargeTypes?.length > 0 && !chargeTypesLoading) {
@@ -262,6 +363,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
       >
         {fields.map((field, index) => (
           <Card
+            key={field.id}
             sx={{
               width: '100%',
               p: 5,

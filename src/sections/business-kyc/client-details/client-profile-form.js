@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -18,38 +18,31 @@ import FormProvider, { RHFTextField, RHFCustomFileUploadBox } from 'src/componen
 import { Grid, IconButton, Stack } from '@mui/material';
 import Iconify from 'src/components/iconify';
 
-// --------------------------------------------------
-// Yup Schema
-// --------------------------------------------------
-
-const ClientBusinessProfileSchema = Yup.object().shape({
-  name: Yup.string().required('Business name is required'),
-  cin: Yup.string().required('CIN is required'),
-  gstin: Yup.string().required('GSTIN is required'),
-  turnover: Yup.number().typeError('Turnover must be a number').required('Turnover is required'),
-  avgCreditDays: Yup.number()
-    .typeError('Average credit days must be a number')
-    .required('Average credit days is required'),
-  relationship: Yup.string().required('Relationship is required'),
-  avgInvoiceSize: Yup.number()
-    .typeError('Average invoice size must be a number')
-    .required('Average invoice size is required'),
-  contactDetails: Yup.string().required('Contact details are required'),
-  invoice: Yup.mixed().required('Invoice is required'),
-});
-
-// --------------------------------------------------
-// Component
-// --------------------------------------------------
-
 export default function ClientBusinessProfileForm({ open, onClose, onSubmitSuccess, defaultData }) {
+  const ClientBusinessProfileSchema = Yup.object().shape({
+    name: Yup.string().required('Business name is required'),
+    cin: Yup.string().required('CIN is required'),
+    gstin: Yup.string().required('GSTIN is required'),
+    turnover: Yup.number().typeError('Turnover must be a number').required('Turnover is required'),
+    avgCreditDays: Yup.number()
+      .typeError('Average credit days must be a number')
+      .required('Average credit days is required'),
+    relationship: Yup.string().required('Relationship is required'),
+    avgInvoiceSize: Yup.number()
+      .typeError('Average invoice size must be a number')
+      .required('Average invoice size is required'),
+    contactDetails: Yup.string().required('Contact details are required'),
+    invoice: Yup.mixed().required('Invoice is required'),
+  });
+
   const defaultValues = useMemo(
     () => ({
       name: defaultData?.name || '',
       cin: defaultData?.cin || '',
       gstin: defaultData?.gstin || '',
       turnover: defaultData?.turnover || '',
-      avgCreditDays: defaultData?.avgCreditDays || '',
+      // Use avgCreditDays from saved data, fallback to creditDays if exists
+      avgCreditDays: defaultData?.avgCreditDays || defaultData?.creditDays || '',
       relationship: defaultData?.relationship || '',
       avgInvoiceSize: defaultData?.avgInvoiceSize || '',
       contactDetails: defaultData?.contactDetails || '',
@@ -65,16 +58,23 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
 
   const {
     handleSubmit,
+    reset,
     formState: { isSubmitting },
   } = methods;
+
+  // Reset form when defaultData changes (for edit mode)
+  useEffect(() => {
+    if (open) {
+      reset(defaultValues);
+    }
+  }, [open, defaultData, reset, defaultValues]);
 
   // --------------------------------------------------
   // Submit Handler
   // --------------------------------------------------
 
   const onSubmit = handleSubmit(async (data) => {
-    const invoiceFileId = data.invoice?.id || data.invoice?.files?.[0]?.id;
-
+    // Store full form data including invoice object
     const payload = {
       name: data.name,
       cin: data.cin,
@@ -84,11 +84,14 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
       relationship: data.relationship,
       avgInvoiceSize: Number(data.avgInvoiceSize),
       contactDetails: data.contactDetails,
-      invoiceFileId,
+      // Store full invoice object, not just ID
+      invoice: data.invoice || null,
+      // Also store invoiceFileId for compatibility
+      invoiceFileId: data.invoice?.id || data.invoice?.files?.[0]?.id || null,
     };
 
     onSubmitSuccess(payload);
-    onClose();
+    reset(); // Reset form after submission
   });
 
   // --------------------------------------------------
@@ -99,7 +102,7 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
     <Dialog fullWidth maxWidth="md" open={open} onClose={onClose}>
       <FormProvider methods={methods} onSubmit={onSubmit}>
         <Stack direction="row" display="flex" justifyContent="space-between">
-          <DialogTitle>Add new Client</DialogTitle>
+          <DialogTitle>{defaultData?.id ? 'Edit Client' : 'Add new Client'}</DialogTitle>
           <IconButton
             onClick={onClose}
             sx={{
@@ -189,6 +192,13 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
             color="primary"
             disabled={isSubmitting}
             startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+            onClick={onClose}
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                boxShadow: 'none',
+              },
+            }}
           >
             Save & Continue
           </Button>

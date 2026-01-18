@@ -34,6 +34,11 @@ export default function GuarantorTableRow({ row, selected, onSelectRow, onViewRo
       <TableCell>{GaurantorAmountLimit }</TableCell>
       <TableCell>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Tooltip title="Edit" placement="top" arrow>
+            <IconButton onClick={onEditRow}>
+              <Iconify icon="solar:pen-bold" width={20} />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="View" placement="top" arrow>
             <IconButton onClick={onViewRow}>
               <Iconify icon="mdi:eye" width={20} />

@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -72,28 +72,89 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
   const confirm = useBoolean();
   const [openAddGuarantor, setOpenAddGuarantor] = useState(false);
   const [selectedGuarantor, setSelectedGuarantor] = useState(null);
-  const [tableData, setTableData] = useState([]);
+
+  // Load guarantors from localStorage
+  const [tableData, setTableData] = useState(() => {
+    try {
+      const saved = localStorage.getItem('formData');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.guarantor_details?.guarantors || [];
+      }
+    } catch (error) {
+      console.error('Error loading guarantors:', error);
+    }
+    return [];
+  });
 
   const handleOpenAddGuarantor = () => {
     setSelectedGuarantor(null);
     setOpenAddGuarantor(true);
   };
 
+  const handleCloseAddGuarantor = () => {
+    setOpenAddGuarantor(false);
+    setSelectedGuarantor(null);
+  };
+
+  // Save guarantors to localStorage
+  const saveGuarantors = useCallback((guarantors) => {
+    try {
+      const saved = localStorage.getItem('formData');
+      const formData = saved ? JSON.parse(saved) : {};
+      formData.guarantor_details = { guarantors };
+      localStorage.setItem('formData', JSON.stringify(formData));
+      setTableData(guarantors);
+    } catch (error) {
+      console.error('Error saving guarantors:', error);
+    }
+  }, []);
+
+  // Handle form submit - add or update guarantor
+  const handleFormSubmit = useCallback(
+    (data) => {
+      const guarantors = [...tableData];
+
+      if (selectedGuarantor?.id) {
+        // Update existing guarantor
+        const index = guarantors.findIndex((g) => g.id === selectedGuarantor.id);
+        if (index !== -1) {
+          guarantors[index] = {
+            ...guarantors[index],
+            ...data, // Store full form data
+            id: selectedGuarantor.id,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+      } else {
+        // Add new guarantor
+        const newGuarantor = {
+          ...data, // Store all form fields
+          id: `guarantor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          createdAt: new Date().toISOString(),
+        };
+        guarantors.push(newGuarantor);
+      }
+
+      saveGuarantors(guarantors);
+      handleCloseAddGuarantor();
+    },
+    [tableData, selectedGuarantor, saveGuarantors]
+  );
+
   const handleViewGuarantor = (row) => {
     setSelectedGuarantor(row);
     setOpenAddGuarantor(true);
   };
 
+  const handleEditRow = useCallback((row) => {
+    setSelectedGuarantor(row);
+    setOpenAddGuarantor(true);
+  }, []);
+
   const handleViewRow = useCallback(
     (id) => {
       router.push(paths.dashboard.tableData.details(id));
-    },
-    [router]
-  );
-
-  const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.tableData.edit(id));
     },
     [router]
   );
@@ -125,18 +186,24 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
 
   const handleDeleteRow = useCallback(
     (id) => {
+      const updatedGuarantors = tableData.filter((guarantor) => guarantor.id !== id);
+      saveGuarantors(updatedGuarantors);
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [dataInPage.length, table]
+    [tableData, dataInPage.length, table, saveGuarantors]
   );
 
   const handleDeleteRows = useCallback(() => {
+    const selectedIds = table.selected;
+    const updatedGuarantors = tableData.filter((guarantor) => !selectedIds.includes(guarantor.id));
+    saveGuarantors(updatedGuarantors);
     table.onUpdatePageDeleteRows({
       totalRows: tableData.length,
       totalRowsInPage: dataInPage.length,
       totalRowsFiltered: dataFiltered.length,
     });
-  }, [dataFiltered.length, dataInPage.length, tableData.length, table]);
+    table.onResetSelected(); // Clear selection after deletion
+  }, [tableData, dataFiltered.length, dataInPage.length, table, saveGuarantors]);
 
   const handleFilterStatus = useCallback(
     (event, newValue) => {
@@ -148,6 +215,15 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
   const handleResetFilters = useCallback(() => {
     setFilters(defaultFilters);
   }, []);
+
+  // Update percent when guarantors are added
+  useEffect(() => {
+    if (tableData && tableData.length >= 1) {
+      percent(100);
+    } else {
+      percent(0);
+    }
+  }, [percent, tableData]);
 
   return (
     <>
@@ -185,7 +261,7 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
         >
           {/* Left side label */}
           <Typography variant="h4" color="primary">
-            Add Guarantor
+            Guarantor List
           </Typography>
 
           {/* Right side button */}
@@ -194,6 +270,12 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
             color="primary"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={handleOpenAddGuarantor}
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                boxShadow: 'none',
+              },
+            }}
           >
             Add Guarantor
           </Button>
@@ -277,7 +359,7 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
                         onSelectRow={() => table.onSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onViewRow={() => handleViewGuarantor(row)}
-                        onEditRow={() => handleEditRow(row.id)}
+                        onEditRow={() => handleEditRow(row)}
                       />
                     ))}
 
@@ -319,8 +401,9 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
 
       <AddGuarantorForm
         open={openAddGuarantor}
-        onClose={() => setOpenAddGuarantor(false)}
+        onClose={handleCloseAddGuarantor}
         currentGurantor={selectedGuarantor}
+        onSubmitSuccess={handleFormSubmit}
       />
 
       <ConfirmDialog

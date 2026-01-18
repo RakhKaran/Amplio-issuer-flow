@@ -58,9 +58,12 @@ export default function AuditedFinancialStatement({
     score += documents.filter((d) => d.file).length * (7 / 3);
     score += documents.filter((d) => d.reportDate).length * (7 / 3);
 
-    const percent = Math.min(20, Math.round(score));
+    const rawScore = Math.min(20, Math.round(score));
+    // When score reaches 20 (all fields complete), set percent to 100
+    // Otherwise use the calculated score as percentage
+    const percent = rawScore === 20 ? 100 : rawScore;
     setPercent(percent);
-    setProgress(percent === 20);
+    setProgress(percent === 100);
   };
 
   // -----------------------------
@@ -232,8 +235,9 @@ export default function AuditedFinancialStatement({
       // );
 
       // Save to parent component (which saves to localStorage)
+      // When form is complete and saved, set percent to 100
       setProgress(true);
-      setPercent(20);
+      setPercent(100);
       onSave?.(financialsData);
       enqueueSnackbar('Audited financial statements saved successfully', {
         variant: 'success',
@@ -247,21 +251,13 @@ export default function AuditedFinancialStatement({
   };
 
   useEffect(() => {
-  if (currentData?.length) {
-    // calculate completion from restored data
-    let score = 0;
-
-    if (currentData[0]?.auditorName) score += 5;
-
-    const docs = currentData.length;
-    if (docs > 0) {
-      score += 15; // files + dates already present
+    if (currentData?.length) {
+      // If saved data exists, the form was already completed
+      // Set percent to 100 to reflect completion
+      setPercent(100);
+      setProgress(true);
     }
-
-    setPercent(20);
-    setProgress(true);
-  }
-}, [currentData, setPercent, setProgress]);
+  }, [currentData, setPercent, setProgress]);
 
   return (
     <Container disableGutters>

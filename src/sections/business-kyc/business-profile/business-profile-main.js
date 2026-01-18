@@ -2,7 +2,7 @@ import { Box, Button, Container } from '@mui/material';
 import AuditedFinancialDocument from './audited-financial/audited-financial-document';
 import BusinessProfile from './business-profile';
 import { useSnackbar } from 'notistack';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 export default function BusinessProfileMain({ setActiveStepId, percent, saveStepData }) {
@@ -36,6 +36,87 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
   const [gstr9Percent, setGstr9Percent] = useState(savedData?.gstr9Percent || 0);
   const [gstr3bPercent, setGstr3bPercent] = useState(savedData?.gstr3bPercent || 0);
 
+  // Ref to track if component just mounted (prevent initial save)
+  // CRITICAL FIX: Keep as true initially, only set to false AFTER allowing stepper to load
+  const isInitialMount = useRef(true);
+
+  // Ref to track latest saved data for merging (avoid state dependency)
+  const savedDataRef = useRef(savedData);
+
+  // Reload savedData from localStorage when component remounts
+  // CRITICAL FIX: Delay marking mount as complete to allow stepper to load first
+  useEffect(() => {
+    const reloadData = () => {
+      try {
+        const saved = localStorage.getItem('formData');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const latestData = parsed.business_Profile_Finance || {};
+          // Only update if there's actually new data to prevent unnecessary re-renders
+          setSavedData((prev) => {
+            if (JSON.stringify(latestData) !== JSON.stringify(prev)) {
+              return latestData;
+            }
+            return prev;
+          });
+          savedDataRef.current = latestData;
+        }
+      } catch (error) {
+        console.error('Error reloading saved data:', error);
+      }
+    };
+    reloadData();
+    
+    // CRITICAL FIX: Delay marking mount as complete to ensure stepper has loaded data
+    // This prevents BusinessProfileMain from saving before stepper's formData is populated
+    const timer = setTimeout(() => {
+      isInitialMount.current = false;
+    }, 100); // Small delay to allow stepper's useEffect to complete
+    
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount - we intentionally don't include savedData to prevent loops
+
+  // Update ref when savedData changes from external source
+  useEffect(() => {
+    savedDataRef.current = savedData;
+  }, [savedData]);
+
+  // Save data to localStorage and stepper
+  const handleSaveData = useCallback(
+    (data) => {
+      const dataToSave = {
+        ...savedDataRef.current,
+        ...data,
+        isBaseYearDone,
+        financialDone,
+        itrDone,
+        gstr9Done,
+        gstr3bDone,
+        businessProfilePercent,
+        financialPercent,
+        itrPercent,
+        gstr9Percent,
+        gstr3bPercent,
+      };
+      savedDataRef.current = dataToSave;
+      saveStepData?.(dataToSave);
+    },
+    [
+      isBaseYearDone,
+      financialDone,
+      itrDone,
+      gstr9Done,
+      gstr3bDone,
+      businessProfilePercent,
+      financialPercent,
+      itrPercent,
+      gstr9Percent,
+      gstr3bPercent,
+      saveStepData,
+    ]
+  );
+
   // Calculate overall progress
   const calculateOverallProgress = useCallback(() => {
     const baseYearWeight = 10;
@@ -64,10 +145,6 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
   ]);
 
   // Update progress when any field changes
-  // useEffect(() => {
-  //   const overallProgress = calculateOverallProgress();
-  //   percent?.(overallProgress);
-  // }, [calculateOverallProgress, percent]);
   const isStepComplete =
     isBaseYearDone &&
     businessProfilePercent === 100 &&
@@ -76,44 +153,45 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
     gstr9Done &&
     gstr3bDone;
 
+  // Update stepper percentage whenever any progress value changes
   useEffect(() => {
-    percent?.(isStepComplete ? 100 : calculateOverallProgress());
-  }, [isStepComplete]);
+    const overallProgress = isStepComplete ? 100 : calculateOverallProgress();
+    percent?.(overallProgress);
+  }, [
+    isStepComplete,
+    isBaseYearDone,
+    businessProfilePercent,
+    financialPercent,
+    itrPercent,
+    gstr9Percent,
+    gstr3bPercent,
+    financialDone,
+    itrDone,
+    gstr9Done,
+    gstr3bDone,
+    calculateOverallProgress,
+    percent,
+  ]);
 
-  // Save data to localStorage and stepper
-  const handleSaveData = useCallback(
-    (data) => {
-      const dataToSave = {
-        ...savedData,
-        ...data,
-        isBaseYearDone,
-        financialDone,
-        itrDone,
-        gstr9Done,
-        gstr3bDone,
-        businessProfilePercent,
-        financialPercent,
-        itrPercent,
-        gstr9Percent,
-        gstr3bPercent,
-      };
-      saveStepData?.(dataToSave);
-    },
-    [
-      savedData,
-      isBaseYearDone,
-      financialDone,
-      itrDone,
-      gstr9Done,
-      gstr3bDone,
-      businessProfilePercent,
-      financialPercent,
-      itrPercent,
-      gstr9Percent,
-      gstr3bPercent,
-      saveStepData,
-    ]
-  );
+  // Save percentages whenever they change (but skip initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      return;
+    }
+    handleSaveData({});
+  }, [
+    businessProfilePercent,
+    financialPercent,
+    itrPercent,
+    gstr9Percent,
+    gstr3bPercent,
+    isBaseYearDone,
+    financialDone,
+    itrDone,
+    gstr9Done,
+    gstr3bDone,
+    handleSaveData,
+  ]);
   // Handle business profile save
   const handleBusinessProfileSave = useCallback(
     (data) => {
@@ -135,6 +213,10 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
       if (updates.itrPercent !== undefined) setItrPercent(updates.itrPercent);
       if (updates.gstr9Percent !== undefined) setGstr9Percent(updates.gstr9Percent);
       if (updates.gstr3bPercent !== undefined) setGstr3bPercent(updates.gstr3bPercent);
+
+      // Save audited financial data and updated percentages immediately
+      // Note: handleSaveData will be called by the useEffect that watches these state changes
+      // But we also call it here to ensure immediate save of the data object
       if (updates.auditedFinancial) {
         handleSaveData({ auditedFinancial: updates.auditedFinancial });
       }
@@ -165,6 +247,9 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
       return;
     }
 
+    // Set step to 100% before moving to next step
+    percent?.(100);
+    handleSaveData({});
     setActiveStepId?.();
   };
 

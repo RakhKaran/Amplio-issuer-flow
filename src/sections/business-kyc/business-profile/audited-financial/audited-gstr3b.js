@@ -202,9 +202,12 @@ export default function AuditedGST3B({
       score += Math.min(dateCount * (7.5 / totalDocs), 7.5);
     }
 
-    const percent = Math.min(20, Math.round(score));
+    const rawScore = Math.min(20, Math.round(score));
+    // When score reaches 20 (all fields complete), set percent to 100
+    // Otherwise use the calculated score as percentage
+    const percent = rawScore === 20 ? 100 : rawScore;
     setPercent(percent);
-    setProgress(percent === 20);
+    setProgress(percent === 100);
   };
 
   const validateBeforeSubmit = () => {
@@ -284,7 +287,8 @@ export default function AuditedGST3B({
       // );
 
       // Save to parent component (which saves to localStorage)
-      setPercent(20);
+      // When form is complete and saved, set percent to 100
+      setPercent(100);
       setProgress(true);
       onSave?.(financialsData);
       enqueueSnackbar('GSTR-3B saved successfully', {
@@ -315,6 +319,10 @@ export default function AuditedGST3B({
           auditedType: doc.auditedType,
         }))
       );
+      // If saved data exists, the form was already completed
+      // Set percent to 100 to reflect completion
+      setPercent(100);
+      setProgress(true);
       return;
     }
 

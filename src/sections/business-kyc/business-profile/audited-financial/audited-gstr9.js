@@ -52,9 +52,12 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
     score += documents.filter((d) => d.file).length * (7 / 3);
     score += documents.filter((d) => d.reportDate).length * (7 / 3);
 
-    const percent = Math.min(20, Math.round(score));
+    const rawScore = Math.min(20, Math.round(score));
+    // When score reaches 20 (all fields complete), set percent to 100
+    // Otherwise use the calculated score as percentage
+    const percent = rawScore === 20 ? 100 : rawScore;
     setPercent(percent);
-    setProgress(percent === 20);
+    setProgress(percent === 100);
   };
 
   // -----------------------------
@@ -78,6 +81,10 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
           auditedType: doc.auditedType, // audited | provisional
         }))
       );
+      // If saved data exists, the form was already completed
+      // Set percent to 100 to reflect completion
+      setPercent(100);
+      setProgress(true);
       return;
     }
 
@@ -226,7 +233,8 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
       // );
 
       // Save to parent component (which saves to localStorage)
-      setPercent(20);
+      // When form is complete and saved, set percent to 100
+      setPercent(100);
       setProgress(true);
       onSave?.(financialsData);
 
