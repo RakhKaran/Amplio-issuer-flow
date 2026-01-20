@@ -7,7 +7,7 @@ export default function InitialPage() {
   return (
     <>
       <Helmet>
-        <title> Post: List</title>
+        <title> Kyc </title>
       </Helmet>
 
       <Initial />
