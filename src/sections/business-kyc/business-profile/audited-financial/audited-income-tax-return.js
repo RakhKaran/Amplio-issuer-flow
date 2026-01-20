@@ -114,43 +114,38 @@ export default function AuditedIncomeTaxReturn({
   // -----------------------------
   // Handlers
   // -----------------------------
+
+
+
   const handleFileUpload = async (e, id) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      // Commented out API integration
-      // const formData = new FormData();
-      // formData.append('file', file);
-      // const res = await axiosInstance.post('/files', formData);
-      // const uploadedFile = res?.data?.files?.[0];
-
-      // Mock file object for local storage
       const mockFile = {
         id: `file-${Date.now()}-${id}`,
-        name: file.name,
+        fileName: file.name,
+        fileOriginalName: file.name,
         size: file.size,
         type: file.type,
-        file: file, // Store the actual file object
+        file,
       };
 
-      // ✅ update ONLY the clicked row
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.id === id
             ? {
-                ...doc,
-                file: mockFile,
-                status: 'Uploaded',
-                reportDate: new Date(),
-              }
+              ...doc,
+              file: mockFile,
+              status: 'Uploaded',
+              reportDate: new Date(),
+            }
             : doc
         )
       );
 
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
-      console.error('File upload error:', error);
       enqueueSnackbar('File upload failed', { variant: 'error' });
     }
   };
@@ -455,6 +450,7 @@ export default function AuditedIncomeTaxReturn({
                     <input
                       id={`file-upload-${doc.id}`}
                       type="file"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                       style={{ display: 'none' }}
                       onChange={(e) => handleFileUpload(e, doc.id)}
                       key={doc.id}
@@ -616,7 +612,7 @@ export default function AuditedIncomeTaxReturn({
                       <input
                         id={`mobile-file-upload-${doc.id}`}
                         type="file"
-                        style={{ display: 'none' }}
+                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{ display: 'none' }}
                         onChange={(e) => handleFileUpload(e, doc.id)}
                       />
                     </label>

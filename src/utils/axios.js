@@ -37,6 +37,10 @@ export const endpoints = {
     forgotPassword: '/auth/forget-password/send-email-otp',
     newPassword: '/auth/forget-password/verify-email-otp',
   },
+  companyProfile:{
+    me: '/company-profiles/me',
+    bankDetails: '/company-profiles/bank-details'
+  },
   mail: {
     list: '/api/mail/list',
     details: '/api/mail/details',

@@ -45,6 +45,7 @@ import GuarantorTableFiltersResult from '../guarantor-table-filters-result';
 import GuarantorTableToolbar from '../guarantor-table-toolbar';
 import { Box, Typography } from '@mui/material';
 import AddGuarantorForm from '../add-guarantor';
+import { enqueueSnackbar } from 'notistack';
 
 // ----------------------------------------------------------------------
 
@@ -388,8 +389,16 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
         <Box sx={{ textAlign: 'right', mt: 3 }}>
           <Button
             variant="contained"
+            color="primary"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                boxShadow: 'none',
+              },
+            }}
             disabled={tableData.length < 1}
             onClick={() => {
+              enqueueSnackbar('Guarantor saved successfully', { variant: 'success' });
               percent(100);
               setActiveStepId();
             }}

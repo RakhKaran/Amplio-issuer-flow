@@ -1,42 +1,10 @@
-import { Card, Typography, Grid, Box, IconButton, Link } from "@mui/material";
+import { Card, Typography, Grid, Box, IconButton, Link, Tooltip } from "@mui/material";
 import Iconify from "src/components/iconify";
 
-const clients = [
-    {
-        name: "Mahindra & Mahindra",
-        gstin: "27XXXXXXXX5",
-        turnover: "₹ 500 Cr",
-        creditDays: "45",
-        relationship: "10 Years",
-        invoiceFile: "Uploaded",
-    },
-    {
-        name: "Tata Motor LTD",
-        gstin: "27XXXXXXXX5",
-        turnover: "₹ 500 Cr",
-        creditDays: "45",
-        relationship: "10 Years",
-        invoiceFile: "Uploaded",
-    },
-    {
-        name: "Reliance Retails",
-        gstin: "27XXXXXXXX5",
-        turnover: "₹ 500 Cr",
-        creditDays: "45",
-        relationship: "10 Years",
-        invoiceFile: "Uploaded",
-    },
-    {
-        name: "Adani Power LTD",
-        gstin: "27XXXXXXXX5",
-        turnover: "₹ 500 Cr",
-        creditDays: "45",
-        relationship: "10 Years",
-        invoiceFile: "Uploaded",
-    },
-];
 
-export default function ClientSummary() {
+export default function ClientSummary({ data }) {
+    const clients = data?.clients || data?.data?.clients || [];
+    console.log('eheiudffdeDATAAAAAAAA', clients)
     return (
         <>
 
@@ -44,15 +12,16 @@ export default function ClientSummary() {
                 <Typography variant="h5" color="primary" >Client Summary</Typography>
             </Box>
 
+
             <Grid
                 container
                 spacing={2}
-                columns={8}
-                justifyContent="center"
-                sx={{ px: { xs: 0, sm: 4, md: 25 } }}
+                columns={12}
+                sx={{ maxWidth: '900px', mx: 'auto', mb: 4 }}
             >
+
                 {clients.map((client, index) => (
-                    <Grid key={index} item xs={8} md={4}>
+                    <Grid key={index} item xs={12} md={6}>
                         <Card sx={{ p: 3, width: "100%" }}>
                             <Grid
                                 container
@@ -73,16 +42,28 @@ export default function ClientSummary() {
                             </Grid>
 
                             {[
-                                { label: "GSTIN", value: client.gstin },
-                                { label: "Turnover (CR)", value: client.turnover },
-                                { label: "CREDIT DAYS:", value: client.creditDays },
-                                { label: "Relationship", value: client.relationship },
+                                { label: "GSTIN", value: client?.gstin },
+                                { label: "Turnover (CR)", value: client?.turnover },
+                                { label: "CREDIT DAYS:", value: client?.creditDays },
+                                { label: "Relationship", value: `${client?.relationship} years` },
                                 {
                                     label: "Invoice File",
                                     value: (
-                                        <Link component="button" underline="hover" fontSize={13}>
-                                            {client.invoiceFile}
-                                        </Link>
+                                        <Tooltip title={client.invoice?.fileName || ""} arrow>
+                                            <Link
+                                                component="button"
+                                                noWrap
+                                                underline="hover"
+                                                sx={{
+                                                    cursor: 'pointer',
+                                                    maxWidth: 140,
+                                                    display: 'inline-block',
+                                                }}
+                                                fontSize={13}
+                                            >
+                                                {client.invoice?.fileName || '-'}
+                                            </Link>
+                                        </Tooltip>
                                     ),
                                 },
                             ].map((item, idx) => (
@@ -93,16 +74,15 @@ export default function ClientSummary() {
                                     alignItems="center"
                                     sx={{ mb: 1 }}
                                 >
-                                    <Grid item xs={6}>
+                                    <Grid item xs={8} md={8}>
                                         <Typography
-                                            variant="body2"
-                                            color="text.secondary"
+                                            variant="body2" fontWeight={600}
                                         >
                                             {item.label}
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2" pl={8} display="flex" justifyContent="flex-start" fontWeight={500}>
+                                    <Grid sx={{ textAlign: "right" }} item xs={4} md={4}>
+                                        <Typography variant="body2" fontWeight={500}>
                                             {item.value}
                                         </Typography>
                                     </Grid>

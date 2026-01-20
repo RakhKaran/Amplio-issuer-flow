@@ -5,10 +5,17 @@ import * as Yup from 'yup';
 
 import ReviewBusinessProfilePage from "./business-profile";
 import ClientSummary from "./client-summary";
+import KycDetailsPage from "./kyc-details";
+import CollateralAssetsPage from "./collateral-assets";
+import GuarantorDetailsPage from "./guarantor-details";
+import { useRouter } from "src/routes/hook";
+import { paths } from "src/routes/paths";
 
 
 
-export default function ReviewAndSubmitPage() {
+export default function ReviewAndSubmitPage({ formData }) {
+
+  const router = useRouter();
 
   const ReviewSubmitSchema = Yup.object().shape({
     consent: Yup.boolean()
@@ -30,6 +37,7 @@ export default function ReviewAndSubmitPage() {
 
   const onSubmit = () => {
     console.log('Review submitted');
+    router.push(paths.kyc.invoiceFinancing.pending)
   };
 
   return (
@@ -45,9 +53,13 @@ export default function ReviewAndSubmitPage() {
             Please review all information before submitting your application
           </Typography>
         </Stack>
-
-        <ReviewBusinessProfilePage />
-        <ClientSummary />
+        <KycDetailsPage />
+        <ReviewBusinessProfilePage
+          data={formData.business_Profile_Finance?.businessProfile}
+        />
+        <CollateralAssetsPage data = {formData.collateral_assets_verification} />
+        <GuarantorDetailsPage data={formData.guarantor_details} />
+        <ClientSummary data={formData.client_details} />
 
         <Box
           mt={5}

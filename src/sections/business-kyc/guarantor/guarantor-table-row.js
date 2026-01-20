@@ -39,11 +39,11 @@ export default function GuarantorTableRow({ row, selected, onSelectRow, onViewRo
               <Iconify icon="solar:pen-bold" width={20} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="View" placement="top" arrow>
+          {/* <Tooltip title="View" placement="top" arrow>
             <IconButton onClick={onViewRow}>
               <Iconify icon="mdi:eye" width={20} />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Box>
       </TableCell>
     </TableRow>
