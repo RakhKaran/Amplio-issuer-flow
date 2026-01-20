@@ -73,7 +73,7 @@ export default function Stepper() {
     const savedProgress = localStorage.getItem('stepsProgress');
 
     if (savedStep) setActiveStepId(savedStep);
-    
+
     // CRITICAL: Only update formData if savedForm exists and has data
     // This prevents overwriting with empty state
     if (savedForm) {
@@ -87,14 +87,14 @@ export default function Stepper() {
           guarantor_details: parsed.guarantor_details || {},
           review_and_submit: parsed.review_and_submit || {},
         };
-        
+
         // Only set if we actually have data to preserve
         setFormData(loadedFormData);
       } catch (error) {
         console.error('Error parsing formData from localStorage:', error);
       }
     }
-    
+
     if (savedProgress) {
       try {
         const parsed = JSON.parse(savedProgress);
@@ -109,7 +109,7 @@ export default function Stepper() {
         console.error('Error parsing stepsProgress from localStorage:', error);
       }
     }
-    
+
     // Mark data as loaded IMMEDIATELY after setting state
     // The state update will be processed in the next render cycle
     dataLoadedRef.current = true;
@@ -168,7 +168,7 @@ export default function Stepper() {
       } catch (error) {
         console.error('Error reading localStorage in saveStepData:', error);
       }
-      
+
       // Now merge the new data into the merged state
       return {
         ...localStorageState,
@@ -279,6 +279,8 @@ export default function Stepper() {
           <ClientDetailListView
             percent={(p) => updateStepPercent('client_details', p)}
             setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
+            saveStepData={(data) => saveStepData('client_details', data)}
+
           />
         );
 
@@ -287,6 +289,8 @@ export default function Stepper() {
           <CollateralAssets
             percent={(p) => updateStepPercent('collateral_assets_verification', p)}
             setActiveStepId={() => setActiveStepId('guarantor_details')}
+            saveStepData={(data) => saveStepData('collateral_assets_verification', data)}
+
           />
         );
 
@@ -295,6 +299,8 @@ export default function Stepper() {
           <GuarantorListView
             percent={(p) => updateStepPercent('guarantor_details', p)}
             setActiveStepId={() => setActiveStepId('review_and_submit')}
+            saveStepData={(data) => saveStepData('guarantor_details', data)}
+
           />
         );
 
@@ -303,6 +309,7 @@ export default function Stepper() {
           <ReviewAndSubmitPage
             percent={(p) => updateStepPercent('review_and_submit', p)}
             setActiveStepId={setActiveStepId}
+            formData={formData}
           />
         );
 

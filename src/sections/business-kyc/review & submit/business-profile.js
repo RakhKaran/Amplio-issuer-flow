@@ -8,12 +8,12 @@ import {
 } from "@mui/material";
 import Iconify from "src/components/iconify";
 
-const businessProfile = [
-  { label: "Years in business :", value: "7" },
-  { label: "FY24 Turnover (Audited) :", value: "₹120 Cr" },
-  { label: "FY25 Projected Turnover :", value: "₹150 Cr" },
-  { label: "EBITDA Margin :", value: "18%" },
-];
+// const businessProfile = [
+//   { label: "Years in business :", value: "7" },
+//   { label: "FY24 Turnover (Audited) :", value: "₹120 Cr" },
+//   { label: "FY25 Projected Turnover :", value: "₹150 Cr" },
+//   { label: "EBITDA Margin :", value: "18%" },
+// ];
 
 const financialDocuments = [
   {
@@ -38,105 +38,113 @@ const financialDocuments = [
   },
 ];
 
-export default function ReviewBusinessProfilePage() {
+export default function ReviewBusinessProfilePage({ data }) {
+  const profile = data?.data || {};
+
+  const businessProfileRows = [
+    { label: "Years in Business", value: `${profile?.yearsInBusiness} years` },
+    { label: "FY24 Turnover (Audited)", value: profile?.lastYearTurnover },
+    { label: "FY25 Projected Turnover", value: profile?.projectedTurnover },
+    { label: "EBITDA Margin (%)", value: `${profile?.ebitdaMargin} %` },
+  ];
   return (
+    <>
+      <Box mb={2} mt={2} display="flex" justifyContent="center">
+        <Typography variant="h5" color="primary" >Invoice Financing Application Details</Typography>
+      </Box>
 
-    <Grid
-      container
-      spacing={2}
-      columns={8}
-      sx={{ px: { xs: 0, sm: 4, md: 25 } }}
-    >
+      <Grid
+        container
+        spacing={2}
+        columns={12}
+        justifyContent="center"
+        sx={{ maxWidth: '900px', mx: 'auto', mb: 4 }}
+      >
 
-      <Grid item xs={8} md={4}>
-        <Card sx={{ p: 3 }}>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            mb={2}
-          >
-            <Typography variant="subtitle1" fontWeight={600}>
-              Business Profile
-            </Typography>
-            <IconButton size="small">
-              <Iconify icon="solar:pen-bold" width={20} />
-            </IconButton>
-          </Box>
-
-          {businessProfile.map((item, index) => (
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3 }}>
             <Grid
+              spacing={2}
               container
-              key={index}
-              display="flex"
+              alignItems="center"
               justifyContent="space-between"
-              mb={2}
             >
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  {item.label}
+              <Grid item xs={8} md={10}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Business Profile
                 </Typography>
               </Grid>
-              <Grid item xs={6} pl={10} display="flex" justifyContent="flex-start" >
-                <Typography variant="body2" fontWeight={500}>
-                  {item.value}
-                </Typography>
+              <Grid sx={{ textAlign: "right" }} item xs={4} md={2}>
+                <IconButton size="small">
+                  <Iconify icon="solar:pen-bold" width={20} />
+                </IconButton>
               </Grid>
+              {businessProfileRows.map((item, index) => (
+                <>
+                  <Grid item xs={8} md={8}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {item.label}
+                    </Typography>
+                  </Grid>
+                  <Grid sx={{ textAlign: 'right' }} item xs={4} md={4}>
+                    <Typography variant="body2" fontWeight={500}>
+                      {item.value}
+                    </Typography>
+                  </Grid>
+                </>
+              ))}
             </Grid>
-          ))}
-        </Card>
+          </Card>
+        </Grid>
+
+        {/* Financial Documents */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, height: "100%" }}>
+            <Grid
+              spacing={2}
+              container
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Grid item xs={8} md={10}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Financial Documents
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "right" }} item xs={4} md={2}>
+                <IconButton size="small">
+                  <Iconify icon="solar:pen-bold" width={20} />
+                </IconButton>
+              </Grid>
+
+              {financialDocuments.map((item, index) => (
+                <>
+                  <Grid item xs={8} md={8}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {item.label}
+                    </Typography>
+                  </Grid>
+                  <Grid sx={{ textAlign: 'right' }} item xs={4} md={4}>
+                    <Chip
+                      size="small"
+                      label={item.status}
+                      variant="outlined"
+                      sx={{
+                        height: 24,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: item.color,
+                        borderColor: item.color,
+                      }}
+                    />
+                  </Grid>
+                </>
+              ))}
+            </Grid>
+          </Card>
+        </Grid>
       </Grid>
 
-      {/* Financial Documents */}
-      <Grid item xs={8} md={4}>
-        <Card sx={{ p: 3, height: "100%" }}>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            mb={2}
-          >
-            <Typography variant="subtitle1" fontWeight={600}>
-              Financial Documents
-            </Typography>
-            <IconButton size="small">
-              <Iconify icon="solar:pen-bold" width={20} />
-            </IconButton>
-          </Box>
-
-          {financialDocuments.map((item, index) => (
-            <Grid
-              container
-              key={index}
-              display="flex"
-              justifyContent="space-between"
-              mb={2}
-            >
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  {item.label}
-                </Typography>
-              </Grid>
-              <Grid item xs={6} pl={10} display="flex" justifyContent="flex-start">
-                <Chip
-                  size="small"
-                  label={item.status}
-                  variant="outlined"
-                  sx={{
-                    height: 24,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: item.color,
-                    borderColor: item.color,
-                  }}
-                />
-              </Grid>
-            </Grid>
-          ))}
-        </Card>
-      </Grid>
-    </Grid>
-
-
+    </>
   );
 }

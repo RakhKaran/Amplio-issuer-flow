@@ -23,10 +23,10 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
   //   applicationId,
   //   'financial_statements'
   // );
-  
+
   // Track if completion message has been shown
   const completionMessageShown = useRef(false);
-  
+
   // Load saved data (API integration commented out)
   const [currentData, setCurrentData] = useState(() => {
     if (savedData) {
@@ -45,7 +45,7 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
       gst3b: [],
     };
   });
-  
+
   const [isBaseYearDone, setBaseYearDone] = useState(savedData?.isBaseYearDone || false);
 
   const [financialPercent, setFinancialPercent] = useState(savedData?.financialPercent || 0);
@@ -64,13 +64,15 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
     return { value: year.toString(), label: `${year - 1} - ${year}` };
   });
 
-  const year = new Date().getFullYear();
+  const year = new Date().getFullYear().toString();
+
 
   const methods = useForm({
     defaultValues: {
-      baseYear: savedData?.baseYear || year,
+      baseYear: savedData?.baseYear?.toString() || year,
     },
   });
+
 
   const { watch } = methods;
   const selectedYear = watch('baseYear');
@@ -93,13 +95,13 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
       gstr9Done,
       gstr3bDone,
     });
-  }, [financialPercent, itrPercent, gstr9Percent, gstr3bPercent, 
-      financialDone, itrDone, gstr9Done, gstr3bDone, onUpdate]);
+  }, [financialPercent, itrPercent, gstr9Percent, gstr3bPercent,
+    financialDone, itrDone, gstr9Done, gstr3bDone, onUpdate]);
 
   // Check if all audited financials are completed and show snackbar
   useEffect(() => {
     const allCompleted = financialDone && itrDone && gstr9Done && gstr3bDone && isBaseYearDone;
-    
+
     if (allCompleted && !completionMessageShown.current) {
       enqueueSnackbar('All audited financial documents have been completed successfully!', {
         variant: 'success',
@@ -159,6 +161,7 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
               name="baseYear"
               sx={{ maxWidth: 260 }}
               placeholder="Select Base Financial Year"
+              disabled
             >
               <MenuItem value="">Select Base Year</MenuItem>
               {years.map((yearData) => (

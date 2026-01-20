@@ -51,7 +51,7 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
   //   [savedData]
   // );
 
-  console.log('Business Profile - Saved Data:', savedData);
+  // console.log('Business Profile - Saved Data:', savedData);
   // ✅ React Hook Form Methods
   const methods = useForm({
     resolver: yupResolver(BusinessProfileSchema),
@@ -123,13 +123,13 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
         >
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="yearsInBusiness" label="Years in Business" placeholder="e.g. 5" />
+              <RHFTextField name="yearsInBusiness" label="Years in Business*" placeholder="e.g. 5" />
             </Grid>
 
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="lastYearTurnover"
-                label="Last Year Turnover"
+                label="Last Year Turnover*"
                 placeholder="₹ Amount in Lakhs"
               />
             </Grid>
@@ -137,13 +137,13 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="projectedTurnover"
-                label="Projected Turnover"
+                label="Projected Turnover*"
                 placeholder="₹ Amount in Lakhs"
               />
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField name="ebitdaMargin" label="EBITDA Margin (%)" placeholder="e.g. 15%" />
+              <RHFTextField name="ebitdaMargin" label="EBITDA Margin (%)*" placeholder="e.g. 15%" />
             </Grid>
           </Grid>
 

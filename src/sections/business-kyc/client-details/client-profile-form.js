@@ -31,7 +31,23 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
     avgInvoiceSize: Yup.number()
       .typeError('Average invoice size must be a number')
       .required('Average invoice size is required'),
-    contactDetails: Yup.string().required('Contact details are required'),
+    contactDetails: Yup.string()
+      .required('Contact details are required')
+      .test(
+        'phone-or-email',
+        'Enter a valid 10-digit phone number or a valid email address',
+        (value) => {
+          if (!value) return false;
+
+          const v = value.trim();
+
+          const phoneRegex = /^\d{10}$/;
+          const emailRegex =
+            /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
+          return phoneRegex.test(v) || emailRegex.test(v);
+        }
+      ),
     invoice: Yup.mixed().required('Invoice is required'),
   });
 
@@ -91,7 +107,8 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
     };
 
     onSubmitSuccess(payload);
-    reset(); // Reset form after submission
+    reset();
+    onClose(); // Reset form after submission
   });
 
   // --------------------------------------------------
@@ -112,7 +129,7 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
               color: 'text.secondary',
             }}
           >
-            <Iconify icon="mingcute:close-line" width={22} />
+            <Iconify icon="mingcute:close-line" onClick={onClose} width={22} />
           </IconButton>
         </Stack>
 
@@ -149,7 +166,7 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField name="relationship" label="Relationship*" />
+              <RHFTextField name="relationship" label="Relationship (Years)*" />
             </Grid>
 
             {/* Row 4 */}
@@ -165,8 +182,16 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="contactDetails"
-                label="Contact Details*"
+                label="Contact Details (phone no./email)*"
                 placeholder="Enter contact number"
+                onInput={(e) => {
+                  const value = e.target.value;
+
+                  // If user is typing ONLY digits → limit to 10
+                  if (/^\d+$/.test(value) && value.length > 10) {
+                    e.target.value = value.slice(0, 10);
+                  }
+                }}
               />
             </Grid>
 
@@ -177,8 +202,6 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
                 fileType="invoice"
                 accept={{
                   'application/pdf': ['.pdf'],
-                  'image/png': ['.png'],
-                  'image/jpeg': ['.jpg', '.jpeg'],
                 }}
               />
             </Grid>
@@ -192,7 +215,7 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
             color="primary"
             disabled={isSubmitting}
             startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
-            onClick={onClose}
+
             sx={{
               '&:hover': {
                 backgroundColor: 'primary.main',

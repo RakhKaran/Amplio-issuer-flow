@@ -382,12 +382,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFSelect
                   name={`collateralAssets.${index}.collateralType`}
-                  label="Collateral Type"
+                  label="Collateral Type*"
                   defaultValue=""
                 >
                   {collateralTypesData.length > 0 ? (
                     collateralTypesData.map((type) => (
-                      <MenuItem key={type.id} value={type.id}>
+                      <MenuItem key={type.id} value={type.label}>
                         {type.label}
                       </MenuItem>
                     ))
@@ -403,12 +403,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFSelect
                   name={`collateralAssets.${index}.chargeType`}
-                  label="Charge Type"
+                  label="Charge Type*"
                   defaultValue=""
                 >
                   {chargeTypesData.length > 0 ? (
                     chargeTypesData.map((type) => (
-                      <MenuItem key={type.id} value={type.id}>
+                      <MenuItem key={type.id} value={type.label}>
                         {type.label}
                       </MenuItem>
                     ))
@@ -422,12 +422,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFSelect
                   name={`collateralAssets.${index}.ownershipType`}
-                  label="Ownership Type"
+                  label="Ownership Type*"
                   defaultValue=""
                 >
                   {ownershipTypesData.length > 0 ? (
                     ownershipTypesData.map((type) => (
-                      <MenuItem key={type.id} value={type.id}>
+                      <MenuItem key={type.id} value={type.label}>
                         {type.label}
                       </MenuItem>
                     ))
@@ -445,7 +445,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFTextField
                   name={`collateralAssets.${index}.estimatedValue`}
-                  label="Estimated Value"
+                  label="Estimated Value*"
                   fullWidth
                 />
               </Grid>
@@ -465,7 +465,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFTextField
                   name={`collateralAssets.${index}.trustName`}
-                  label="  Trust Name"
+                  label="  Trust Name*"
                   fullWidth
                 />
               </Grid>
@@ -480,7 +480,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={6}>
                 <Controller
                   name={`collateralAssets.${index}.valuationDate`}
-                  label="Valuation Date"
+                  label="Valuation Date*"
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <DatePicker
@@ -509,7 +509,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={12}>
                 <RHFTextField
                   name={`collateralAssets.${index}.description`}
-                  label="Asset Description"
+                  label="Asset Description*"
                   multiline
                   rows={3}
                   fullWidth
@@ -523,8 +523,6 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
                     label="Reference doc*"
                     accept={{
                       'application/pdf': ['.pdf'],
-                      'image/png': ['.png'],
-                      'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                   />
                   <YupErrorMessage name={`collateralAssets.${index}.securityDocument`} />
