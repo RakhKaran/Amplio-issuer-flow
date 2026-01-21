@@ -85,78 +85,95 @@ export default function AuditedGST3B({
 
   const monthOrder = months.map((m) => m.value);
 
-  const handleAddRow = () => {
-    setDocuments((prev) => {
-      let nextMonth = 'jan';
+  // const handleAddRow = () => {
+  //   setDocuments((prev) => {
+  //     let nextMonth = 'jan';
 
-      if (prev.length > 0) {
-        const lastMonth = prev[prev.length - 1].month;
-        const lastIndex = monthOrder.indexOf(lastMonth);
+  //     if (prev.length > 0) {
+  //       const lastMonth = prev[prev.length - 1].month;
+  //       const lastIndex = monthOrder.indexOf(lastMonth);
 
-        if (lastIndex === -1) {
-          nextMonth = 'jan';
-        } else if (lastIndex === monthOrder.length - 1) {
-          enqueueSnackbar('All months are already added', { variant: 'warning' });
-          return prev;
-        } else {
-          nextMonth = monthOrder[lastIndex + 1];
-        }
-      }
+  //       if (lastIndex === -1) {
+  //         nextMonth = 'jan';
+  //       } else if (lastIndex === monthOrder.length - 1) {
+  //         enqueueSnackbar('All months are already added', { variant: 'warning' });
+  //         return prev;
+  //       } else {
+  //         nextMonth = monthOrder[lastIndex + 1];
+  //       }
+  //     }
 
-      const newDocument = {
-        id: `gst3b-${Date.now()}`, // ✅ unique ID
-        month: nextMonth, // ✅ auto assigned
-        file: null,
-        status: 'Pending',
-        reportDate: null,
-        auditedType: 'audited',
-      };
+  //     const newDocument = {
+  //       id: `gst3b-${Date.now()}`,
+  //       month: nextMonth,
+  //       file: null,
+  //       status: 'Pending',
+  //       reportDate: null,
+  //       auditedType: 'audited',
+  //     };
 
-      return [...prev, newDocument];
+  //     return [...prev, newDocument];
+  //   });
+  // };
+
+
+const getLastSixMonthsDesc = () => {
+  const result = [];
+
+  for (let i = 0; i < 6; i++) {
+    const date = dayjs().subtract(i, 'month');
+
+    result.push({
+      value: date.format('MMM').toLowerCase(), // jan, dec
+      label: date.format('MMMM'),              // January
+      monthIndex: date.month(),
+      year: date.year(),
     });
-  };
+  }
+
+  return result; // already DESC order
+};
+
+
+
+  const lastSixMonths = getLastSixMonthsDesc();
+
+
 
   const handleFileUpload = async (e, id) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      // Commented out API integration
-      // const formData = new FormData();
-      // formData.append('file', file);
-      // const res = await axiosInstance.post('/files', formData);
-      // const uploadedFile = res?.data?.files?.[0];
 
-      // Mock file object for local storage
+
+    try {
       const mockFile = {
         id: `file-${Date.now()}-${id}`,
-        name: file.name,
+        fileName: file.name,
+        fileOriginalName: file.name,
         size: file.size,
         type: file.type,
-        file: file, // Store the actual file object
+        file,
       };
 
-      // ✅ update ONLY the clicked row
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.id === id
             ? {
-                ...doc,
-                file: mockFile,
-                status: 'Uploaded',
-                reportDate: new Date(),
-              }
+              ...doc,
+              file: mockFile,
+              status: 'Uploaded',
+              reportDate: new Date(),
+            }
             : doc
         )
       );
 
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
-      console.error('File upload error:', error);
       enqueueSnackbar('File upload failed', { variant: 'error' });
     }
   };
-
   const handleDelete = (id) => {
     setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
   };
@@ -326,17 +343,17 @@ export default function AuditedGST3B({
       return;
     }
 
-    if (documents.length === 0) {
-      setDocuments([
-        {
-          id: `gst3b`,
-          month: 'jan',
-          file: null,
-          status: 'Pending',
-          reportDate: null,
-          auditedType: 'audited',
-        },
-      ]);
+    if (!currentData?.length) {
+      const initialDocs = lastSixMonths.map((m) => ({
+        id: `gst3b-${m.value}`,
+        month: m.value,
+        file: null,
+        status: 'Pending',
+        reportDate: null,
+        auditedType: 'audited',
+      }));
+
+      setDocuments(initialDocs);
     }
   }, [currentData]);
 
@@ -455,11 +472,12 @@ export default function AuditedGST3B({
                     );
                   }}
                 >
-                  {months.map((month) => (
+                  {lastSixMonths.map((month) => (
                     <MenuItem key={month.value} value={month.value}>
                       {month.label}
                     </MenuItem>
                   ))}
+
                 </Select>
 
                 <Box>
@@ -562,6 +580,7 @@ export default function AuditedGST3B({
                     <input
                       id={`file-upload-${doc.id}`}
                       type="file"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                       style={{ display: 'none' }}
                       onChange={(e) => handleFileUpload(e, doc.id)}
                       key={doc.id}
@@ -723,6 +742,7 @@ export default function AuditedGST3B({
                       <input
                         id={`mobile-file-upload-${doc.id}`}
                         type="file"
+                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         style={{ display: 'none' }}
                         onChange={(e) => handleFileUpload(e, doc.id)}
                       />
@@ -767,7 +787,7 @@ export default function AuditedGST3B({
             width: '100%',
           }}
         >
-          <Button
+          {/* <Button
             variant="contained"
             onClick={() => handleAddRow()}
             color="primary"
@@ -779,7 +799,7 @@ export default function AuditedGST3B({
             }}
           >
             + Add row
-          </Button>
+          </Button> */}
 
           <Button
             variant="contained"

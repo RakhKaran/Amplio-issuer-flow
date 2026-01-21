@@ -62,43 +62,6 @@ export default function BusinessKycPending() {
         }}
       >
         <MotionContainer>
-          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-            <m.div variants={varFade().inUp}>
-              <Box
-                component="img"
-                src="\assets\images\kyc\kyc-pending.svg"
-                alt="KYC Success"
-                sx={{
-                  width: 520,
-                  display: 'block',
-                  mx: 'auto',
-                  mb: 3
-                }}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <StyledIcon>
-                  <div className="icon-container">
-                    <Icon icon="mdi:clock-time-four-outline" width="100%" height="100%" />
-                  </div>
-                  <div className="status-text">Under Review</div>
-                </StyledIcon>
-              </div>
-            </m.div>
-          </Box>
-
-          <m.div variants={varFade().inUp}>
-            <Typography variant="h6" sx={{ mb: 1, color: '#000' }}>
-              We are reviewing your application and will notify you once the review is completed.<br />
-              Expected review time:
-              <Box component="span" sx={{ pl: 0.2, color: 'error.main' }}>
-                24 – 48 business hours
-              </Box>
-
-            </Typography>
-          </m.div>
-          <m.div variants={varFade().inUp}>
-            <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
-          </m.div>
           <m.div variants={varFade().inUp}>
             <Typography
               variant="subtitle2"
@@ -107,8 +70,8 @@ export default function BusinessKycPending() {
               Status Timeline
             </Typography>
 
-            <Grid container alignItems="center">
-         
+            <Grid container mb={3} alignItems="center">
+
               <Grid item xs>
                 <Stack alignItems="center" spacing={1}>
                   <Box
@@ -129,7 +92,7 @@ export default function BusinessKycPending() {
                 </Stack>
               </Grid>
 
-             
+
               <Grid item xs>
                 <Box sx={{ height: 2, backgroundColor: '#0B63F6' }} />
               </Grid>
@@ -181,6 +144,45 @@ export default function BusinessKycPending() {
               </Grid>
             </Grid>
           </m.div>
+          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+
+            <m.div variants={varFade().inUp}>
+              <Box
+                component="img"
+                src="\assets\images\kyc\kyc-pending.svg"
+                alt="KYC Success"
+                sx={{
+                  width: 520,
+                  display: 'block',
+                  mx: 'auto',
+                  mb: 3
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <StyledIcon>
+                  <div className="icon-container">
+                    <Icon icon="mdi:clock-time-four-outline" width="100%" height="100%" />
+                  </div>
+                  <div className="status-text">Under Review</div>
+                </StyledIcon>
+              </div>
+            </m.div>
+          </Box>
+
+          <m.div variants={varFade().inUp}>
+            <Typography variant="h6" sx={{ mb: 1, color: '#000' }}>
+              We are reviewing your application and will notify you once the review is completed.<br />
+              Expected review time:
+              <Box component="span" sx={{ pl: 0.2, color: 'error.main' }}>
+                24 – 48 business hours
+              </Box>
+
+            </Typography>
+          </m.div>
+          {/* <m.div variants={varFade().inUp}>
+            <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
+          </m.div> */}
+
 
         </MotionContainer>
       </Box>

@@ -11,6 +11,7 @@ import KycLayout from 'src/layouts/kyc';
 // const InvoiceFinancingSuccessPage = lazy(() => import('src/pages/kyc/invoice-financing/success'));
 const InitialPage = lazy(() => import('src/pages/business-kyc/show'));
 const BusinessKycPage = lazy(() => import('src/pages/business-kyc/kyc'));
+const KYCPendingPage = lazy(()=>import('src/pages/business-kyc/pending'))
 
 export const kycRoutes = [
   {
@@ -34,6 +35,7 @@ export const kycRoutes = [
         children: [
           { path: 'initialize', element: <InitialPage /> },
           { path: 'create', element: <BusinessKycPage /> },
+          {path: 'pending', element:<KYCPendingPage/>}
         ],
       },
     ],

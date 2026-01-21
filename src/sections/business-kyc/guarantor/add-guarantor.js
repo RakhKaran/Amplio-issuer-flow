@@ -120,7 +120,7 @@ export default function AddGuarantorForm({
       // Preserve file objects if editing
       adharCardFile: currentGurantor?.adharCardFile || null,
       panCardFile: currentGurantor?.panCardFile || null,
-      consent: false,
+      consent: currentGurantor ? true : false,
     }),
     [currentGurantor]
   );
@@ -380,7 +380,7 @@ export default function AddGuarantorForm({
                 name="guarantorName"
                 label="Name*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -390,7 +390,7 @@ export default function AddGuarantorForm({
                   name="cin"
                   label="CIN*"
                   InputLabelProps={{ shrink: true }}
-                  // disabled={isViewMode}
+                // disabled={isViewMode}
                 />
               </Grid>
             )}
@@ -409,6 +409,7 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="phoneNumber"
                 label="Phone Number*"
+                inputProps={{ maxLength: 10 }}
                 // disabled={isViewMode}
                 InputLabelProps={{ shrink: true }}
               />
@@ -435,7 +436,7 @@ export default function AddGuarantorForm({
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -445,7 +446,7 @@ export default function AddGuarantorForm({
                 name="estimetedNetWorth"
                 label="Estimated Net Worth*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -454,7 +455,8 @@ export default function AddGuarantorForm({
                 name="fullName"
                 label="Full Name* (as per PAN)"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+                inputProps={{ style: { textTransform: 'uppercase' } }}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -464,7 +466,8 @@ export default function AddGuarantorForm({
                 name="panNumber"
                 label="PAN Number*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+                inputProps={{ maxLength: 10 }}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -473,7 +476,8 @@ export default function AddGuarantorForm({
                 name="adharNumber"
                 label="Aadhaar Number*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+                inputProps={{ maxLength: 12 }}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -482,8 +486,13 @@ export default function AddGuarantorForm({
               <RHFCustomFileUploadBox
                 name="panCardFile"
                 label="Upload PAN Card*"
+                accept={{
+                  'application/pdf': ['.pdf'],
+                  'image/png': ['.png'],
+                  'image/jpeg': ['.jpg', '.jpeg'],
+                }}
                 fullWidth
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
               {getErrorMessage('panCardFile')}
             </Grid>
@@ -492,8 +501,13 @@ export default function AddGuarantorForm({
               <RHFCustomFileUploadBox
                 name="adharCardFile"
                 label="Upload Aadhaar Card*"
+                accept={{
+                  'application/pdf': ['.pdf'],
+                  'image/png': ['.png'],
+                  'image/jpeg': ['.jpg', '.jpeg'],
+                }}
                 fullWidth
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
               {getErrorMessage('adharCardFile')}
             </Grid>

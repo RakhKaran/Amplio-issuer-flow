@@ -45,6 +45,7 @@ import ClientDetailTableRow from '../client-detail-table-row';
 import ClientBusinessProfileForm from '../client-profile-form';
 import { useGetClientDetail } from 'src/api/clientDetail';
 import { Box, Typography } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
 
 // ----------------------------------------------------------------------
 
@@ -460,8 +461,16 @@ export default function ClientDetailListView({ percent, setActiveStepId }) {
         <Box sx={{ textAlign: 'right', mt: 3 }}>
           <Button
             variant="contained"
+            color="primary"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                boxShadow: 'none',
+              },
+            }}
             disabled={ClientDetail.length < 1}
             onClick={() => {
+              enqueueSnackbar('Client details saved successfully', { variant: 'success' });
               percent(100);
               setActiveStepId();
             }}
