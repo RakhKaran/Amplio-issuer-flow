@@ -57,7 +57,10 @@ export default function KYCAddSignatoriesForm({
   const [panExtractionStatus, setPanExtractionStatus] = useState('idle');
 
   const NewUserSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
+    name: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .required('Name is required')
+      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     email: Yup.string()
       .required('Email is required')
       .email('Please enter a valid email address')
@@ -308,6 +311,7 @@ export default function KYCAddSignatoriesForm({
               label="Name*"
               InputLabelProps={{ shrink: true }}
               disabled={isViewMode}
+              inputProps={{ style: { textTransform: 'uppercase' } }}
             />
 
             <RHFTextField

@@ -82,7 +82,10 @@ export default function KYCBasicInfo() {
 
   const NewUserSchema = Yup.object().shape({
     cin: Yup.string().required('CIN is required'),
-    companyName: Yup.string().required('Company Name is required'),
+    companyName: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .required('Company Name is required')
+      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     gstin: Yup.string().required('GSTIN is required'),
     dateOfIncorporation: Yup.date().required('Date of Incorporation is required'),
     msmeUdyamRegistrationNo: Yup.string().required('MSME Udyam Registration No is required'),
@@ -508,6 +511,7 @@ export default function KYCBasicInfo() {
                   name="companyName"
                   label="Legal Entity Name *"
                   placeholder="Company Name"
+                  inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
               </Grid>
 
