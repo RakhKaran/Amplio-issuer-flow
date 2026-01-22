@@ -172,10 +172,7 @@ export default function KYCBasicInfo() {
             extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
             extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
           }
-        : {
-            extractedCompanyName: formData.panHoldersName,
-            extractedPanNumber: formData.panNumber,
-          };
+        : undefined;
 
       // Build submitted PAN object
       const submittedPan = humanEdited

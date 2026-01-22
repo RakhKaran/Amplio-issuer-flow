@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 
 import { Card, Typography, Container, Grid } from '@mui/material';
 
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFPriceField, RHFTextField } from 'src/components/hook-form';
 import { LoadingButton } from '@mui/lab';
 import { useSnackbar } from 'src/components/snackbar';
 
@@ -127,18 +127,16 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="lastYearTurnover"
                 label="Last Year Turnover*"
-                placeholder="₹ Amount in Lakhs"
               />
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="projectedTurnover"
                 label="Projected Turnover*"
-                placeholder="₹ Amount in Lakhs"
               />
             </Grid>
 

@@ -11,14 +11,12 @@ import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 
 import FormProvider, { RHFCustomFileUploadBox } from 'src/components/hook-form';
-import RHFFileUploadBox from 'src/components/custom-file-upload/file-upload';
 import { RHFSelect } from 'src/components/hook-form/rhf-select';
 import KYCTitle from './kyc-title';
 import KYCFooter from './kyc-footer';
 
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import YupErrorMessage from 'src/components/error-field/yup-error-messages';
 import axiosInstance from 'src/utils/axios';
 
 import { enqueueSnackbar } from 'notistack';
@@ -268,7 +266,6 @@ export default function KYCCompanyDetails({
             <RHFCustomFileUploadBox
               name="certificateOfIncorporation"
               label="Certificate of Incorporation*"
-              // existing={docs[DOCUMENT_MAP.certificate_of_incorporation]}
               icon="mdi:certificate-outline"
               accept={{
                 'application/pdf': ['.pdf'],
@@ -276,7 +273,6 @@ export default function KYCCompanyDetails({
                 'image/jpeg': ['.jpg', '.jpeg'],
               }}
             />
-            <YupErrorMessage name="certificateOfIncorporation" />
 
             {/* ================= MOA / AOA TYPE ================= */}
             <RHFSelect name="moaAoaType" label="Select Document Type">
@@ -289,7 +285,6 @@ export default function KYCCompanyDetails({
               <RHFCustomFileUploadBox
                 name="moaDocument"
                 label="MoA - Memorandum of Association*"
-                // existing={docs[DOCUMENT_MAP.moa]}
                 icon="mdi:file-document-edit-outline"
                 accept={{
                   'application/pdf': ['.pdf'],
@@ -304,7 +299,6 @@ export default function KYCCompanyDetails({
               <RHFCustomFileUploadBox
                 name="aoaDocument"
                 label="AoA - Articles of Association*"
-                // existing={docs[DOCUMENT_MAP.aoa]}
                 icon="mdi:file-document-edit-outline"
                 accept={{
                   'application/pdf': ['.pdf'],
@@ -319,7 +313,6 @@ export default function KYCCompanyDetails({
               name="gstCertificate"
               label="GST Certificate*"
               icon="mdi:earth"
-              // existing={docs[DOCUMENT_MAP.gst_certificate]}
               accept={{
                 'application/pdf': ['.pdf'],
                 'image/png': ['.png'],

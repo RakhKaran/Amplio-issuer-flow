@@ -7,6 +7,7 @@ import {
   Chip,
 } from "@mui/material";
 import Iconify from "src/components/iconify";
+import { formatNumberIN } from "src/utils/change-case";
 
 // const businessProfile = [
 //   { label: "Years in business :", value: "7" },
@@ -43,8 +44,8 @@ export default function ReviewBusinessProfilePage({ data }) {
 
   const businessProfileRows = [
     { label: "Years in Business", value: `${profile?.yearsInBusiness} years` },
-    { label: "FY24 Turnover (Audited)", value: profile?.lastYearTurnover },
-    { label: "FY25 Projected Turnover", value: profile?.projectedTurnover },
+    { label: "FY24 Turnover (Audited)", value: `₹${formatNumberIN(profile?.lastYearTurnover)}` },
+    { label: "FY25 Projected Turnover", value: `₹${formatNumberIN(profile?.projectedTurnover)}` },
     { label: "EBITDA Margin (%)", value: `${profile?.ebitdaMargin} %` },
   ];
   return (

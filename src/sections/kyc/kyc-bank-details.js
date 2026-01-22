@@ -36,7 +36,7 @@ export default function KYCBankDetails({
   percent,
   setActiveStepId,
   dataInitializedSteps,
-  setDataInitializedSteps
+  setDataInitializedSteps,
 }) {
   const router = useRouter();
   const { Details: bankDetails, Loading: bankLoading } = useGetDetails();
@@ -245,8 +245,6 @@ export default function KYCBankDetails({
               name="documentType"
               SelectProps={{
                 displayEmpty: true,
-                renderValue: (value) =>
-                  value ? value : <Box sx={{ color: 'text.disabled' }}>Select Type</Box>,
               }}
             >
               <MenuItem value="cheque">Cheque</MenuItem>
@@ -255,16 +253,6 @@ export default function KYCBankDetails({
           </Box>
 
           {/* ---------------- ADDRESS PROOF UPLOAD ---------------- */}
-          {/* <RHFFileUploadBox
-            name="addressProof"
-            label={`Upload ${documentType === 'cheque' ? 'Cheque' : 'Bank Statement'}`}
-            icon="mdi:file-document-outline"
-            color="#1e88e5"
-            acceptedTypes="pdf,xls,docx,jpeg"
-            maxSizeMB={10}
-            existing={existingProof}
-            onDrop={(files) => handleDrop(files)}
-          /> */}
           <RHFCustomFileUploadBox
             name="addressProof"
             label={`Upload ${documentType === 'cheque' ? 'Cheque' : 'Bank Statement'}`}

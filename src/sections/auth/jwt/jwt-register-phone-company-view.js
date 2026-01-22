@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Link from '@mui/material/Link';
@@ -23,8 +23,10 @@ export default function JwtRegisterCompanyByMobileView() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [sessionId, setSessionId] = useState('');
-  const [otp, setOtp] = useState(Array(4).fill(""));
+  const [otp, setOtp] = useState(Array(4).fill(''));
   const [otpStarted, setOtpStarted] = useState(false);
+  const [timer, setTimer] = useState(0);
+
   const otpRefs = useRef([]);
 
   const searchParams = useSearchParams();
@@ -57,60 +59,89 @@ export default function JwtRegisterCompanyByMobileView() {
   // Send OTP using axiosInstance
   // ------------------------------------------------------
   const handleSendOtp = async () => {
-    const valid = await trigger("mobileNo");
+    const valid = await trigger('mobileNo');
     if (!valid) return;
 
     const phone = getValues('mobileNo');
 
     try {
-      const res = await axiosInstance.post("/auth/send-phone-otp", {
+      const res = await axiosInstance.post('/auth/send-phone-otp', {
         phone,
-        role: "company",
+        role: 'company',
       });
 
-      enqueueSnackbar(res.data.message, { variant: "success" });
+      enqueueSnackbar(res.data.message, { variant: 'success' });
 
       // save sessionId
       setSessionId(res.data.sessionId);
-      localStorage.setItem("sessionId", res.data.sessionId);
+      localStorage.setItem('sessionId', res.data.sessionId);
 
       // reset OTP boxes
-      setOtp(Array(4).fill(""));
+      setOtp(Array(4).fill(''));
       setOtpStarted(false);
       setIsOtpSent(true);
-
-    } catch (err) {
-      enqueueSnackbar(err?.response?.data?.message || "Failed to send OTP", {
-        variant: "error",
+    } catch (error) {
+      const message =
+        typeof error === 'string'
+          ? error
+          : error?.error?.message ||
+            error?.response?.data?.message ||
+            error?.message ||
+            'OTP verification failed';
+      enqueueSnackbar(message, {
+        variant: 'error',
       });
     }
+  };
+
+  useEffect(() => {
+    if (timer === 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    // eslint-disable-next-line consistent-return
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const handleResendClick = () => {
+    if (timer > 0) return;
+    handleSendOtp();
+    setTimer(60);
   };
 
   // ------------------------------------------------------
   // Verify OTP using axiosInstance
   // ------------------------------------------------------
   const onSubmit = handleSubmit(async () => {
-    const enteredOtp = otp.join("");
+    const enteredOtp = otp.join('');
 
     if (enteredOtp.length !== 4) {
-      setErrorMsg("Enter all 4 digits");
+      setErrorMsg('Enter all 4 digits');
       return;
     }
 
     try {
-      const res = await axiosInstance.post("/auth/verify-phone-otp", {
+      const res = await axiosInstance.post('/auth/verify-phone-otp', {
         sessionId,
         otp: enteredOtp,
       });
 
-      enqueueSnackbar(res.data.message, { variant: "success" });
+      enqueueSnackbar(res.data.message, { variant: 'success' });
 
       // go to email page
       router.push(paths.auth.jwt.registerEmail);
-
-    } catch (err) {
-      enqueueSnackbar(err?.response?.data?.message || "Invalid OTP", {
-        variant: "error",
+    } catch (error) {
+      const message =
+        typeof error === 'string'
+          ? error
+          : error?.error?.message ||
+            error?.response?.data?.message ||
+            error?.message ||
+            'OTP verification failed';
+      enqueueSnackbar(message, {
+        variant: 'error',
       });
     }
   });
@@ -121,7 +152,7 @@ export default function JwtRegisterCompanyByMobileView() {
   const handleOtpChange = (index, value) => {
     if (/^\d?$/.test(value)) {
       if (value && !otpStarted) {
-        const cleared = Array(4).fill("");
+        const cleared = Array(4).fill('');
         cleared[index] = value;
         setOtp(cleared);
         setOtpStarted(true);
@@ -149,18 +180,30 @@ export default function JwtRegisterCompanyByMobileView() {
             onChange={(e) => handleOtpChange(i, e.target.value)}
             inputRef={(el) => (otpRefs.current[i] = el)}
             onKeyDown={(e) => {
-              if (e.key === "Backspace" && !otp[i] && i > 0) {
+              if (e.key === 'Backspace' && !otp[i] && i > 0) {
                 otpRefs.current[i - 1]?.focus();
               }
             }}
             inputProps={{
               maxLength: 1,
-              style: { textAlign: "center", fontSize: "1.5rem" },
+              style: { textAlign: 'center', fontSize: '1.5rem' },
             }}
           />
         </Grid>
       ))}
     </Grid>
+  );
+
+  const resendOtp = (
+    <Typography variant="body2">
+      {timer > 0 ? (
+        <span style={{ color: '#999' }}>Resend OTP in {timer}s</span>
+      ) : (
+        <Link component="button" type="button" underline="hover" onClick={handleResendClick}>
+          Resend OTP
+        </Link>
+      )}
+    </Typography>
   );
 
   return (
@@ -185,11 +228,11 @@ export default function JwtRegisterCompanyByMobileView() {
             label="Phone Number"
             inputProps={{
               maxLength: 10,
-              inputMode: "numeric",
-              pattern: "[0-9]*",
+              inputMode: 'numeric',
+              pattern: '[0-9]*',
             }}
             onInput={(e) => {
-              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = e.target.value.replace(/[^0-9]/g, '');
             }}
             InputProps={{
               endAdornment: (
@@ -200,7 +243,7 @@ export default function JwtRegisterCompanyByMobileView() {
                     onClick={handleSendOtp}
                     disabled={isOtpSent}
                   >
-                    {isOtpSent ? "OTP Sent" : "Send OTP"}
+                    {isOtpSent ? 'OTP Sent' : 'Send OTP'}
                   </LoadingButton>
                 </InputAdornment>
               ),
@@ -208,6 +251,7 @@ export default function JwtRegisterCompanyByMobileView() {
           />
 
           {isOtpSent && renderOtpBoxes}
+          {isOtpSent && resendOtp}
 
           <LoadingButton
             fullWidth
@@ -224,12 +268,17 @@ export default function JwtRegisterCompanyByMobileView() {
       </FormProvider>
 
       <Typography
-        sx={{ color: "text.secondary", mt: 2.5, typography: "caption", textAlign: "center" }}
+        sx={{ color: 'text.secondary', mt: 2.5, typography: 'caption', textAlign: 'center' }}
       >
-        By signing up, you agree to our{" "}
-        <Link underline="always" color="text.primary">Terms of Service</Link>{" "}
-        &{" "}
-        <Link underline="always" color="text.primary">Privacy Policy</Link>.
+        By signing up, you agree to our{' '}
+        <Link underline="always" color="text.primary">
+          Terms of Service
+        </Link>{' '}
+        &{' '}
+        <Link underline="always" color="text.primary">
+          Privacy Policy
+        </Link>
+        .
       </Typography>
     </Card>
   );

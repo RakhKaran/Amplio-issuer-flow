@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Link from '@mui/material/Link';
@@ -44,7 +44,6 @@ export default function JwtRegisterCompanyByEmailView() {
 
       router.push(paths.auth.kyc.companyKyc);
       return;
-
     } catch (err) {
       console.error('KYC Progress Fetch Error:', err);
       enqueueSnackbar('Unable to fetch KYC progress', { variant: 'error' });
@@ -57,6 +56,8 @@ export default function JwtRegisterCompanyByEmailView() {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otp, setOtp] = useState(Array(4).fill(''));
   const [otpStarted, setOtpStarted] = useState(false);
+  const [timer, setTimer] = useState(0);
+
   const otpRefs = useRef([]);
 
   const searchParams = useSearchParams();
@@ -105,9 +106,35 @@ export default function JwtRegisterCompanyByEmailView() {
       setOtp(Array(4).fill(''));
       setOtpStarted(false);
       setIsOtpSent(true);
-    } catch (err) {
-      setErrorMsg(err?.response?.data?.message || 'Failed to send OTP');
+    } catch (error) {
+      const message =
+        typeof error === 'string'
+          ? error
+          : error?.error?.message ||
+            error?.response?.data?.message ||
+            error?.message ||
+            'OTP verification failed';
+      enqueueSnackbar(message, {
+        variant: 'error',
+      });
     }
+  };
+
+  useEffect(() => {
+    if (timer === 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    // eslint-disable-next-line consistent-return
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const handleResendClick = () => {
+    if (timer > 0) return;
+    handleSendOtp();
+    setTimer(60);
   };
 
   const onSubmit = handleSubmit(async () => {
@@ -134,8 +161,17 @@ export default function JwtRegisterCompanyByEmailView() {
       await redirectBasedOnProgress(sessionId);
 
       // router.push(paths.auth.kyc.kycBasicInfo);
-    } catch (err) {
-      setErrorMsg(err?.response?.data?.message || 'Invalid OTP');
+    } catch (error) {
+      const message =
+        typeof error === 'string'
+          ? error
+          : error?.error?.message ||
+            error?.response?.data?.message ||
+            error?.message ||
+            'OTP verification failed';
+      enqueueSnackbar(message, {
+        variant: 'error',
+      });
     }
   });
 
@@ -184,6 +220,18 @@ export default function JwtRegisterCompanyByEmailView() {
     </Grid>
   );
 
+  const resendOtp = (
+    <Typography variant="body2">
+      {timer > 0 ? (
+        <span style={{ color: '#999' }}>Resend OTP in {timer}s</span>
+      ) : (
+        <Link component="button" type="button" underline="hover" onClick={handleResendClick}>
+          Resend OTP
+        </Link>
+      )}
+    </Typography>
+  );
+
   return (
     <Card sx={{ p: 3 }}>
       <Stack spacing={2} sx={{ mb: 3 }}>
@@ -223,6 +271,7 @@ export default function JwtRegisterCompanyByEmailView() {
 
           {/* OTP Boxes */}
           {isOtpSent && renderOtpBoxes}
+          {isOtpSent && resendOtp}
 
           {/* VERIFY BUTTON */}
           <LoadingButton

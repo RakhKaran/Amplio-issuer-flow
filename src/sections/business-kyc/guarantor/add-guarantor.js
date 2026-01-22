@@ -17,6 +17,7 @@ import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, {
   RHFCustomFileUploadBox,
+  RHFPriceField,
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
@@ -432,7 +433,7 @@ export default function AddGuarantorForm({
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
                 InputLabelProps={{ shrink: true }}
@@ -442,7 +443,7 @@ export default function AddGuarantorForm({
 
             {/* Row 4 */}
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="estimetedNetWorth"
                 label="Estimated Net Worth*"
                 InputLabelProps={{ shrink: true }}

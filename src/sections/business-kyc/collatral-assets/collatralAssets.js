@@ -14,6 +14,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import YupErrorMessage from 'src/components/error-field/yup-error-messages';
 import FormProvider, {
   RHFCustomFileUploadBox,
+  RHFPriceField,
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
@@ -443,7 +444,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
 
               {/* Estimated Value */}
               <Grid item xs={12} md={4}>
-                <RHFTextField
+                <RHFPriceField
                   name={`collateralAssets.${index}.estimatedValue`}
                   label="Estimated Value*"
                   fullWidth
