@@ -46,6 +46,7 @@ import GuarantorTableToolbar from '../guarantor-table-toolbar';
 import { Box, Typography } from '@mui/material';
 import AddGuarantorForm from '../add-guarantor';
 import { enqueueSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
 
 // ----------------------------------------------------------------------
 
@@ -65,7 +66,7 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function GuarantorListView({ setActiveStepId, percent }) {
+export default function GuarantorListView({ setActiveStepId,saveStepData, percent }) {
   const table = useTable();
 
   const settings = useSettingsContext();
@@ -399,6 +400,9 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
             disabled={tableData.length < 1}
             onClick={() => {
               enqueueSnackbar('Guarantor saved successfully', { variant: 'success' });
+              saveStepData?.({
+                guarantors: tableData,
+              });
               percent(100);
               setActiveStepId();
             }}
@@ -436,6 +440,12 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
     </>
   );
 }
+
+GuarantorListView.propTypes = {
+  percent: PropTypes.func,
+  setActiveStepId: PropTypes.func,
+  saveStepData: PropTypes.func,
+};
 
 // ----------------------------------------------------------------------
 

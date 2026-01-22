@@ -9,7 +9,7 @@ export default function BusinessKycPage() {
   return (
     <>
       <Helmet>
-        <title> Post: List</title>
+        <title> Business KYC</title>
       </Helmet>
 
       <Stepper />

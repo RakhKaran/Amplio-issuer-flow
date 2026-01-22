@@ -44,7 +44,7 @@ const DUMMY_OWNERSHIP_TYPES = [
   { id: 'own_3', label: 'Hypothecated' },
 ];
 
-export default function CollateralAssets({ percent, setActiveStepId, currentCollateralAssets }) {
+export default function CollateralAssets({ percent, saveStepData, setActiveStepId, currentCollateralAssets }) {
   const params = useParams();
   const { applicationId } = params;
   const { enqueueSnackbar } = useSnackbar();
@@ -247,14 +247,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      // Store full form data in localStorage
       const saved = localStorage.getItem('formData');
       const formData = saved ? JSON.parse(saved) : {};
 
-      // Save full collateral assets data
       formData.collateral_assets_verification = {
         collateralAssets: data.collateralAssets.map((asset) => ({
-          ...asset, // Store all fields
+          ...asset,
           estimatedValue: asset.estimatedValue,
           securityDocumentRef: asset.securityDocRef,
           trustName: asset.trustName,
@@ -264,44 +262,25 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
           chargeTypesId: asset.chargeType,
           ownershipTypesId: asset.ownershipType,
           remark: asset.remark,
-          securityDocument: asset.securityDocument, // Store full document object
+          securityDocument: asset.securityDocument,
           isActive: true,
           isDeleted: false,
-          // Store document ID if exists
           securityDocumentId:
-            asset.securityDocument?.id || asset.securityDocument?.files?.[0]?.id || null,
+            asset.securityDocument?.id ||
+            asset.securityDocument?.files?.[0]?.id ||
+            null,
         })),
       };
 
       localStorage.setItem('formData', JSON.stringify(formData));
 
-      // Commented out API call
-      // const payload = data.collateralAssets.map((asset) => ({
-      //   estimatedValue: asset.estimatedValue,
-      //   securityDocumentRef: asset.securityDocRef,
-      //   trustName: asset.trustName,
-      //   valuationDate: asset.valuationDate,
-      //   description: asset.description,
-      //   collateralTypesId: asset.collateralType,
-      //   chargeTypesId: asset.chargeType,
-      //   ownershipTypesId: asset.ownershipType,
-      //   remark: asset.remark,
-      //   isActive: true,
-      //   isDeleted: false,
-      //   securityDocumentId: asset.securityDocument.id,
-      // }));
+      saveStepData?.({
+        collateralAssets: formData.collateral_assets_verification.collateralAssets,
+      });
 
-      // const response = await axiosInstance.patch(
-      //   `/bond-estimations/collateral-assets/${applicationId}`,
-      //   payload
-      // );
-
-      // if (response?.data?.success) {
       enqueueSnackbar('Collateral assets saved successfully', { variant: 'success' });
-      // Update progress to 100%
       percent?.(100);
       setActiveStepId();
-      // }
     } catch (error) {
       console.error('Error while saving collateral assets:', error);
       enqueueSnackbar('Error saving collateral assets', { variant: 'error' });
@@ -612,4 +591,5 @@ CollateralAssets.propTypes = {
   currentCollateral: PropTypes.object,
   percent: PropTypes.func,
   setActiveStepId: PropTypes.func,
+  saveStepData: PropTypes.func,
 };

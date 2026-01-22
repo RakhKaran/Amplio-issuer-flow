@@ -46,6 +46,7 @@ import ClientBusinessProfileForm from '../client-profile-form';
 import { useGetClientDetail } from 'src/api/clientDetail';
 import { Box, Typography } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
 
 // ----------------------------------------------------------------------
 
@@ -122,7 +123,7 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function ClientDetailListView({ percent, setActiveStepId }) {
+export default function ClientDetailListView({ percent, setActiveStepId, saveStepData }) {
   const table = useTable();
 
   const settings = useSettingsContext();
@@ -471,6 +472,9 @@ export default function ClientDetailListView({ percent, setActiveStepId }) {
             disabled={ClientDetail.length < 1}
             onClick={() => {
               enqueueSnackbar('Client details saved successfully', { variant: 'success' });
+              saveStepData?.({
+                clients: ClientDetail,
+              });
               percent(100);
               setActiveStepId();
             }}
@@ -503,6 +507,12 @@ export default function ClientDetailListView({ percent, setActiveStepId }) {
   );
 }
 
+
+ClientDetailListView.propTypes = {
+  percent: PropTypes.func,
+  setActiveStepId: PropTypes.func,
+  saveStepData: PropTypes.func,
+};
 // ----------------------------------------------------------------------
 
 function applyFilter({ inputData = [], comparator, filters }) {

@@ -7,7 +7,7 @@ export default function KYCPendingPage() {
   return (
     <>
       <Helmet>
-        <title> Post: List</title>
+        <title> KYC pending</title>
       </Helmet>
 
       <BusinessKycPending />
