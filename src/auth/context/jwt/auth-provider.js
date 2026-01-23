@@ -72,7 +72,10 @@ export function AuthProvider({ children }) {
         dispatch({
           type: 'INITIAL',
           payload: {
-            user,
+            user: {
+              ...user,
+              isBusinessKycComplete: false,
+            },
           },
         });
       } else {
@@ -115,7 +118,10 @@ export function AuthProvider({ children }) {
       dispatch({
         type: 'LOGIN',
         payload: {
-          user,
+          user: {
+            ...user,
+            isBusinessKycComplete: false,
+          },
         },
       });
     } else throw new Error("User Doesn't have permission");

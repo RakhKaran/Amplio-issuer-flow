@@ -32,9 +32,6 @@ export default function KycGuard({ children }) {
       // Redirect to KYC flow if not complete
       const kycPath = paths.kyc.invoiceFinancing.initialize;
       router.replace(kycPath);
-    } else {
-      // KYC is complete, allow access
-      setChecked(true);
     }
   }, [authenticated, user, router]);
 
