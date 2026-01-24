@@ -1,13 +1,39 @@
-import { Card, Box, Typography, Stack, Container, Button } from '@mui/material';
+import { Card, Typography, Stack, Container, Button } from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import Iconify from 'src/components/iconify';
-import { useRouter } from 'src/routes/hook/use-router';
+import { useSnackbar } from 'src/components/snackbar';
 import { paths } from 'src/routes/paths';
+import axiosInstance from 'src/utils/axios';
 
 export default function Initial() {
-  const router = useRouter();
+  const [loading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const handleStart = () => {
-    router.push(paths.kyc.invoiceFinancing.create);
+  const handleStart = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.post('/business-kyc');
+
+      if (response.data.success) {
+        enqueueSnackbar(response.data.message ?? 'Business KYC started successfully', {
+          variant: 'success',
+        });
+        navigate(paths.kyc.invoiceFinancing.create);
+      } else {
+        enqueueSnackbar(response.data.message ?? 'Failed to start Business KYC', {
+          variant: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Error while starting business KYC:', error);
+      const message =
+        error?.error?.message ?? error?.message ?? 'Something went wrong. Please try again.';
+      enqueueSnackbar(message, { variant: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -62,6 +88,7 @@ export default function Initial() {
           variant="contained"
           size="large"
           color="primary"
+          disabled={loading}
           sx={{
             px: 6,
             py: 1.5,
@@ -73,7 +100,7 @@ export default function Initial() {
           }}
           onClick={handleStart}
         >
-          Start
+          {loading ? 'Starting…' : 'Start'}
         </Button>
       </Card>
     </Container>

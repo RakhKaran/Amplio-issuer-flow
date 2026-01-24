@@ -82,9 +82,9 @@ export const endpoints = {
     getProfileData: `/company-profiles/me`,
   },
   companyEntityType: {
-    list: '/trustee-entity-types',
-    filterList: (filter) => `/trustee-entity-types?filter=${filter}`,
-    details: (id) => `/trustee-entity-types/${id}`,
+    list: '/company-entity-types',
+    filterList: (filter) => `/company-entity-types?filter=${filter}`,
+    details: (id) => `/company-entity-types/${id}`,
   },
   companySectorType: {
     list: '/company-sector-types',
