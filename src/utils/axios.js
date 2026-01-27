@@ -37,10 +37,12 @@ export const endpoints = {
     forgotPassword: '/auth/forget-password/send-email-otp',
     newPassword: '/auth/forget-password/verify-email-otp',
   },
-  companyProfile:{
+  companyProfile: {
     me: '/company-profiles/me',
-    bankDetails: '/company-profiles/bank-details'
+    bankDetails: '/company-profiles/bank-details',
   },
+  addressDetails: '/company-profiles/address-details',
+
   mail: {
     list: '/api/mail/list',
     details: '/api/mail/details',
@@ -121,7 +123,8 @@ export const endpoints = {
     list: '/bond-applications',
     filterList: (filter) => `/bond-applications?filter=${filter}`,
     details: (applicationId) => `/bond-applications/${applicationId}`,
-    dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
+    dataByStatus: (applicationId, statusValue) =>
+      `/bond-applications/${applicationId}/data-by-status/${statusValue}`,
   },
   creditRatingAgencies: {
     list: '/credit-rating-agencies',
