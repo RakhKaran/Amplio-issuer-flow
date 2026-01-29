@@ -27,6 +27,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { DatePicker } from '@mui/x-date-pickers';
 import axiosInstance from 'src/utils/axios';
 import { Checkbox, FormControlLabel, Grid, Typography } from '@mui/material';
+import { status } from 'nprogress';
 
 const guarantorType = [
   { value: 'Individual', label: 'Individual' },
@@ -243,30 +244,75 @@ export default function AddGuarantorForm({
   //     enqueueSnackbar('Failed to add signatory', { variant: 'error' });
   //   }
   // });
+  const getFileId = (fileValue) => {
+    if (!fileValue) return null;
+
+    // already uploaded (edit mode)
+    if (fileValue.id) return fileValue.id;
+
+    // newly uploaded
+    if (fileValue.files?.length > 0) {
+      return fileValue.files[0]?.id || null;
+    }
+
+    return null;
+  };
 
   const onSubmit = handleSubmit(async (data) => {
-    // Store full form data including file objects
-    const payload = {
-      guarantorName: data.guarantorName,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      phone: data.phoneNumber, // Alias for compatibility
-      cin: data.cin || '',
-      guarantorType: data.guarantorType,
-      guarantorAmountLimit: Number(data.guarantorAmountLimit),
-      GaurantorAmountLimit: Number(data.guarantorAmountLimit), // For table display
-      fullName: data.fullName,
-      estimetedNetWorth: Number(data.estimetedNetWorth),
-      panNumber: data.panNumber,
-      adharNumber: data.adharNumber,
-      // Store full file objects
-      panCardFile: data.panCardFile || null,
-      adharCardFile: data.adharCardFile || null,
-    };
+    try {
+      const panCardFileId = getFileId(data.panCardFile);
+      const adharCardFileId = getFileId(data.adharCardFile);
 
-    onSubmitSuccess?.(payload);
-    reset(); // Reset form after submission
+      if (!panCardFileId || !adharCardFileId) {
+        enqueueSnackbar('PAN & Aadhaar documents are required', {
+          variant: 'error',
+        });
+        return;
+      }
+
+      const payload = {
+        guarantorCompanyName: data.guarantorName,
+        CIN: data.cin,
+        phoneNumber: data.phoneNumber,
+        email: data.email,
+        guarantorType: data.guarantorType,
+        guaranteedAmountLimit: Number(data.guarantorAmountLimit),
+        estimatedNetWorth: Number(data.estimetedNetWorth),
+        fullName: data.fullName,
+        panNumber: data.panNumber,
+        adharNumber: data.adharNumber,
+        companyPanId: panCardFileId,
+        companyAadharId: adharCardFileId,
+      };
+
+
+      const res = await axiosInstance.post(
+        '/business-kyc/guarantor-details',
+        payload
+      );
+
+      if (res?.data?.success) {
+        enqueueSnackbar('Guarantor details saved successfully', {
+          variant: 'success',
+        });
+
+        onSubmitSuccess?.(res.data.data);
+        onClose();
+        reset();
+      } else {
+        enqueueSnackbar(res?.data?.message || 'Something went wrong', {
+          variant: 'error',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar(
+        error?.response?.data?.message || 'Failed to save guarantor details',
+        { variant: 'error' }
+      );
+    }
   });
+
 
   useEffect(() => {
     if (open) {

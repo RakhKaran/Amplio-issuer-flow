@@ -26,7 +26,7 @@ export default function KycGuard({ children }) {
     console.log('check', checked);
 
     // Check if KYC is complete
-    const isKycComplete = user.isBusinessKycComplete === false;
+    const isKycComplete = user.isBusinessKycComplete === true;
 
     if (!isKycComplete) {
       // Redirect to KYC flow if not complete
