@@ -37,7 +37,7 @@ export const endpoints = {
     forgotPassword: '/auth/forget-password/send-email-otp',
     newPassword: '/auth/forget-password/verify-email-otp',
   },
-  companyProfile:{
+  companyProfile: {
     me: '/company-profiles/me',
     bankDetails: '/company-profiles/bank-details'
   },
@@ -57,6 +57,12 @@ export const endpoints = {
     details: '/api/product/details',
     search: '/api/product/search',
   },
+  businessKyc: {
+    data: (businessKycId) => `/business-kyc/${businessKycId}`,
+    dataByStatus: (businessKycId, statusValue) => `/business-kyc/${businessKycId}/data-by-status/{statusValue}/${statusValue}`
+  },
+
+
   scheduler: {
     list: '/schedulers',
     filterList: (filter) => `/schedulers?filter=${filter}`,
@@ -117,12 +123,12 @@ export const endpoints = {
     filterList: (filter) => `/bond-estimations?filter=${filter}`,
     details: (applicationId) => `/bond-estimations/${applicationId}`,
   },
-  bondApplications: {
-    list: '/bond-applications',
-    filterList: (filter) => `/bond-applications?filter=${filter}`,
-    details: (applicationId) => `/bond-applications/${applicationId}`,
-    dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
-  },
+  // bondApplications: {
+  //   list: '/bond-applications',
+  //   filterList: (filter) => `/bond-applications?filter=${filter}`,
+  //   details: (applicationId) => `/bond-applications/${applicationId}`,
+  //   dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
+  // },
   creditRatingAgencies: {
     list: '/credit-rating-agencies',
   },
