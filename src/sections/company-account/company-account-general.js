@@ -444,7 +444,8 @@ export default function CompanyAccountGeneral() {
             <Grid item xs={12} md={12}>
               <RHFTextField
                 name="companyAbout"
-                placeholder="Enter abount company"
+                label="About Seller"
+                placeholder="Enter about seller"
                 multiline
                 rows={4}
               />
