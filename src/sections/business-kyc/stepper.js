@@ -8,6 +8,7 @@ import ClientDetailListView from './client-details/view/client-detail-list-view'
 import CollateralAssets from './collatral-assets/collatralAssets';
 import GuarantorListView from './guarantor/view/guarantor-list-view';
 import ReviewAndSubmitPage from './review & submit/review-and-submit';
+import { useGetBusinessKyc } from 'src/api/businessKyc';
 
 export default function Stepper() {
   // const params = useParams();
@@ -16,6 +17,7 @@ export default function Stepper() {
   // const [applicationData, setApplicationData] = useState(null);
   // const { bondApplication, bondApplicationLoading } = useGetBondApplication(applicationId);
   // const [dataInitialized, setDataInitialized] = useState(false);
+  const { businessKyc, businessKycLoading } = useGetBusinessKyc();
 
   const [activeStepId, setActiveStepId] = useState('business_Profile_Finance');
   const [formData, setFormData] = useState({

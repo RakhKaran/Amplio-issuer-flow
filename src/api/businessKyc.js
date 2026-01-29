@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 import { fetcher, endpoints } from 'src/utils/axios';
 import { identity } from 'lodash';
 
-export function useGetBusinessKyc(businessKycId) {
-  const URL = businessKycId ? endpoints.businessKyc.data(businessKycId) : null;
+export function useGetBusinessKyc() {
+  const URL =  endpoints.businessKyc.data;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
   const refreshBusinessKyc = () => {
@@ -23,14 +23,14 @@ return {
 
 
 
-export function useGetBusinessKycStepData(businessKycId, statusValue) {
-    const URL = (businessKycId && statusValue) ? endpoints.businessKyc.dataByStatus(businessKycId, statusValue) : null;
+export function useGetBusinessKycStepData(statusValue) {
+    const URL = (statusValue) ? endpoints.businessKyc.dataByStatus(statusValue) : null;
 
     const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
     const memoizedValue = useMemo(
         () => ({
-            stepData: data?.stepData,
+            stepData: data,
             stepDataLoading: isLoading,
             stepDataError: error,
             stepDataValidating: isValidating,

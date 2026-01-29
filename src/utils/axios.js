@@ -60,8 +60,8 @@ export const endpoints = {
     search: '/api/product/search',
   },
   businessKyc: {
-    data: (businessKycId) => `/business-kyc/${businessKycId}`,
-    dataByStatus: (businessKycId, statusValue) => `/business-kyc/${businessKycId}/data-by-status/{statusValue}/${statusValue}`
+    data: '/business-kyc/state',
+    dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`
   },
 
 
