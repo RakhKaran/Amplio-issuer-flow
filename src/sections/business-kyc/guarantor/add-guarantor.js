@@ -68,7 +68,14 @@ export default function AddGuarantorForm({
     guarantorType: Yup.string().required('Guarantor Type is required'),
     guarantorAmountLimit: Yup.number().required('Amount Limit is required'),
     panCardFile: Yup.mixed().required('fileRequired', 'PAN card is required'),
-    adharCardFile: Yup.mixed().required('fileRequired', 'Aadhar card is required'),
+    adharCardFile: Yup.mixed().required(
+      'fileRequired',
+      'Aadhar card is required',
+      function (value) {
+        if (currentGurantor?.id) return true; // ✅ edit mode
+        return !!value;
+      }
+    ),
     fullName: Yup.string().required("Guarantor's Full Name is required"),
     estimetedNetWorth: Yup.number().required('Estimated Net Worth is required'),
     panNumber: Yup.string()
@@ -81,46 +88,24 @@ export default function AddGuarantorForm({
     consent: Yup.boolean()
       .oneOf([true], 'You must provide consent to proceed')
       .required('Consent is required'),
-
-    // submittedPanFullName: Yup.string()
-    //   .transform((value) => value?.toUpperCase())
-    //   .required("PAN Holder's Name is required")
-    //   .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
-    // submittedPanNumber: Yup.string()
-    //   .transform((value) => value?.toUpperCase())
-    //   .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format')
-    //   .required('PAN Number is required'),
-    // submittedDateOfBirth: Yup.string().required('DOB is required'),
-    // panCard: Yup.mixed().test('fileRequired', 'PAN card is required', function (value) {
-    //   if (isEditMode) return true;
-    //   return !!value;
-    // }),
-    // boardResolution: Yup.mixed().test(
-    //   'fileRequired',
-    //   'Board Resolution is required',
-    //   function (value) {
-    //     if (isEditMode) return true;
-    //     return !!value;
-    //   }
-    // ),
   });
 
   const defaultValues = useMemo(
     () => ({
-      guarantorName: currentGurantor?.guarantorName || '',
+      guarantorName: currentGurantor?.guarantorCompanyName || '',
       email: currentGurantor?.email || '',
       phoneNumber: currentGurantor?.phoneNumber || currentGurantor?.phone || '',
-      cin: currentGurantor?.cin || '',
+      cin: currentGurantor?.CIN || '',
       guarantorAmountLimit:
-        currentGurantor?.guarantorAmountLimit || currentGurantor?.GaurantorAmountLimit || '',
+        currentGurantor?.guaranteedAmountLimit || currentGurantor?.GaurantorAmountLimit || '',
       guarantorType: currentGurantor?.guarantorType || 'Corporate',
       fullName: currentGurantor?.fullName || '',
-      estimetedNetWorth: currentGurantor?.estimetedNetWorth || '',
+      estimetedNetWorth: currentGurantor?.estimatedNetWorth || '',
       panNumber: currentGurantor?.panNumber || '',
       adharNumber: currentGurantor?.adharNumber || '',
-      // Preserve file objects if editing
-      adharCardFile: currentGurantor?.adharCardFile || null,
-      panCardFile: currentGurantor?.panCardFile || null,
+      adharCardFile: currentGurantor?.companyAadhar || null,
+      panCardFile: currentGurantor?.companyPan || null,
+
       consent: currentGurantor ? true : false,
     }),
     [currentGurantor]
@@ -163,109 +148,80 @@ export default function AddGuarantorForm({
 
   // const watchRole = methods.watch('role');
 
-  // const getFileId = (fileValue) => {
-  //   if (!fileValue) return null;
+  const getFileId = (fileValue) => {
+    if (!fileValue) return null;
 
-  //   // Existing file (edit mode)
-  //   if (fileValue.id) return fileValue.id;
+    // Existing file (edit mode)
+    if (fileValue.id) return fileValue.id;
 
-  //   // Newly uploaded file
-  //   if (fileValue.files?.length > 0) {
-  //     return fileValue.files[0]?.id || null;
-  //   }
+    // Newly uploaded file
+    if (fileValue.files?.length > 0) {
+      return fileValue.files[0]?.id || null;
+    }
 
-  //   return null;
-  // };
-
-  // const onSubmit = handleSubmit(async (data) => {
-  //   try {
-  //     const usersId = sessionStorage.getItem('trustee_user_id');
-
-  //     if (!usersId) {
-  //       enqueueSnackbar('User ID missing. Restart KYC.', { variant: 'error' });
-  //       return;
-  //     }
-
-  //     const panCardFileId = getFileId(data.panCard);
-  //     const boardResolutionFileId = getFileId(data.boardResolution);
-
-  //     if (!panCardFileId && !isEditMode) {
-  //       enqueueSnackbar('PAN card is required', { variant: 'error' });
-  //       return;
-  //     }
-
-  //     if (!boardResolutionFileId && !isEditMode) {
-  //       enqueueSnackbar('Board Resolution is required', { variant: 'error' });
-  //       return;
-  //     }
-
-  //     const isCustom = data.role === 'OTHER';
-
-  //     const payload = {
-  //       usersId,
-  //       signatory: {
-  //         fullName: data.name,
-  //         email: data.email,
-  //         phone: data.phoneNumber,
-
-  //         // Extracted PAN details (from OCR)
-  //         extractedPanFullName: extractedPan?.extractedPanFullName || '',
-  //         extractedPanNumber: extractedPan?.extractedPanNumber || '',
-  //         extractedDateOfBirth: extractedPan?.extractedDateOfBirth || '',
-
-  //         // Submitted PAN details (after human check / edit)
-  //         submittedPanFullName: data.submittedPanFullName,
-  //         submittedPanNumber: data.submittedPanNumber,
-  //         submittedDateOfBirth: data.submittedDateOfBirth,
-
-  //         panCardFileId,
-  //         boardResolutionFileId,
-  //         designationType: isCustom ? 'custom' : 'dropdown',
-  //         designationValue: isCustom
-  //           ? data.customDesignation
-  //           : ROLES.find((r) => r.value === data.role)?.label || data.role,
-  //       },
-  //     };
-
-  //     const res = await axiosInstance.post('/trustee-profiles/kyc-authorize-signatory', payload);
-
-  //     if (res?.data?.success) {
-  //       enqueueSnackbar('Signatory added successfully', { variant: 'success' });
-  //       onSuccess?.(payload.signatory);
-  //       onClose();
-  //     } else {
-  //       enqueueSnackbar(res?.data?.message || 'Something went wrong', {
-  //         variant: 'error',
-  //       });
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     enqueueSnackbar('Failed to add signatory', { variant: 'error' });
-  //   }
-  // });
+    return null;
+  };
 
   const onSubmit = handleSubmit(async (data) => {
-    // Store full form data including file objects
-    const payload = {
-      guarantorName: data.guarantorName,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      phone: data.phoneNumber, // Alias for compatibility
-      cin: data.cin || '',
-      guarantorType: data.guarantorType,
-      guarantorAmountLimit: Number(data.guarantorAmountLimit),
-      GaurantorAmountLimit: Number(data.guarantorAmountLimit), // For table display
-      fullName: data.fullName,
-      estimetedNetWorth: Number(data.estimetedNetWorth),
-      panNumber: data.panNumber,
-      adharNumber: data.adharNumber,
-      // Store full file objects
-      panCardFile: data.panCardFile || null,
-      adharCardFile: data.adharCardFile || null,
-    };
+    try {
+      const panCardFileId = getFileId(data.panCardFile);
+      const adharCardFileId = getFileId(data.adharCardFile);
 
-    onSubmitSuccess?.(payload);
-    reset(); // Reset form after submission
+      if (!panCardFileId || !adharCardFileId) {
+        enqueueSnackbar('PAN & Aadhaar documents are required', { variant: 'error' });
+        return;
+      }
+
+      // ✅ Backend-aligned payload
+      const payload = {
+        guarantorCompanyName: data.guarantorName,
+        CIN: data.cin || '',
+        phoneNumber: data.phoneNumber,
+        email: data.email,
+        guarantorType: data.guarantorType,
+        guaranteedAmountLimit: Number(data.guarantorAmountLimit),
+        estimatedNetWorth: Number(data.estimetedNetWorth),
+        fullName: data.fullName,
+        panNumber: data.panNumber,
+        adharNumber: data.adharNumber,
+        companyPanId: panCardFileId,
+        companyAadharId: adharCardFileId,
+      };
+
+      let response;
+
+      // 🟢 EDIT → PATCH
+      if (currentGurantor?.id) {
+        response = await axiosInstance.patch(
+          `/business-kyc/guarantor-details/${currentGurantor.id}`,
+          payload
+        );
+      }
+      // 🔵 ADD → POST
+      else {
+        response = await axiosInstance.post('/business-kyc/guarantor-details', payload);
+      }
+
+      if (response?.data?.success) {
+        enqueueSnackbar(
+          currentGurantor?.id ? 'Guarantor updated successfully' : 'Guarantor added successfully',
+          { variant: 'success' }
+        );
+
+        onSubmitSuccess?.(response.data.data);
+        onClose();
+        reset();
+      } else {
+        enqueueSnackbar(response?.data?.message || 'Something went wrong', {
+          variant: 'error',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar(error?.response?.data?.message || 'Failed to save guarantor', {
+        variant: 'error',
+      });
+    }
   });
 
   useEffect(() => {
@@ -381,7 +337,7 @@ export default function AddGuarantorForm({
                 name="guarantorName"
                 label="Name*"
                 InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -391,7 +347,7 @@ export default function AddGuarantorForm({
                   name="cin"
                   label="CIN*"
                   InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+                  // disabled={isViewMode}
                 />
               </Grid>
             )}
@@ -437,7 +393,7 @@ export default function AddGuarantorForm({
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
                 InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -447,7 +403,7 @@ export default function AddGuarantorForm({
                 name="estimetedNetWorth"
                 label="Estimated Net Worth*"
                 InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -457,7 +413,7 @@ export default function AddGuarantorForm({
                 label="Full Name* (as per PAN)"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ style: { textTransform: 'uppercase' } }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -468,7 +424,7 @@ export default function AddGuarantorForm({
                 label="PAN Number*"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 10 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -478,7 +434,7 @@ export default function AddGuarantorForm({
                 label="Aadhaar Number*"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 12 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -493,7 +449,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
               {getErrorMessage('panCardFile')}
             </Grid>
@@ -508,7 +464,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
               {getErrorMessage('adharCardFile')}
             </Grid>

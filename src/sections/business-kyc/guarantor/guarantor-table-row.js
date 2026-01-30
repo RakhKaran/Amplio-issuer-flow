@@ -20,18 +20,20 @@ const statusMap = {
 
 export default function GuarantorTableRow({ row, selected, onSelectRow, onViewRow, onEditRow }) {
   const {
-    guarantorName,
+    guarantorCompanyName,
     guarantorType,
-    GaurantorAmountLimit,
+    guaranteedAmountLimit,
+    estimatedNetWorth,
     status,
   } = row;
 
   return (
     <TableRow hover selected={selected}>
-      <TableCell>{guarantorName }</TableCell>
+      <TableCell>{guarantorCompanyName}</TableCell>
 
-      <TableCell>{guarantorType }</TableCell>
-      <TableCell>{GaurantorAmountLimit }</TableCell>
+      <TableCell>{guarantorType}</TableCell>
+      <TableCell>{guaranteedAmountLimit}</TableCell>
+      <TableCell>{estimatedNetWorth}</TableCell>
       <TableCell>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Tooltip title="Edit" placement="top" arrow>
