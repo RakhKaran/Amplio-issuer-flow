@@ -84,39 +84,6 @@ export default function AuditedGST3B({
     { value: 'dec', label: 'December' },
   ];
 
-  const monthOrder = months.map((m) => m.value);
-
-  // const handleAddRow = () => {
-  //   setDocuments((prev) => {
-  //     let nextMonth = 'jan';
-
-  //     if (prev.length > 0) {
-  //       const lastMonth = prev[prev.length - 1].month;
-  //       const lastIndex = monthOrder.indexOf(lastMonth);
-
-  //       if (lastIndex === -1) {
-  //         nextMonth = 'jan';
-  //       } else if (lastIndex === monthOrder.length - 1) {
-  //         enqueueSnackbar('All months are already added', { variant: 'warning' });
-  //         return prev;
-  //       } else {
-  //         nextMonth = monthOrder[lastIndex + 1];
-  //       }
-  //     }
-
-  //     const newDocument = {
-  //       id: `gst3b-${Date.now()}`,
-  //       month: nextMonth,
-  //       file: null,
-  //       status: 'Pending',
-  //       reportDate: null,
-  //       auditedType: 'audited',
-  //     };
-
-  //     return [...prev, newDocument];
-  //   });
-  // };
-
   const getLastSixMonthsDesc = () => {
     const result = [];
 
@@ -136,38 +103,6 @@ export default function AuditedGST3B({
 
   const lastSixMonths = getLastSixMonthsDesc();
 
-  // const handleFileUpload = async (e, id) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file) return;
-
-  //   try {
-  //     const mockFile = {
-  //       id: `file-${Date.now()}-${id}`,
-  //       fileName: file.name,
-  //       fileOriginalName: file.name,
-  //       size: file.size,
-  //       type: file.type,
-  //       file,
-  //     };
-
-  //     setDocuments((prev) =>
-  //       prev.map((doc) =>
-  //         doc.id === id
-  //           ? {
-  //               ...doc,
-  //               file: mockFile,
-  //               status: 'Uploaded',
-  //               reportDate: new Date(),
-  //             }
-  //           : doc
-  //       )
-  //     );
-
-  //     enqueueSnackbar('File uploaded successfully', { variant: 'success' });
-  //   } catch (error) {
-  //     enqueueSnackbar('File upload failed', { variant: 'error' });
-  //   }
-  // };
   const handleFileUpload = async (e, id) => {
     const file = e.target.files?.[0];
     if (!file) return;

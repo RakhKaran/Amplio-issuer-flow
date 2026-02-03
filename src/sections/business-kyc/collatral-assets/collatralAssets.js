@@ -131,43 +131,6 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
     });
   };
 
-  // const onSubmit = handleSubmit(async (data) => {
-  //   try {
-  //     const payload = {
-  //       collateralAssets: data.collateralAssets.map((asset) => ({
-  //         estimatedValue: asset.estimatedValue,
-  //         securityDocumentRef: asset.securityDocRef,
-  //         trustName: asset.trustName,
-  //         valuationDate: asset.valuationDate,
-  //         description: asset.description,
-  //         collateralTypesId: asset.collateralType,
-  //         chargeTypesId: asset.chargeType,
-  //         ownershipTypesId: asset.ownershipType,
-  //         // isActive: true,
-  //         // isDeleted: false,
-  //         securityDocumentId: asset.securityDocument.id,
-  //       })),
-  //     };
-
-  //     const response = await axiosInstance.patch('/business-kyc/collateral-details', payload);
-  //     if (response?.data?.success) {
-  //       enqueueSnackbar('Collateral assets submitted', { variant: 'success' });
-  //       const stateRes = await axiosInstance.get('/business-kyc/state');
-
-  //       const nextStepCode = stateRes?.data?.data?.activeStep?.code;
-
-  //       if (nextStepCode) {
-  //         setActiveStepId?.(nextStepCode); // ✅ NOW IT MOVES
-  //       }
-  //       setApprovalScreen(true);
-  //       percent?.(100);
-  //       // setActiveStepId?.();
-  //     }
-  //   } catch (error) {
-  //     console.error('Error while submitting collateral assets form :', error);
-  //   }
-  // });
-
   const onSubmit = handleSubmit(async (data) => {
     try {
       const payload = {
@@ -476,28 +439,6 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
                     }}
                   />
                   <YupErrorMessage name={`collateralAssets.${index}.securityDocument`} />
-
-                  {/* <RHFCustomFileUploadBox
-                    name={`collateralAssets.${index}.assetCoverCertificate`}
-                    label="Asset Cover Certificate"
-                    accept={{
-                      'application/pdf': ['.pdf'],
-                      'image/png': ['.png'],
-                      'image/jpeg': ['.jpg', '.jpeg'],
-                    }}
-                  />
-                  <YupErrorMessage name={`collateralAssets.${index}.assetCoverCertificate`} />
-
-                  <RHFCustomFileUploadBox
-                    name={`collateralAssets.${index}.valuationReport`}
-                    label="Valuation Report"
-                    accept={{
-                      'application/pdf': ['.pdf'],
-                      'image/png': ['.png'],
-                      'image/jpeg': ['.jpg', '.jpeg'],
-                    }}
-                  />
-                  <YupErrorMessage name={`collateralAssets.${index}.valuationReport`} /> */}
                 </Stack>
               </Grid>
             </Grid>

@@ -274,6 +274,8 @@ export const paths = {
       root: `${ROOTS.KYC}/invoiceFinancing`,
       initialize: `${ROOTS.KYC}/invoiceFinancing/initialize`,
       create: `${ROOTS.KYC}/invoiceFinancing/create`,
+      agreements: '/kyc/invoiceFinancing/agreements',
+      roc: '/kyc/invoiceFinancing/roc',
       pending: `${ROOTS.KYC}/invoiceFinancing/pending`,
       success: `${ROOTS.KYC}/invoiceFinancing/success`,
     },

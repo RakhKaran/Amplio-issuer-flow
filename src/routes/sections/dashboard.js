@@ -1,12 +1,13 @@
 import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 // auth
-import { AuthGuard, KycGuard } from 'src/auth/guard';
+import { AuthGuard } from 'src/auth/guard';
 // layouts
 import DashboardLayout from 'src/layouts/dashboard';
 // components
 import { LoadingScreen } from 'src/components/loading-screen';
 import { element } from 'prop-types';
+import KycCompletionGuard from 'src/auth/guard/kyc-completion-guard';
 
 // ----------------------------------------------------------------------
 
@@ -119,13 +120,13 @@ export const dashboardRoutes = [
     path: 'dashboard',
     element: (
       <AuthGuard>
-        <KycGuard>
+        <KycCompletionGuard>
           <DashboardLayout>
             <Suspense fallback={<LoadingScreen />}>
               <Outlet />
             </Suspense>
           </DashboardLayout>
-        </KycGuard>
+        </KycCompletionGuard>
       </AuthGuard>
     ),
     children: [
