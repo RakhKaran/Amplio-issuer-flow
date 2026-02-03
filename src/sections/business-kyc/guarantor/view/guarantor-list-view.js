@@ -48,6 +48,7 @@ import AddGuarantorForm from '../add-guarantor';
 import { enqueueSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import { useGetGuarantors } from 'src/api/businessKyc';
+import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -274,13 +275,33 @@ export default function GuarantorListView({ setActiveStepId, saveStepData, perce
               },
             }}
             disabled={tableData.length < 1}
-            onClick={() => {
-              enqueueSnackbar('Guarantor saved successfully', { variant: 'success' });
-              saveStepData?.({
-                guarantors: tableData,
-              });
-              percent(100);
-              setActiveStepId();
+            onClick={async () => {
+              try {
+                // 1️⃣ Call backend CONTINUE API
+                const response = await axiosInstance.post(
+                  '/business-kyc/guarantor-details/continue'
+                );
+
+                // 2️⃣ Read next step from backend
+                const nextStepCode = response?.data?.currentStatus?.code;
+
+                if (!nextStepCode) {
+                  enqueueSnackbar('Unable to move to next step', { variant: 'error' });
+                  return;
+                }
+
+                // 3️⃣ Move UI to next step
+                setActiveStepId(nextStepCode);
+
+                // 4️⃣ UI feedback
+                percent(100);
+                enqueueSnackbar('Guarantor step completed', { variant: 'success' });
+              } catch (error) {
+                console.error(error);
+                enqueueSnackbar(error?.response?.data?.message || 'Failed to continue', {
+                  variant: 'error',
+                });
+              }
             }}
           >
             Next

@@ -79,7 +79,7 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
 
   useEffect(() => {
     onProgressChange?.(calculateProgress(values));
-  }, [values]);
+  }, [values.yearInBusiness, values.projectedTurnover, values.turnover]);
 
   const calculateProgress = (vals) => {
     let completed = 0;
@@ -117,6 +117,8 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
       enqueueSnackbar(error.error.message, { variant: 'error' });
     }
   };
+
+  console.log('Loop ...');
 
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>

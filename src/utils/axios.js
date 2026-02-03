@@ -148,8 +148,8 @@ export const endpoints = {
     filterList: (filter) => `/investor-categories?filter=${filter}`,
   },
   fieldOptions: {
-    chargeTypes: '',
-    ownershipTypes: '',
-    collateralTypes: '',
+    chargeTypes: '/charge-types',
+    ownershipTypes: '/ownership-types',
+    collateralTypes: '/collateral-types',
   },
 };

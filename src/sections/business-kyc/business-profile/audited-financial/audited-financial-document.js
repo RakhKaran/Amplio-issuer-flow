@@ -3,30 +3,24 @@ import Grid from '@mui/material/Unstable_Grid2';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import FormProvider, { RHFSelect } from 'src/components/hook-form';
-import AuditedFinancialStatement from './audited-fnancial-statement';
 import AuditedIncomeTaxReturn from './audited-income-tax-return';
 import AuditedGSTR9 from './audited-gstr9';
-import AuditedGST3B from './audited-gstr3b';
+// import AuditedGST3B from './audited-gstr3b22';
 import { Container } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect, useState, useRef } from 'react';
 import { useSnackbar } from 'notistack';
-// import { useGetBondApplicationStepData } from 'src/api/bondApplications';
-// import { useParams } from 'src/routes/hook';
+import { useGetBusinessKycStepData } from 'src/api/businessKyc';
+import AuditedFinancialStatement from './audited-financial-statements';
+import AuditedGST3B from './audited-gstr3b';
 
 export default function AuditedFinancialDocument({ onUpdate, savedData }) {
-  // const params = useParams();
-  // const { applicationId } = params;
   const { enqueueSnackbar } = useSnackbar();
-  // Commented out API integration
-  // const { stepData, stepDataLoading } = useGetBondApplicationStepData(
-  //   applicationId,
-  //   'financial_statements'
-  // );
-
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData(
+    'financial_statements'
+  );
   // Track if completion message has been shown
   const completionMessageShown = useRef(false);
-
   // Load saved data (API integration commented out)
   const [currentData, setCurrentData] = useState(() => {
     if (savedData) {
@@ -140,6 +134,17 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
   //     });
   //   }
   // }, [stepData, stepDataLoading, savedData, currentData, onUpdate]);
+
+  useEffect(() => {
+    if (stepData && !stepDataLoading) {
+      setCurrentData({
+        financialStatements: stepData?.data?.financialStatements ?? [],
+        incomeTaxReturns: stepData?.data?.incomeTaxReturns ?? [],
+        gstr9: stepData?.data?.gstr9 ?? [],
+        gst3b: stepData?.data?.gst3b ?? [],
+      });
+    }
+  }, [stepData, stepDataLoading]);
 
 
   return (

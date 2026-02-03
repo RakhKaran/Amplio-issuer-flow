@@ -34,6 +34,7 @@ import {
 } from '@mui/material';
 // import { useParams } from 'src/routes/hook';
 import { useSnackbar } from 'notistack';
+import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -116,64 +117,104 @@ export default function AuditedGST3B({
   //   });
   // };
 
+  const getLastSixMonthsDesc = () => {
+    const result = [];
 
-const getLastSixMonthsDesc = () => {
-  const result = [];
+    for (let i = 0; i < 6; i++) {
+      const date = dayjs().subtract(i, 'month');
 
-  for (let i = 0; i < 6; i++) {
-    const date = dayjs().subtract(i, 'month');
+      result.push({
+        value: date.format('MMM').toLowerCase(), // jan, dec
+        label: date.format('MMMM'), // January
+        monthIndex: date.month(),
+        year: date.year(),
+      });
+    }
 
-    result.push({
-      value: date.format('MMM').toLowerCase(), // jan, dec
-      label: date.format('MMMM'),              // January
-      monthIndex: date.month(),
-      year: date.year(),
-    });
-  }
-
-  return result; // already DESC order
-};
-
-
+    return result; // already DESC order
+  };
 
   const lastSixMonths = getLastSixMonthsDesc();
 
+  // const handleFileUpload = async (e, id) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
 
+  //   try {
+  //     const mockFile = {
+  //       id: `file-${Date.now()}-${id}`,
+  //       fileName: file.name,
+  //       fileOriginalName: file.name,
+  //       size: file.size,
+  //       type: file.type,
+  //       file,
+  //     };
 
+  //     setDocuments((prev) =>
+  //       prev.map((doc) =>
+  //         doc.id === id
+  //           ? {
+  //               ...doc,
+  //               file: mockFile,
+  //               status: 'Uploaded',
+  //               reportDate: new Date(),
+  //             }
+  //           : doc
+  //       )
+  //     );
+
+  //     enqueueSnackbar('File uploaded successfully', { variant: 'success' });
+  //   } catch (error) {
+  //     enqueueSnackbar('File upload failed', { variant: 'error' });
+  //   }
+  // };
   const handleFileUpload = async (e, id) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-
-
     try {
-      const mockFile = {
-        id: `file-${Date.now()}-${id}`,
-        fileName: file.name,
-        fileOriginalName: file.name,
-        size: file.size,
-        type: file.type,
-        file,
-      };
+      const formData = new FormData();
+      formData.append('file', file);
 
+      // ✅ correct upload endpoint for your backend
+      const res = await axiosInstance.post('/files', formData);
+
+      // ✅ backend sends files[]
+      const uploadedFile = res?.data?.files?.[0];
+
+      if (!uploadedFile?.id) {
+        enqueueSnackbar('File upload failed', { variant: 'error' });
+        return;
+      }
+
+      // ✅ update ONLY the clicked row
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.id === id
             ? {
-              ...doc,
-              file: mockFile,
-              status: 'Uploaded',
-              reportDate: new Date(),
-            }
+                ...doc,
+                file: {
+                  id: uploadedFile.id, // ✅ UUID from DB
+                  fileOriginalName: uploadedFile.fileOriginalName,
+                  fileUrl: uploadedFile.fileUrl,
+                },
+                status: 'Uploaded',
+                reportDate: new Date(),
+              }
             : doc
         )
       );
 
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar('File upload failed', { variant: 'error' });
+      console.error('File upload error:', error);
+
+      enqueueSnackbar(error?.response?.data?.error?.message || 'File upload failed', {
+        variant: 'error',
+      });
     }
   };
+
   const handleDelete = (id) => {
     setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
   };
@@ -289,33 +330,29 @@ const getLastSixMonthsDesc = () => {
         auditorName: auditorName.trim(),
         reportDate: doc.reportDate,
         fileId: doc.file.id,
-        file: doc.file,
-        isActive: true,
-        isDeleted: false,
+        // file: doc.file,
+        // isActive: true,
+        // isDeleted: false,
       }));
 
       // Commented out API integration
-      // const payloadData = {
-      //   auditedFinancials: financialsData,
-      // };
-      // const response = await axiosInstance.patch(
-      //   `/bonds-pre-issue/audited-financials/${applicationId}`,
-      //   payloadData
-      // );
+      const payloadData = {
+        auditedFinancials: financialsData,
+      };
+      const response = await axiosInstance.patch(`/business-kyc/audited-financials`, payloadData);
 
-      // Save to parent component (which saves to localStorage)
-      // When form is complete and saved, set percent to 100
-      setPercent(100);
-      setProgress(true);
-      onSave?.(financialsData);
-      enqueueSnackbar('GSTR-3B saved successfully', {
-        variant: 'success',
-      });
+      if (response.status === 200) {
+        enqueueSnackbar('Audited financials saved successfully', { variant: 'success' });
+        setProgress(true);
+      }
     } catch (error) {
-      console.error('Error while saving financials:', error);
-      enqueueSnackbar('Something went wrong while saving audited financials', {
-        variant: 'error',
-      });
+      console.error('Error while uploading financials:', error);
+
+      enqueueSnackbar(
+        error?.response?.data?.error?.message ||
+          'Something went wrong while saving audited financials',
+        { variant: 'error' }
+      );
     }
   };
 
@@ -477,7 +514,6 @@ const getLastSixMonthsDesc = () => {
                       {month.label}
                     </MenuItem>
                   ))}
-
                 </Select>
 
                 <Box>

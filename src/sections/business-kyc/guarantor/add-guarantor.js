@@ -202,19 +202,17 @@ export default function AddGuarantorForm({
         response = await axiosInstance.post('/business-kyc/guarantor-details', payload);
       }
 
-      if (response?.data?.success) {
+      if (response?.status === 200 || response?.status === 201) {
         enqueueSnackbar(
           currentGurantor?.id ? 'Guarantor updated successfully' : 'Guarantor added successfully',
           { variant: 'success' }
         );
 
-        onSubmitSuccess?.(response.data.data);
+        onSubmitSuccess?.(response.data);
         onClose();
         reset();
       } else {
-        enqueueSnackbar(response?.data?.message || 'Something went wrong', {
-          variant: 'error',
-        });
+        enqueueSnackbar('Something went wrong', { variant: 'error' });
       }
     } catch (error) {
       console.error(error);
