@@ -337,7 +337,7 @@ export default function AddGuarantorForm({
                 name="guarantorName"
                 label="Name*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -347,7 +347,7 @@ export default function AddGuarantorForm({
                   name="cin"
                   label="CIN*"
                   InputLabelProps={{ shrink: true }}
-                  // disabled={isViewMode}
+                // disabled={isViewMode}
                 />
               </Grid>
             )}
@@ -393,7 +393,7 @@ export default function AddGuarantorForm({
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -403,7 +403,7 @@ export default function AddGuarantorForm({
                 name="estimetedNetWorth"
                 label="Estimated Net Worth*"
                 InputLabelProps={{ shrink: true }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -413,7 +413,7 @@ export default function AddGuarantorForm({
                 label="Full Name* (as per PAN)"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ style: { textTransform: 'uppercase' } }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -424,7 +424,7 @@ export default function AddGuarantorForm({
                 label="PAN Number*"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 10 }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -434,7 +434,7 @@ export default function AddGuarantorForm({
                 label="Aadhaar Number*"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 12 }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -449,7 +449,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
               {getErrorMessage('panCardFile')}
             </Grid>
@@ -464,7 +464,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
               {getErrorMessage('adharCardFile')}
             </Grid>

@@ -59,7 +59,7 @@ export default function ReviewAndSubmitPage({ formData }) {
         />
         <CollateralAssetsPage data = {formData.collateral_assets_verification} />
         <GuarantorDetailsPage data={formData.guarantor_details} />
-        <ClientSummary data={formData.client_details} />
+        {/* <ClientSummary data={formData.client_details} /> */}
 
         <Box
           mt={5}
