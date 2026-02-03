@@ -66,13 +66,13 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
       }
     };
     reloadData();
-    
+
     // CRITICAL FIX: Delay marking mount as complete to ensure stepper has loaded data
     // This prevents BusinessProfileMain from saving before stepper's formData is populated
     const timer = setTimeout(() => {
       isInitialMount.current = false;
     }, 100); // Small delay to allow stepper's useEffect to complete
-    
+
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount - we intentionally don't include savedData to prevent loops
@@ -170,7 +170,6 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
     gstr9Done,
     gstr3bDone,
     calculateOverallProgress,
-    percent,
   ]);
 
   // Save percentages whenever they change (but skip initial mount)
@@ -190,8 +189,8 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
     itrDone,
     gstr9Done,
     gstr3bDone,
-    handleSaveData,
   ]);
+
   // Handle business profile save
   const handleBusinessProfileSave = useCallback(
     (data) => {

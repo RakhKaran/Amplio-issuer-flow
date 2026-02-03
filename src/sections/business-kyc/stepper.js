@@ -11,18 +11,12 @@ import ReviewAndSubmitPage from './review & submit/review-and-submit';
 import { useGetBusinessKyc } from 'src/api/businessKyc';
 
 export default function Stepper() {
-  // const params = useParams();
-  // const { applicationId } = params;
-
-  // const [applicationData, setApplicationData] = useState(null);
-  // const { bondApplication, bondApplicationLoading } = useGetBondApplication(applicationId);
-  // const [dataInitialized, setDataInitialized] = useState(false);
   const { businessKyc, businessKycLoading } = useGetBusinessKyc();
-
+  // console.log('businessKyc',businessKyc);
   const [activeStepId, setActiveStepId] = useState('business_Profile_Finance');
   const [formData, setFormData] = useState({
     business_Profile_Finance: {},
-    client_details: {},
+    // client_details: {},
     collateral_assets_verification: {},
     guarantor_details: {},
     review_and_submit: {},
@@ -34,31 +28,31 @@ export default function Stepper() {
       number: 1,
       lines: ['Business Profile', '& Finance'],
     },
-    {
-      id: 'client_details',
-      number: 2,
-      lines: ['Clieant', 'Details'],
-    },
+    // {
+    //   id: 'client_details',
+    //   number: 2,
+    //   lines: ['Clieant', 'Details'],
+    // },
     {
       id: 'collateral_assets_verification',
-      number: 3,
+      number: 2,
       lines: ['Collateral & Assets', 'Verification'],
     },
     {
       id: 'guarantor_details',
-      number: 4,
+      number: 3,
       lines: ['Guarantor', 'Details'],
     },
     {
       id: 'review_and_submit',
-      number: 5,
+      number: 4,
       lines: ['Review & Submit'],
     },
   ];
 
   const [stepsProgress, setStepsProgress] = useState({
     business_Profile_Finance: { percent: 0 },
-    client_details: { percent: 0 },
+    // client_details: { percent: 0 },
     collateral_assets_verification: { percent: 0 },
     guarantor_details: { percent: 0 },
     review_and_submit: { percent: 0 },
@@ -84,7 +78,7 @@ export default function Stepper() {
         // Preserve ALL existing data - ensure all step keys exist with actual saved data
         const loadedFormData = {
           business_Profile_Finance: parsed.business_Profile_Finance || {},
-          client_details: parsed.client_details || {},
+          // client_details: parsed.client_details || {},
           collateral_assets_verification: parsed.collateral_assets_verification || {},
           guarantor_details: parsed.guarantor_details || {},
           review_and_submit: parsed.review_and_submit || {},
@@ -102,7 +96,7 @@ export default function Stepper() {
         const parsed = JSON.parse(savedProgress);
         setStepsProgress({
           business_Profile_Finance: parsed.business_Profile_Finance || { percent: 0 },
-          client_details: parsed.client_details || { percent: 0 },
+          // client_details: parsed.client_details || { percent: 0 },
           collateral_assets_verification: parsed.collateral_assets_verification || { percent: 0 },
           guarantor_details: parsed.guarantor_details || { percent: 0 },
           review_and_submit: parsed.review_and_submit || { percent: 0 },
@@ -160,9 +154,11 @@ export default function Stepper() {
         if (saved) {
           const parsed = JSON.parse(saved);
           localStorageState = {
-            business_Profile_Finance: parsed.business_Profile_Finance || prev.business_Profile_Finance || {},
+            business_Profile_Finance:
+              parsed.business_Profile_Finance || prev.business_Profile_Finance || {},
             client_details: parsed.client_details || prev.client_details || {},
-            collateral_assets_verification: parsed.collateral_assets_verification || prev.collateral_assets_verification || {},
+            collateral_assets_verification:
+              parsed.collateral_assets_verification || prev.collateral_assets_verification || {},
             guarantor_details: parsed.guarantor_details || prev.guarantor_details || {},
             review_and_submit: parsed.review_and_submit || prev.review_and_submit || {},
           };
@@ -271,20 +267,20 @@ export default function Stepper() {
         return (
           <BusinessProfileMain
             percent={(p) => updateStepPercent('business_Profile_Finance', p)}
-            setActiveStepId={() => setActiveStepId('client_details')}
+            setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
             saveStepData={(data) => saveStepData('business_Profile_Finance', data)}
           />
         );
 
-      case 'client_details':
-        return (
-          <ClientDetailListView
-            percent={(p) => updateStepPercent('client_details', p)}
-            setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
-            saveStepData={(data) => saveStepData('client_details', data)}
+      // case 'client_details':
+      //   return (
+      //     <ClientDetailListView
+      //       percent={(p) => updateStepPercent('client_details', p)}
+      //       setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
+      //       saveStepData={(data) => saveStepData('client_details', data)}
 
-          />
-        );
+      //     />
+      //   );
 
       case 'collateral_assets_verification':
         return (
@@ -292,7 +288,6 @@ export default function Stepper() {
             percent={(p) => updateStepPercent('collateral_assets_verification', p)}
             setActiveStepId={() => setActiveStepId('guarantor_details')}
             saveStepData={(data) => saveStepData('collateral_assets_verification', data)}
-
           />
         );
 
@@ -302,7 +297,6 @@ export default function Stepper() {
             percent={(p) => updateStepPercent('guarantor_details', p)}
             setActiveStepId={() => setActiveStepId('review_and_submit')}
             saveStepData={(data) => saveStepData('guarantor_details', data)}
-
           />
         );
 

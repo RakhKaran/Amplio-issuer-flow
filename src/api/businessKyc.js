@@ -40,3 +40,24 @@ export function useGetBusinessKycStepData(statusValue) {
 
     return memoizedValue;
 }
+
+
+export function useGetGuarantors() {
+  const URL = endpoints.businessKyc.guarantors;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
+
+  const memoizedValue = useMemo(
+    () => ({
+      guarantors: data?.data || [], // backend returns { success, data }
+      guarantorsLoading: isLoading,
+      guarantorsError: error,
+      guarantorsValidating: isValidating,
+      refreshGuarantors: mutate,
+    }),
+    [data, error, isLoading, isValidating, mutate]
+  );
+
+  return memoizedValue;
+}
+

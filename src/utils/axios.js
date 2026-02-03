@@ -61,7 +61,8 @@ export const endpoints = {
   },
   businessKyc: {
     data: '/business-kyc/state',
-    dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`
+    dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`,
+    guarantors: '/business-kyc/guarantor-details',
   },
 
 
@@ -147,8 +148,8 @@ export const endpoints = {
     filterList: (filter) => `/investor-categories?filter=${filter}`,
   },
   fieldOptions: {
-    chargeTypes: '',
-    ownershipTypes: '',
-    collateralTypes: '',
+    chargeTypes: '/charge-types',
+    ownershipTypes: '/ownership-types',
+    collateralTypes: '/collateral-types',
   },
 };
