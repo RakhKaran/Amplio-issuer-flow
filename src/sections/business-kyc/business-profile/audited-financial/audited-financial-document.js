@@ -107,34 +107,6 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
     }
   }, [financialDone, itrDone, gstr9Done, gstr3bDone, isBaseYearDone, enqueueSnackbar]);
 
-  // Commented out API integration
-  // useEffect(() => {
-  //   if (stepData && !stepDataLoading && !savedData) {
-  //     setCurrentData({
-  //       financialStatements: stepData?.financialStatements,
-  //       incomeTaxReturns: stepData?.incomeTaxReturns,
-  //       gstr9: stepData?.gstr9,
-  //       gst3b: stepData?.gst3b,
-  //     });
-  //     // Save API data to parent
-  //     onUpdate?.({
-  //       auditedFinancial: {
-  //         financialStatements: stepData?.financialStatements,
-  //         incomeTaxReturns: stepData?.incomeTaxReturns,
-  //         gstr9: stepData?.gstr9,
-  //         gst3b: stepData?.gst3b,
-  //       },
-  //     });
-  //   } else if (!currentData && !savedData) {
-  //     setCurrentData({
-  //       financialStatements: [],
-  //       incomeTaxReturns: [],
-  //       gstr9: [],
-  //       gst3b: [],
-  //     });
-  //   }
-  // }, [stepData, stepDataLoading, savedData, currentData, onUpdate]);
-
   useEffect(() => {
     if (stepData && !stepDataLoading) {
       setCurrentData({

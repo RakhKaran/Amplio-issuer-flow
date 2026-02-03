@@ -8,7 +8,6 @@ import PropTypes from 'prop-types';
 export default function BusinessProfileMain({ setActiveStepId, percent, saveStepData }) {
   const { enqueueSnackbar } = useSnackbar();
 
-  // Load saved data from localStorage
   const [savedData, setSavedData] = useState(() => {
     try {
       const saved = localStorage.getItem('formData');
@@ -36,15 +35,11 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
   const [gstr9Percent, setGstr9Percent] = useState(savedData?.gstr9Percent || 0);
   const [gstr3bPercent, setGstr3bPercent] = useState(savedData?.gstr3bPercent || 0);
 
-  // Ref to track if component just mounted (prevent initial save)
-  // CRITICAL FIX: Keep as true initially, only set to false AFTER allowing stepper to load
   const isInitialMount = useRef(true);
 
   // Ref to track latest saved data for merging (avoid state dependency)
   const savedDataRef = useRef(savedData);
 
-  // Reload savedData from localStorage when component remounts
-  // CRITICAL FIX: Delay marking mount as complete to allow stepper to load first
   useEffect(() => {
     const reloadData = () => {
       try {
@@ -52,7 +47,6 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
         if (saved) {
           const parsed = JSON.parse(saved);
           const latestData = parsed.business_Profile_Finance || {};
-          // Only update if there's actually new data to prevent unnecessary re-renders
           setSavedData((prev) => {
             if (JSON.stringify(latestData) !== JSON.stringify(prev)) {
               return latestData;
@@ -67,15 +61,13 @@ export default function BusinessProfileMain({ setActiveStepId, percent, saveStep
     };
     reloadData();
 
-    // CRITICAL FIX: Delay marking mount as complete to ensure stepper has loaded data
-    // This prevents BusinessProfileMain from saving before stepper's formData is populated
     const timer = setTimeout(() => {
       isInitialMount.current = false;
     }, 100); // Small delay to allow stepper's useEffect to complete
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount - we intentionally don't include savedData to prevent loops
+  }, []);
 
   // Update ref when savedData changes from external source
   useEffect(() => {

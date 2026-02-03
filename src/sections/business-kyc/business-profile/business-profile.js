@@ -35,12 +35,6 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
       .typeError('Projected turnover must be a number')
       .required('Projected turnover is required')
       .min(0, 'Invalid amount'),
-
-    // ebitdaMargin: Yup.number()
-    //   .typeError('EBITDA margin must be a number')
-    //   .required('EBITDA margin is required')
-    //   .min(0, 'Invalid value')
-    //   .max(100, 'EBITDA margin cannot exceed 100%'),
   });
 
   // ✅ Default Values with saved data
@@ -98,10 +92,6 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
     try {
       const percent = calculateProgress(data);
 
-      // onSave?.({
-      //   data,
-      //   percent,
-      // });
       const payload = {
         yearInBusiness: data.yearInBusiness,
         turnover: data.turnover,
@@ -109,7 +99,6 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
       };
       const response = await axiosInstance.patch('/business-kyc/profile-details', payload);
       if (response.data.success) {
-        // setProgress(true);
         enqueueSnackbar('Issue details saved successfully', { variant: 'success' });
       }
       onProgressChange?.(percent);
