@@ -635,7 +635,17 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
             width: '100%',
           }}
         >
-          <Button variant="contained" sx={{ color: '#fff' }} onClick={() => handleSave()}>
+          <Button
+            variant="contained"
+            onClick={() => handleSave()}
+            color="primary"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                boxShadow: 'none',
+              },
+            }}
+          >
             Save
           </Button>
         </Box>

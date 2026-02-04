@@ -4,7 +4,7 @@ import { Box, Button, Card, Grid, MenuItem, Stack, Typography } from '@mui/mater
 import { DatePicker } from '@mui/x-date-pickers';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useGetBusinessKycStepData } from 'src/api/businessKyc';
 import {
@@ -24,6 +24,7 @@ import * as Yup from 'yup';
 
 export default function CollateralAssets({ percent, setActiveStepId }) {
   const { enqueueSnackbar } = useSnackbar();
+  const isInitialLoad = useRef(true);
   const { stepData, stepDataLoading } = useGetBusinessKycStepData('collateral_assets');
   const { chargeTypes, chargeTypesLoading } = useGetChargeTypes();
   const { collateralTypes, collateralTypesLoading } = useGetCollateralTypes();
@@ -198,15 +199,16 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
   };
 
   useEffect(() => {
-    calculatePercent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // 🚨 Skip first render
+    if (isInitialLoad.current) return;
+    calculatePercent(collateralAssets);
   }, [collateralAssets]);
 
-  useEffect(() => {
-    if (currentCollateralAssets) {
-      reset(defaultValues);
-    }
-  }, [currentCollateralAssets, reset, defaultValues]);
+  // useEffect(() => {
+  //   if (currentCollateralAssets) {
+  //     reset(defaultValues);
+  //   }
+  // }, [currentCollateralAssets, reset, defaultValues]);
 
   useEffect(() => {
     if (chargeTypes?.length > 0 && !chargeTypesLoading) {
@@ -232,7 +234,8 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
     const apiAssets = stepData?.data ?? [];
     if (!apiAssets.length) {
       percent?.(0);
-      return;
+    } else {
+      percent?.(100); // trust backend
     }
 
     const mappedAssets = apiAssets.map((asset) => ({
@@ -259,8 +262,8 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
     reset({ collateralAssets: mappedAssets });
 
     // ✅ IMPORTANT: recalc percent AFTER reset
-    calculatePercent(mappedAssets);
-  }, [stepData, stepDataLoading, reset, percent]);
+    isInitialLoad.current = false;
+  }, [stepData, stepDataLoading]);
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>

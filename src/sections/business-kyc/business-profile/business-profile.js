@@ -98,12 +98,15 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
         projectedTurnover: data.projectedTurnover,
       };
       const response = await axiosInstance.patch('/business-kyc/profile-details', payload);
-      if (response.data.success) {
-        enqueueSnackbar('Issue details saved successfully', { variant: 'success' });
-      }
+      enqueueSnackbar('Business profile saved successfully', {
+        variant: 'success',
+      });
       onProgressChange?.(percent);
     } catch (error) {
-      enqueueSnackbar(error.error.message, { variant: 'error' });
+      enqueueSnackbar(
+        error?.response?.data?.error?.message || error?.message || 'Something went wrong',
+        { variant: 'error' }
+      );
     }
   };
 
