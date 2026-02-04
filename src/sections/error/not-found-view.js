@@ -39,9 +39,9 @@ export default function NotFoundView() {
           />
         </m.div>
 
-        <Button component={RouterLink} href="/" size="large" variant="contained">
+        {/* <Button component={RouterLink} href="/" size="large" variant="contained">
           Go to Home
-        </Button>
+        </Button> */}
       </MotionContainer>
     </CompactLayout>
   );

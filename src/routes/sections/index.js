@@ -10,6 +10,7 @@ import { authDemoRoutes } from './auth-demo';
 import { dashboardRoutes } from './dashboard';
 import { kycRoutes } from './kyc';
 import { componentsRoutes } from './components';
+import { publicKycRoutes } from './public-route';
 
 // ----------------------------------------------------------------------
 
@@ -39,8 +40,9 @@ export default function Router() {
 
     // Dashboard routes
     ...dashboardRoutes,
-    ...kycRoutes,
+    ...publicKycRoutes,
 
+    ...kycRoutes,
     // Main routes
     ...mainRoutes,
 

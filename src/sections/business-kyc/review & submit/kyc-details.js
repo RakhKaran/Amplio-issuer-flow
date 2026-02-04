@@ -201,7 +201,8 @@ export default function KycDetailsPage() {
                 </Tooltip>
               </Grid>
 
-              {bankData && (
+
+              {bankData ? (
                 <>
                   <Grid item xs={8} md={8}>
                     <Typography variant="body2" fontWeight={600}>
@@ -234,7 +235,18 @@ export default function KycDetailsPage() {
                     </Typography>
                   </Grid>
                 </>
-              )}
+              ):(
+              <Grid item xs={12}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                  sx={{ py: 2 }}
+                >
+                  No records found
+                </Typography>
+              </Grid>
+      )}
             </Grid>
           </Card>
         </Grid>
