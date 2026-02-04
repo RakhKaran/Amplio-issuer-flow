@@ -1,6 +1,7 @@
 import { Card, Typography, Grid, Box, IconButton, Link, Chip, Button } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
+import { useGetBusinessKycStepData } from 'src/api/businessKyc';
 import Iconify from 'src/components/iconify';
 import { formatNumberIN } from 'src/utils/change-case';
 
@@ -107,8 +108,10 @@ const collateralAssets = [
   },
 ];
 
-export default function CollateralAssetsPage({ data }) {
-  const clients = data?.collateralAssets || data?.data?.collateralAssets || [];
+export default function CollateralAssetsPage() {
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData('collateral_assets');
+
+  const clients = stepData?.data || []
   const [visibleCount, setVisibleCount] = useState(4);
 
   const handleViewMore = () => {
@@ -158,12 +161,17 @@ export default function CollateralAssetsPage({ data }) {
               </Grid>
 
               {[
-                ['Collateral Type', item.collateralType],
-                ['Asset Description', item.description],
-                ['Estimated Value', `₹${formatNumberIN(item.estimatedValue)}`],
-                ['Ownership Type', item.ownershipType],
-                ['Trust Name', item.trustName],
-                ['Valuation Date', item.valuationDate],
+                ['Collateral Type', item.collateralTypes?.label || '—'],
+                ['Asset Description', item.description || '—'],
+                ['Estimated Value', `₹${formatNumberIN(item.estimatedValue || 0)}`],
+                ['Ownership Type', item.ownershipTypes?.label || '—'],
+                ['Trust Name', item.trustName || '—'],
+                [
+                  'Valuation Date',
+                  item.valuationDate
+                    ? new Date(item.valuationDate).toLocaleDateString('en-IN')
+                    : '—',
+                ],
               ].map(([label, value], idx) => (
                 <Grid container key={idx} sx={{ mb: 1 }}>
                   <Grid item xs={7}>

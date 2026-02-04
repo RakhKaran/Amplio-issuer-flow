@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Container, Grid, Typography, TextField, Stack, Button, Alert, Box } from '@mui/material';
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
-import AgreementSuccessDialog from '../success/agreement-success';
+import GuarantorAgreementSuccessDialog from './guarantor-agreement-success';
 
 export default function GuarantorESignVerify() {
   const { enqueueSnackbar } = useSnackbar();
@@ -136,17 +136,26 @@ export default function GuarantorESignVerify() {
       ))}
     </Grid>
   );
-
-  return (
-    <Box
-      sx={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Container maxWidth="sm">
+return (
+  <Box
+    sx={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#FAFAFA',
+      px: 2,
+    }}
+  >
+    <Container maxWidth="sm">
+      <Box
+        sx={{
+          backgroundColor: '#fff',
+          borderRadius: 3,
+          p: 4,
+          boxShadow: '0px 8px 24px rgba(0,0,0,0.08)',
+        }}
+      >
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h4" textAlign="center">
@@ -169,6 +178,7 @@ export default function GuarantorESignVerify() {
           <Grid item xs={12}>
             {renderOtpBoxes}
           </Grid>
+
           <Grid item xs={12}>
             <Stack
               direction="row"
@@ -178,10 +188,11 @@ export default function GuarantorESignVerify() {
             >
               <Typography variant="body2" color="text.secondary">
                 Expect OTP in{' '}
-                <Box component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                <Box component="span" sx={{ fontWeight: 700 }}>
                   {timer} seconds
                 </Box>
               </Typography>
+
               <Typography
                 variant="body2"
                 sx={{
@@ -214,12 +225,6 @@ export default function GuarantorESignVerify() {
                     backgroundColor: '#fff',
                     color: 'primary.dark',
                     borderColor: 'primary.dark',
-                    boxShadow: 'none',
-                  },
-                  '&.Mui-disabled': {
-                    backgroundColor: '#fff',
-                    color: 'text.disabled',
-                    borderColor: 'text.disabled',
                   },
                 }}
               >
@@ -227,17 +232,21 @@ export default function GuarantorESignVerify() {
               </Button>
             </Stack>
           </Grid>
+
           <Grid item xs={12}>
-            <Typography variant="body2" textAlign="center">
+            <Typography variant="body2" textAlign="center" color="text.secondary">
               Your data is encrypted and secure
             </Typography>
           </Grid>
         </Grid>
-        <AgreementSuccessDialog
+
+        <GuarantorAgreementSuccessDialog
           open={openSuccessDialog}
           onClose={() => setOpenSuccessDialog(false)}
         />
-      </Container>
-    </Box>
-  );
+      </Box>
+    </Container>
+  </Box>
+);
+
 }

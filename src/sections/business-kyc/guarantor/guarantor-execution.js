@@ -11,6 +11,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import axiosInstance from 'src/utils/axios';
+import GuarantorESignVerify from './guarantor-verify-e-sign';
 
 export default function GuarantorExecution() {
   const [params] = useSearchParams();
@@ -50,85 +51,107 @@ export default function GuarantorExecution() {
   console.log('data', data)
 
   return (
-    
-    <Container >
-      <Typography
-        variant="h5"
-        align="center"
-        sx={{ mb: 3, fontWeight: 600 }}
-      >
-        Guarantor Execution
-      </Typography>
-
-
-
-      {!loading && !error && !data && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-
-            textAlign: 'center',
-            backgroundColor: '#F9FAFB',
-            borderRadius: 1,
-          }}
+    <Container
+      maxWidth="md"
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Box width="100%" maxWidth={720}>
+        <Typography
+          variant="h6"
+          align="center"
+          sx={{ mb: 2, fontWeight: 600 }}
         >
-          <Typography variant="subtitle1" fontWeight={600}>
-            No guarantor execution data found
-          </Typography>
+          Guarantor Execution
+        </Typography>
 
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            The execution document is not available at the moment.
-          </Typography>
-        </Paper>
-      )}
-
-      {!loading && data && (
-        <>
+        {/* NO DATA */}
+        {!loading && !error && !data && (
           <Paper
             elevation={0}
             sx={{
-              p: 2,
-              mb: 3,
-              backgroundColor: '#F4F8FF',
-              borderRadius: 1,
+              p: 3,
+              textAlign: 'center',
+              backgroundColor: '#F9FAFB',
+              borderRadius: 2,
             }}
           >
-            <Typography variant="subtitle2" color="primary" sx={{ mb: 0.5 }}>
-              Guarantor Details
+            <Typography variant="subtitle1" fontWeight={600}>
+              No guarantor execution data found
             </Typography>
-
-            <Typography variant="body1" fontWeight={500}>
-              Guarantor Name: {data.guarantorName}
-            </Typography>
-
-            <Typography variant="body2">
-              CIN: {data.cin}
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              The execution document is not available at the moment.
             </Typography>
           </Paper>
+        )}
 
-          <Card sx={{ height: '75vh', mb: 4 }}>
-            <Box
-              component="iframe"
-              src={data.documentUrl}
-              width="100%"
-              height="100%"
-              sx={{ border: 'none' }}
-            />
-          </Card>
-
-          <Stack direction="row" justifyContent="center">
-            <Button
-              variant="contained"
-              size="large"
-              sx={{ px: 4, borderRadius: 2 }}
-              // onClick={() => navigate('/kyc/e-sign')}
+        {/* DATA FOUND */}
+        {!loading && data && (
+          <>
+            {/* Guarantor Info */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                mb: 2,
+                backgroundColor: '#F4F8FF',
+                borderRadius: 2,
+              }}
             >
-              Continue to E-Sign
-            </Button>
-          </Stack>
-        </>
-      )}
+              <Typography variant="subtitle2" color="primary">
+                Guarantor Details
+              </Typography>
+
+              <Typography variant="body2" fontWeight={500}>
+                {data.guarantorName}
+              </Typography>
+
+              <Typography variant="caption" color="text.secondary">
+                CIN: {data.cin}
+              </Typography>
+            </Paper>
+
+            {/* Document Preview */}
+            <Card
+              sx={{
+                height: 420,
+                mb: 3,
+                borderRadius: 2,
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                component="iframe"
+                // src={data.documentUrl}
+                src="/assets/Guarantor_Execution_Dummy.pdf"
+                width="100%"
+                height="100%"
+                sx={{ border: 'none' }}
+              />
+            </Card>
+
+            {/* CTA */}
+            <Stack direction="row" justifyContent="center">
+              <Button
+                variant="contained"
+                size="medium"
+                sx={{ px: 4, borderRadius: 2 }}
+                onClick={() =>
+                  navigate(`/kyc/invoiceFinancing/esign?token=${params.get('token')}`)
+                }
+              >
+                Continue to E-Sign
+              </Button>
+
+            </Stack>
+          </>
+        )}
+      </Box>
     </Container>
   );
+
 }

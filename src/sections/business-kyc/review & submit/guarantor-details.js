@@ -1,6 +1,7 @@
 import { Card, Typography, Grid, Box, IconButton, Link, Chip, Button } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
+import { useGetGuarantors } from 'src/api/businessKyc';
 import Iconify from 'src/components/iconify';
 import { formatNumberIN } from 'src/utils/change-case';
 
@@ -98,7 +99,13 @@ const guarantorDetails = [
 ];
 
 export default function GuarantorDetailsPage({ data }) {
-  const guarantorsDetails = data?.guarantors || data?.data?.guarantors || [];
+  // const guarantorsDetails = data?.guarantors || data?.data?.guarantors || [];
+  const { guarantors, refreshGuarantors } = useGetGuarantors();
+
+  const guarantorsDetails = Array.isArray(guarantors)
+    ? guarantors
+    : guarantors?.data ?? [];
+
   const [visibleCount, setVisibleCount] = useState(4);
 
   const handleViewMore = () => {
@@ -153,8 +160,8 @@ export default function GuarantorDetailsPage({ data }) {
                 ['Full Name', item.fullName],
                 ['PAN', item.panNumber],
                 ['Aadhaar', item.adharNumber],
-                ['Net Worth', `₹${formatNumberIN(item.estimetedNetWorth)}`],
-                ['Guaranteed Amount Limit', `₹${formatNumberIN(item.guarantorAmountLimit)}`],
+                ['Net Worth', `₹${formatNumberIN(item.estimatedNetWorth)}`],
+                ['Guaranteed Amount Limit', `₹${formatNumberIN(item.guaranteedAmountLimit)}`],
               ].map(([label, value], idx) => (
                 <Grid container key={idx} sx={{ mb: 1 }}>
                   <Grid item xs={7}>

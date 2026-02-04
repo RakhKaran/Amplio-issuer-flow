@@ -54,10 +54,8 @@ export default function ReviewAndSubmitPage({ formData }) {
           </Typography>
         </Stack>
         <KycDetailsPage />
-        <ReviewBusinessProfilePage
-          data={formData.business_Profile_Finance?.businessProfile}
-        />
-        <CollateralAssetsPage data = {formData.collateral_assets_verification} />
+        <ReviewBusinessProfilePage/>
+        <CollateralAssetsPage/>
         <GuarantorDetailsPage data={formData.guarantor_details} />
         {/* <ClientSummary data={formData.client_details} /> */}
 

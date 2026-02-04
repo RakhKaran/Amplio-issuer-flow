@@ -55,7 +55,7 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
 
         <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+        {/* <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack direction="row" spacing={2}>
             <Button
               variant="contained"
@@ -82,7 +82,7 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
           >
             Next
           </Button>
-        </Stack>
+        </Stack> */}
       </DialogContent>
     </Dialog>
   );

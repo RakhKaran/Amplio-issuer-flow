@@ -6,6 +6,7 @@ import {
   IconButton,
   Chip,
 } from "@mui/material";
+import { useGetBusinessKycStepData } from "src/api/businessKyc";
 import Iconify from "src/components/iconify";
 import { formatNumberIN } from "src/utils/change-case";
 
@@ -39,15 +40,31 @@ const financialDocuments = [
   },
 ];
 
-export default function ReviewBusinessProfilePage({ data }) {
-  const profile = data?.data || {};
+export default function ReviewBusinessProfilePage() {
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData('business_profile');
 
+  const profileData = stepData?.data[0];
   const businessProfileRows = [
-    { label: "Years in Business", value: `${profile?.yearsInBusiness} years` },
-    { label: "FY24 Turnover (Audited)", value: `₹${formatNumberIN(profile?.lastYearTurnover)}` },
-    { label: "FY25 Projected Turnover", value: `₹${formatNumberIN(profile?.projectedTurnover)}` },
-    { label: "EBITDA Margin (%)", value: `${profile?.ebitdaMargin} %` },
+    {
+      label: "Years in Business",
+      value: profileData?.yearInBusiness
+        ? `${profileData.yearInBusiness} years`
+        : '—',
+    },
+    {
+      label: "FY24 Turnover (Audited)",
+      value: profileData?.turnover
+        ? `₹${formatNumberIN(profileData.turnover)}`
+        : '—',
+    },
+    {
+      label: "FY25 Projected Turnover",
+      value: profileData?.projectedTurnover
+        ? `₹${formatNumberIN(profileData.projectedTurnover)}`
+        : '—',
+    },
   ];
+
   return (
     <>
       <Box mb={2} mt={2} display="flex" justifyContent="center">
