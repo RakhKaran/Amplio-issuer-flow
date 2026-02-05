@@ -41,6 +41,7 @@ export default function KYCStepperGuard({ children }) {
         const targetRoute = KYC_STAGE_ROUTE_MAP[stage];
 
         if (targetRoute) {
+          setChecked(true);
           router.replace(targetRoute);
           return;
         }
