@@ -29,7 +29,15 @@ export default function KycFlowGuard({ children }) {
 
         /* ---------- PENDING ---------- */
         if (state.currentStage === 'PENDING') {
+          setChecking(false);
           router.replace(paths.kyc.invoiceFinancing.pending);
+          return;
+        }
+
+        /* ---------- AGREEMENTS ---------- */
+        if (state.currentStage === 'AGREEMENTS') {
+          setChecking(false);
+          router.replace(paths.kyc.invoiceFinancing.agreements);
           return;
         }
 
