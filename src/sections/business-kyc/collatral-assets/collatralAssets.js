@@ -229,41 +229,64 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
   }, [ownershipTypes, ownershipTypesLoading]);
 
   useEffect(() => {
-    if (!stepData || stepDataLoading) return;
+  if (!stepData || stepDataLoading) return;
 
-    const apiAssets = stepData?.data ?? [];
-    if (!apiAssets.length) {
-      percent?.(0);
-    } else {
-      percent?.(100); // trust backend
-    }
+  const apiAssets = stepData?.data ?? [];
 
-    const mappedAssets = apiAssets.map((asset) => ({
-      collateralType: asset.collateralTypesId ?? '',
-      chargeType: asset.chargeTypesId ?? '',
-      ownershipType: asset.ownershipTypesId ?? '',
-      description: asset.description ?? '',
-      estimatedValue: asset.estimatedValue ?? '',
-      valuationDate: asset.valuationDate ? new Date(asset.valuationDate) : null,
-      trustName: asset.trustName ?? '',
-      securityDocRef: asset.securityDocumentRef ?? '',
-      securityDocument: asset.securityDocument
-        ? {
-            id: asset.securityDocument.id,
-            fileOriginalName: asset.securityDocument.fileOriginalName,
-            fileUrl: asset.securityDocument.fileUrl,
-          }
-        : null,
-      assetCoverCertificate: null,
-      valuationReport: null,
-      remark: asset.remark ?? '',
-    }));
+  // ✅ if API empty → keep ONE default form
+  if (apiAssets.length === 0) {
+    reset({
+      collateralAssets: [
+        {
+          collateralType: '',
+          chargeType: '',
+          ownershipType: '',
+          description: '',
+          estimatedValue: '',
+          valuationDate: null,
+          trustName: '',
+          securityDocRef: '',
+          securityDocument: null,
+          assetCoverCertificate: null,
+          valuationReport: null,
+          remark: '',
+        },
+      ],
+    });
 
-    reset({ collateralAssets: mappedAssets });
-
-    // ✅ IMPORTANT: recalc percent AFTER reset
+    percent?.(0);
     isInitialLoad.current = false;
-  }, [stepData, stepDataLoading]);
+    return;
+  }
+
+  // ✅ if API has data → map & show
+  const mappedAssets = apiAssets.map((asset) => ({
+    collateralType: asset.collateralTypesId ?? '',
+    chargeType: asset.chargeTypesId ?? '',
+    ownershipType: asset.ownershipTypesId ?? '',
+    description: asset.description ?? '',
+    estimatedValue: asset.estimatedValue ?? '',
+    valuationDate: asset.valuationDate ? new Date(asset.valuationDate) : null,
+    trustName: asset.trustName ?? '',
+    securityDocRef: asset.securityDocumentRef ?? '',
+    securityDocument: asset.securityDocument
+      ? {
+          id: asset.securityDocument.id,
+          fileOriginalName: asset.securityDocument.fileOriginalName,
+          fileUrl: asset.securityDocument.fileUrl,
+        }
+      : null,
+    assetCoverCertificate: null,
+    valuationReport: null,
+    remark: asset.remark ?? '',
+  }));
+
+  reset({ collateralAssets: mappedAssets });
+  percent?.(100);
+
+  isInitialLoad.current = false;
+}, [stepData, stepDataLoading]);
+
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>

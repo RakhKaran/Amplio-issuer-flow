@@ -137,9 +137,7 @@ export default function CollateralAssetsPage() {
         {clients.slice(0, visibleCount).map((item, index) => (
           <Grid item xs={12} md={6} key={index}>
             <Card sx={{ p: 3 }}>
-              <Grid container justifyContent="space-between" alignItems="flex-start" mb={2}>
-                <Typography fontWeight={600}>Collateral & Asset Details</Typography>
-
+              <Grid container justifyContent="flex-end" alignItems="flex-end" mb={2}>
                 <Box display="flex" flexDirection="row" alignItems="flex-end" gap={0.5}>
                   <Chip
                     size="small"

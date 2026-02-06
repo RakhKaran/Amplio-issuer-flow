@@ -483,7 +483,7 @@ export default function AuditedGST3B({
                     </Typography>
                   ) : (
                     <Typography variant="body2">
-                      {doc.file.fileName || doc.file.fileOriginalName}
+                      {doc.file.fileOriginalName}
                     </Typography>
                   )}
                 </Box>
@@ -720,7 +720,7 @@ export default function AuditedGST3B({
                     </label>
                   ) : (
                     <Typography variant="body2" sx={{ flexGrow: 1, mr: 1 }}>
-                      {doc.file.fileName || doc.file.fileOriginalName}
+                      {doc.file.fileOriginalName}
                     </Typography>
                   )}
                   <Box sx={{ display: 'flex', gap: 1 }}>

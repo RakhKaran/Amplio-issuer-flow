@@ -68,7 +68,7 @@ export default function Initial() {
             mb: 2,
           }}
         >
-          upload document and clients and get financed faster and security
+          Upload document and clients and get financed faster and security
         </Typography>
 
         {/* Iconify Icons */}
