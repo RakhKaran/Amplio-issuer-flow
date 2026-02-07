@@ -34,33 +34,6 @@ export default function ESignVerify() {
     }
   };
 
-  // const handleVerify = async () => {
-  //   const enteredOtp = otp.join('');
-
-  //   if (enteredOtp.length !== OTP_LENGTH) {
-  //     setErrorMsg(`Enter all ${OTP_LENGTH} digits`);
-  //     return;
-  //   }
-
-  //   setErrorMsg('');
-  //   setVerifying(true);
-
-  //   try {
-  //     await axiosInstance.post('/auth/verify-esign-otp', {
-  //       otp: enteredOtp,
-  //     });
-
-  //     enqueueSnackbar('OTP verified successfully', { variant: 'success' });
-
-  //     // TODO: Proceed with E-sign flow here
-  //     setOpenSuccessDialog(true);
-  //   } catch (err) {
-  //     enqueueSnackbar(err?.response?.data?.message || 'Invalid OTP', { variant: 'error' });
-  //   } finally {
-  //     setVerifying(false);
-  //   }
-  // };
-
   const handleVerify = async () => {
     const enteredOtp = otp.join('');
 
@@ -70,33 +43,45 @@ export default function ESignVerify() {
     }
 
     setErrorMsg('');
+    setVerifying(true);
 
-    // 🔐 Hardcoded OTP check
-    if (enteredOtp !== '1234') {
-      enqueueSnackbar('Invalid OTP', { variant: 'error' });
-      return;
+    try {
+      await axiosInstance.post('/auth/company-esign/verify-otp', {
+        otp: enteredOtp,
+      });
+
+      enqueueSnackbar('OTP verified successfully', {
+        variant: 'success',
+      });
+
+      setOpenSuccessDialog(true);
+    } catch (error) {
+      enqueueSnackbar(error?.error?.message || 'Invalid OTP', { variant: 'error' });
+    } finally {
+      setVerifying(false);
     }
-
-    // ✅ OTP is correct
-    enqueueSnackbar('OTP verified successfully', { variant: 'success' });
-    setOpenSuccessDialog(true);
   };
 
   const handleResendOtp = async () => {
     try {
-      await axiosInstance.post('/auth/resend-esign-otp');
+      await axiosInstance.post('/auth/company-esign/send-otp');
 
-      enqueueSnackbar('OTP resent successfully', { variant: 'success' });
+      enqueueSnackbar('OTP resent successfully', {
+        variant: 'success',
+      });
 
       setOtp(Array(OTP_LENGTH).fill(''));
       setTimer(RESEND_TIME);
       setCanResend(false);
 
       otpRefs.current[0]?.focus();
-    } catch (err) {
-      enqueueSnackbar(err?.response?.data?.message || 'Failed to resend OTP', { variant: 'error' });
+    } catch (error) {
+      enqueueSnackbar(error?.error?.message || 'Failed to resend OTP', {
+        variant: 'error',
+      });
     }
   };
+
   useEffect(() => {
     if (timer === 0) {
       setCanResend(true);

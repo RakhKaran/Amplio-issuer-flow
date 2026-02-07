@@ -13,9 +13,9 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import { enqueueSnackbar } from 'notistack';
 
 export default function PlatformAgreement({ document, onNext }) {
-
   // ✅ Validation Schema
   const AgreementSchema = Yup.object().shape({
     agreement: Yup.boolean().oneOf(
@@ -38,18 +38,24 @@ export default function PlatformAgreement({ document, onNext }) {
 
   const onSubmit = () => {
     onNext?.(); // move to next document / eSign
+    enqueueSnackbar('Agreement accepted successfully', {
+      variant: 'success',
+    });
   };
 
   return (
     <Container maxWidth="md">
-      <Typography variant="h5" align="center" sx={{ mb: 3, fontWeight: 600 }}>
-        {document.title}
+      <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
+        {document?.title}
+      </Typography>
+      <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
+        {document?.subtitle}
       </Typography>
 
       <Card sx={{ height: '75vh', mb: 3 }}>
         <Box
           component="iframe"
-          src={document.pdfUrl}
+          src={document?.pdfUrl}
           width="100%"
           height="100%"
           sx={{ border: 'none' }}
@@ -59,7 +65,6 @@ export default function PlatformAgreement({ document, onNext }) {
       {/* FORM */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={3} alignItems="center">
-
           {/* Checkbox Container */}
           <Controller
             name="agreement"
@@ -68,22 +73,15 @@ export default function PlatformAgreement({ document, onNext }) {
               <Box
                 sx={{
                   width: '100%',
-                  backgroundColor: '#eef2f6',
+                  backgroundColor: 'primary.lighter',
                   borderRadius: 1.5,
-                  border: errors.agreement
-                    ? '1px solid #d32f2f'
-                    : '1px solid #cfd8dc',
+                  border: errors.agreement ? '1px solid #d32f2f' : '1px solid #cfd8dc',
                   px: 2,
                   py: 1.2,
                 }}
               >
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      {...field}
-                      checked={field.value}
-                    />
-                  }
+                  control={<Checkbox {...field} checked={field.value} />}
                   label={
                     <Box>
                       <Typography fontWeight={600}>
@@ -98,9 +96,7 @@ export default function PlatformAgreement({ document, onNext }) {
                 />
 
                 {errors.agreement && (
-                  <FormHelperText error>
-                    {errors.agreement.message}
-                  </FormHelperText>
+                  <FormHelperText error>{errors.agreement.message}</FormHelperText>
                 )}
               </Box>
             )}
@@ -119,7 +115,6 @@ export default function PlatformAgreement({ document, onNext }) {
           >
             Next
           </Button>
-
         </Stack>
       </form>
     </Container>

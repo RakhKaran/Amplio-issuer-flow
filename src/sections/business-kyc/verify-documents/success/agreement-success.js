@@ -1,11 +1,20 @@
 import { Dialog, DialogContent, Typography, Box, Stack, Button, Divider } from '@mui/material';
 import Iconify from 'src/components/iconify';
+import { useRouter } from 'src/routes/hook';
+import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
 
 export default function AgreementSuccessDialog({ open, onClose }) {
+  const router = useRouter();
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={(event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        onClose?.();
+      }}
+      disableEscapeKeyDown
       maxWidth="sm"
       fullWidth
       PaperProps={{
@@ -30,7 +39,9 @@ export default function AgreementSuccessDialog({ open, onClose }) {
               <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
                 Signed on
               </Typography>
-              <Typography variant="body1" color="text.primary" sx={{ fontWeight: 600 }}>Aadhaar OTP & Email OTP</Typography>
+              <Typography variant="body1" color="text.primary" sx={{ fontWeight: 600 }}>
+                Aadhaar OTP & Email OTP
+              </Typography>
             </Stack>
 
             <Stack direction="row" justifyContent="space-between">
@@ -59,7 +70,7 @@ export default function AgreementSuccessDialog({ open, onClose }) {
           <Stack direction="row" spacing={2}>
             <Button
               variant="contained"
-              color='primary'
+              color="primary"
               startIcon={<Iconify icon="mdi:eye-outline" />}
               sx={{ borderRadius: 20, px: 3 }}
             >
@@ -79,6 +90,10 @@ export default function AgreementSuccessDialog({ open, onClose }) {
             variant="text"
             endIcon={<Iconify icon="mdi:arrow-right" />}
             sx={{ fontWeight: 600 }}
+            onClick={() => {
+              onClose?.();
+              router.push(KYC_STAGE_ROUTE_MAP.ROC);
+            }}
           >
             Next
           </Button>

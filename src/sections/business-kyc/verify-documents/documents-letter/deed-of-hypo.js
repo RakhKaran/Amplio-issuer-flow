@@ -11,10 +11,15 @@ import {
   Checkbox,
   FormHelperText,
 } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
-export default function DeedOfHypo({ document }) {
+export default function DeedOfHypo({ document, onNext  }) {
+  const [sendingOtp, setSendingOtp] = useState(false);
+
   const AgreementSchema = Yup.object().shape({
     agreement: Yup.boolean().oneOf(
       [true],
@@ -34,19 +39,33 @@ export default function DeedOfHypo({ document }) {
     mode: 'onChange', // enables instant validation
   });
 
-  const onSubmit = () => {
-    // onNext?.(); // move to next document / eSign
-    console.log('Data submitted');
+  const onSubmit = async () => {
+    setSendingOtp(true);
+    try {
+      await axiosInstance.post('/auth/company-esign/send-otp');
+
+      enqueueSnackbar('OTP sent successfully', {
+        variant: 'success',
+      });
+
+      onNext();
+    } catch (err) {
+      enqueueSnackbar(err?.response?.data?.message || 'Failed to send OTP', { variant: 'error' });
+    }
   };
+
   return (
     <Container maxWidth="md">
-      <Typography variant="h5" align="center" sx={{ mb: 3, fontWeight: 600 }}>
-        {document.title}
+      <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
+        {document?.title}
+      </Typography>
+      <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
+        {document?.subtitle}
       </Typography>
       <Card sx={{ height: '75vh', mb: 4 }}>
         <Box
           component="iframe"
-          src={document.pdfUrl}
+          src={document?.pdfUrl}
           width="100%"
           height="100%"
           sx={{ border: 'none' }}
@@ -62,7 +81,7 @@ export default function DeedOfHypo({ document }) {
               <Box
                 sx={{
                   width: '100%',
-                  backgroundColor: '#eef2f6',
+                  backgroundColor: 'primary.lighter',
                   borderRadius: 1.5,
                   border: errors.agreement ? '1px solid #d32f2f' : '1px solid #cfd8dc',
                   px: 2,
@@ -91,12 +110,12 @@ export default function DeedOfHypo({ document }) {
             )}
           />
         </Stack>
+        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+          <Button type="submit" variant="contained" size="large" sx={{ px: 4, borderRadius: 2 }}>
+            {sendingOtp ? 'Sending OTP...' : 'Continue to E-Sign'}
+          </Button>
+        </Stack>
       </form>
-      <Stack direction="row" justifyContent="center">
-        <Button variant="contained" size="large" sx={{ px: 4, borderRadius: 2 }}>
-          Continue to E-Sign
-        </Button>
-      </Stack>
     </Container>
   );
 }

@@ -1,8 +1,10 @@
 import { Box, Button, Card, Container, Grid, Stack, Typography } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 
-export default function SanctionLetter({ data }) {
+export default function SanctionLetter({ document, onNext }) {
   const methods = useForm({
     defaultValues: {
       remark: '',
@@ -13,6 +15,9 @@ export default function SanctionLetter({ data }) {
 
   const onSubmit = (formData) => {
     console.log('Remarks:', formData);
+    enqueueSnackbar('Agreement accepted successfully', {
+      variant: 'success',
+    });
   };
 
   return (
@@ -23,10 +28,10 @@ export default function SanctionLetter({ data }) {
             Sanction Letter Preview
           </Typography>
         </Box>
-        <Card sx={{ p: 4, mt: 2 }}>
+        <Card sx={{ p: 4, mt: 2, height: '75vh' }}>
           <Box
             component="iframe"
-            src={document.pdfUrl}
+            src={document?.pdfUrl}
             width="100%"
             height="100%"
             sx={{ border: 'none' }}
@@ -71,7 +76,7 @@ export default function SanctionLetter({ data }) {
                 Submit Remarks
               </Button>
 
-              <Button variant="contained" color="primary">
+              <Button variant="contained" color="primary" onClick={onNext}>
                 Next
               </Button>
             </Stack>
@@ -81,3 +86,8 @@ export default function SanctionLetter({ data }) {
     </FormProvider>
   );
 }
+
+SanctionLetter.propTypes = {
+  onNext: PropTypes.func,
+  document: PropTypes.object,
+};

@@ -63,6 +63,7 @@ export const endpoints = {
     data: '/business-kyc/state',
     dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`,
     guarantors: '/business-kyc/guarantor-details',
+    agreements: '/business-kyc/agreements',
   },
 
 
