@@ -23,6 +23,7 @@ import { enqueueSnackbar } from 'notistack';
 
 import { useGetKycSection } from 'src/api/companyKyc';
 import { useGetDocumentsByScreen } from 'src/api/documentsByScreen';
+import { Card, Stack, Typography } from '@mui/material';
 
 // =====================================================================
 
@@ -150,11 +151,11 @@ export default function KYCCompanyDetails({
     initialValues.moaAoaType = filled[DOCUMENT_MAP.moa]
       ? 'moa'
       : filled[DOCUMENT_MAP.aoa]
-      ? 'aoa'
-      : 'moa';
+        ? 'aoa'
+        : 'moa';
 
     reset(initialValues);
-    if (!dataInitializedSteps.includes('kyc_company_documents')) {
+    if (!dataInitializedSteps?.includes('kyc_company_documents')) {
       setDataInitializedSteps();
       setActiveStepId();
     }
@@ -257,81 +258,109 @@ export default function KYCCompanyDetails({
   // =====================================================================
   return (
     <Container>
-      <KYCTitle title="Company Details" subtitle="Submit required company documents." />
-
-      <FormProvider methods={methods} onSubmit={onSubmit}>
-        <Paper sx={{ p: 3, mt: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* ================= COI ================= */}
-            <RHFCustomFileUploadBox
-              name="certificateOfIncorporation"
-              label="Certificate of Incorporation*"
-              icon="mdi:certificate-outline"
-              accept={{
-                'application/pdf': ['.pdf'],
-                'image/png': ['.png'],
-                'image/jpeg': ['.jpg', '.jpeg'],
-              }}
-            />
-
-            {/* ================= MOA / AOA TYPE ================= */}
-            <RHFSelect name="moaAoaType" label="Select Document Type">
-              <MenuItem value="moa">MoA - Memorandum of Association</MenuItem>
-              <MenuItem value="aoa">AoA - Articles of Association</MenuItem>
-            </RHFSelect>
-
-            {/* ================= MOA ================= */}
-            {moaAoaType === 'moa' && (
+      <Card
+        sx={{
+          p: 4,
+          borderRadius: 3,
+          width: '100%',
+          boxShadow: '0px 8px 25px rgba(0,0,0,0.08)',
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: 600,
+        }}
+      >
+        <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              color: '#206CFE',
+              textAlign: 'left',
+            }}
+          >
+            Company Details
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 500,
+              color: '#000000',
+              textAlign: 'left',
+            }}
+          >
+            Submit required company documents.
+          </Typography>
+        </Stack>
+        <FormProvider methods={methods} onSubmit={onSubmit}>
+          <Paper sx={{ p: 3, mt: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* ================= COI ================= */}
               <RHFCustomFileUploadBox
-                name="moaDocument"
-                label="MoA - Memorandum of Association*"
-                icon="mdi:file-document-edit-outline"
+                name="certificateOfIncorporation"
+                label="Certificate of Incorporation*"
+                icon="mdi:certificate-outline"
                 accept={{
                   'application/pdf': ['.pdf'],
                   'image/png': ['.png'],
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
               />
-            )}
 
-            {/* ================= AOA ================= */}
-            {moaAoaType === 'aoa' && (
+              {/* ================= MOA / AOA TYPE ================= */}
+              <RHFSelect name="moaAoaType" label="Select Document Type">
+                <MenuItem value="moa">MoA - Memorandum of Association</MenuItem>
+                <MenuItem value="aoa">AoA - Articles of Association</MenuItem>
+              </RHFSelect>
+
+              {/* ================= MOA ================= */}
+              {moaAoaType === 'moa' && (
+                <RHFCustomFileUploadBox
+                  name="moaDocument"
+                  label="MoA - Memorandum of Association*"
+                  icon="mdi:file-document-edit-outline"
+                  accept={{
+                    'application/pdf': ['.pdf'],
+                    'image/png': ['.png'],
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                  }}
+                />
+              )}
+
+              {/* ================= AOA ================= */}
+              {moaAoaType === 'aoa' && (
+                <RHFCustomFileUploadBox
+                  name="aoaDocument"
+                  label="AoA - Articles of Association*"
+                  icon="mdi:file-document-edit-outline"
+                  accept={{
+                    'application/pdf': ['.pdf'],
+                    'image/png': ['.png'],
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                  }}
+                />
+              )}
+
+              {/* ================= GST ================= */}
               <RHFCustomFileUploadBox
-                name="aoaDocument"
-                label="AoA - Articles of Association*"
-                icon="mdi:file-document-edit-outline"
+                name="gstCertificate"
+                label="GST Certificate*"
+                icon="mdi:earth"
                 accept={{
                   'application/pdf': ['.pdf'],
                   'image/png': ['.png'],
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
               />
-            )}
+            </Box>
+          </Paper>
 
-            {/* ================= GST ================= */}
-            <RHFCustomFileUploadBox
-              name="gstCertificate"
-              label="GST Certificate*"
-              icon="mdi:earth"
-              accept={{
-                'application/pdf': ['.pdf'],
-                'image/png': ['.png'],
-                'image/jpeg': ['.jpg', '.jpeg'],
-              }}
-            />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+              Next
+            </LoadingButton>
           </Box>
-        </Paper>
-
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-          <Button component={RouterLink} href={paths.kycBasicInfo} variant="outlined">
-            Back
-          </Button>
-
-          <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-            Next
-          </LoadingButton>
-        </Box>
-      </FormProvider>
+        </FormProvider>
+      </Card>
 
       <KYCFooter />
     </Container>

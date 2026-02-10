@@ -229,63 +229,63 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
   }, [ownershipTypes, ownershipTypesLoading]);
 
   useEffect(() => {
-  if (!stepData || stepDataLoading) return;
+    if (!stepData || stepDataLoading) return;
 
-  const apiAssets = stepData?.data ?? [];
+    const apiAssets = stepData?.data ?? [];
 
-  // ✅ if API empty → keep ONE default form
-  if (apiAssets.length === 0) {
-    reset({
-      collateralAssets: [
-        {
-          collateralType: '',
-          chargeType: '',
-          ownershipType: '',
-          description: '',
-          estimatedValue: '',
-          valuationDate: null,
-          trustName: '',
-          securityDocRef: '',
-          securityDocument: null,
-          assetCoverCertificate: null,
-          valuationReport: null,
-          remark: '',
-        },
-      ],
-    });
+    // ✅ if API empty → keep ONE default form
+    if (apiAssets.length === 0) {
+      reset({
+        collateralAssets: [
+          {
+            collateralType: '',
+            chargeType: '',
+            ownershipType: '',
+            description: '',
+            estimatedValue: '',
+            valuationDate: null,
+            trustName: '',
+            securityDocRef: '',
+            securityDocument: null,
+            assetCoverCertificate: null,
+            valuationReport: null,
+            remark: '',
+          },
+        ],
+      });
 
-    percent?.(0);
-    isInitialLoad.current = false;
-    return;
-  }
+      percent?.(0);
+      isInitialLoad.current = false;
+      return;
+    }
 
-  // ✅ if API has data → map & show
-  const mappedAssets = apiAssets.map((asset) => ({
-    collateralType: asset.collateralTypesId ?? '',
-    chargeType: asset.chargeTypesId ?? '',
-    ownershipType: asset.ownershipTypesId ?? '',
-    description: asset.description ?? '',
-    estimatedValue: asset.estimatedValue ?? '',
-    valuationDate: asset.valuationDate ? new Date(asset.valuationDate) : null,
-    trustName: asset.trustName ?? '',
-    securityDocRef: asset.securityDocumentRef ?? '',
-    securityDocument: asset.securityDocument
-      ? {
+    // ✅ if API has data → map & show
+    const mappedAssets = apiAssets.map((asset) => ({
+      collateralType: asset.collateralTypesId ?? '',
+      chargeType: asset.chargeTypesId ?? '',
+      ownershipType: asset.ownershipTypesId ?? '',
+      description: asset.description ?? '',
+      estimatedValue: asset.estimatedValue ?? '',
+      valuationDate: asset.valuationDate ? new Date(asset.valuationDate) : null,
+      trustName: asset.trustName ?? '',
+      securityDocRef: asset.securityDocumentRef ?? '',
+      securityDocument: asset.securityDocument
+        ? {
           id: asset.securityDocument.id,
           fileOriginalName: asset.securityDocument.fileOriginalName,
           fileUrl: asset.securityDocument.fileUrl,
         }
-      : null,
-    assetCoverCertificate: null,
-    valuationReport: null,
-    remark: asset.remark ?? '',
-  }));
+        : null,
+      assetCoverCertificate: null,
+      valuationReport: null,
+      remark: asset.remark ?? '',
+    }));
 
-  reset({ collateralAssets: mappedAssets });
-  percent?.(100);
+    reset({ collateralAssets: mappedAssets });
+    percent?.(100);
 
-  isInitialLoad.current = false;
-}, [stepData, stepDataLoading]);
+    isInitialLoad.current = false;
+  }, [stepData, stepDataLoading]);
 
 
   return (
@@ -422,6 +422,7 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
                   render={({ field, fieldState: { error } }) => (
                     <DatePicker
                       label="Valuation Date"
+                      format="dd/MM/yyyy"
                       value={
                         field.value
                           ? field.value instanceof Date
@@ -482,6 +483,7 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
           <Button
             type="button"
             variant="contained"
+            color="primary"
             onClick={() => handleAddAsset()}
             sx={{ color: '#fff' }}
           >
@@ -501,7 +503,8 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
             loading={isSubmitting}
             type="submit"
             variant="contained"
-            sx={{ color: '#fff' }}
+            color='primary'
+            
           >
             Save
           </LoadingButton>

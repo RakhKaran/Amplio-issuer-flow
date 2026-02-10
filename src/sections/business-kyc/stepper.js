@@ -10,6 +10,7 @@ import GuarantorListView from './guarantor/view/guarantor-list-view';
 import ReviewAndSubmitPage from './review & submit/review-and-submit';
 import { useGetBusinessKyc } from 'src/api/businessKyc';
 import { LoadingScreen } from 'src/components/loading-screen';
+import Logo from 'src/components/logo';
 
 export default function Stepper() {
   const { businessKyc, businessKycLoading } = useGetBusinessKyc();
@@ -29,37 +30,37 @@ export default function Stepper() {
   });
 
   useEffect(() => {
-  if (!businessKyc) return;
+    if (!businessKyc) return;
 
-  const STEP_MAP = {
-    business_profile: 'business_Profile_Finance',
-    audited_financials: 'business_Profile_Finance',
-    collateral_assets: 'collateral_assets_verification',
-    guarantor_details: 'guarantor_details',
-    review_and_submit: 'review_and_submit',
-  };
+    const STEP_MAP = {
+      business_profile: 'business_Profile_Finance',
+      audited_financials: 'business_Profile_Finance',
+      collateral_assets: 'collateral_assets_verification',
+      guarantor_details: 'guarantor_details',
+      review_and_submit: 'review_and_submit',
+    };
 
-  // ✅ Set Active Step
-  const activeCode = businessKyc?.activeStep?.code;
+    // ✅ Set Active Step
+    const activeCode = businessKyc?.activeStep?.code;
 
-  if (activeCode && STEP_MAP[activeCode]) {
-    setActiveStepId(STEP_MAP[activeCode]);
-  }
+    if (activeCode && STEP_MAP[activeCode]) {
+      setActiveStepId(STEP_MAP[activeCode]);
+    }
 
-  // ✅ Mark Completed Steps
-  if (Array.isArray(businessKyc.completedSteps)) {
-    setStepsProgress((prev) => {
-      const updated = { ...prev };
+    // ✅ Mark Completed Steps
+    if (Array.isArray(businessKyc.completedSteps)) {
+      setStepsProgress((prev) => {
+        const updated = { ...prev };
 
-      businessKyc.completedSteps.forEach((step) => {
-        const mapped = STEP_MAP[step.code];
-        if (mapped) updated[mapped] = { percent: 100 };
+        businessKyc.completedSteps.forEach((step) => {
+          const mapped = STEP_MAP[step.code];
+          if (mapped) updated[mapped] = { percent: 100 };
+        });
+
+        return updated;
       });
-
-      return updated;
-    });
-  }
-}, [businessKyc]);
+    }
+  }, [businessKyc]);
 
 
   if (businessKycLoading) {
@@ -241,6 +242,16 @@ export default function Stepper() {
 
   return (
     <Box sx={{ p: 3 }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <ProgressStepper
         steps={steps}
         activeStepId={activeStepId}

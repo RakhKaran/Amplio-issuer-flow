@@ -1,7 +1,8 @@
-import { Card, Typography, Stack, Container, Button } from '@mui/material';
+import { Card, Typography, Stack, Container, Button, Box } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import Iconify from 'src/components/iconify';
+import Logo from 'src/components/logo';
 import { useSnackbar } from 'src/components/snackbar';
 import { paths } from 'src/routes/paths';
 import axiosInstance from 'src/utils/axios';
@@ -38,6 +39,16 @@ export default function Initial() {
 
   return (
     <Container maxWidth="md">
+         <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <Card
         sx={{
           mt: 10,

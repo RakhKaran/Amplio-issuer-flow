@@ -125,11 +125,11 @@ export default function AuditedIncomeTaxReturn({
         prev.map((doc) =>
           doc.id === id
             ? {
-                ...doc,
-                file: uploadedFile,
-                status: 'Uploaded',
-                reportDate: new Date(),
-              }
+              ...doc,
+              file: uploadedFile,
+              status: 'Uploaded',
+              reportDate: new Date(),
+            }
             : doc
         )
       );
@@ -144,9 +144,23 @@ export default function AuditedIncomeTaxReturn({
   };
 
   const handleDelete = (id) => {
-    setDocuments((docs) =>
-      docs.map((d) => (d.id === id ? { ...d, file: null, status: 'Pending', reportDate: null } : d))
+    setDocuments(docs =>
+      docs.map(d =>
+        d.id === id
+          ? { ...d, file: null, status: 'Pending', reportDate: null }
+          : d
+      )
     );
+  };
+
+
+  const handleViewFile = (file) => {
+    if (!file?.fileUrl) {
+      enqueueSnackbar('File URL not available', { variant: 'warning' });
+      return;
+    }
+
+    window.open(file.fileUrl, '_blank', 'noopener,noreferrer');
   };
 
   const validateBeforeSubmit = () => {
@@ -229,7 +243,7 @@ export default function AuditedIncomeTaxReturn({
 
       enqueueSnackbar(
         error?.response?.data?.error?.message ||
-          'Something went wrong while saving audited financials',
+        'Something went wrong while saving audited financials',
         { variant: 'error' }
       );
     }
@@ -327,6 +341,7 @@ export default function AuditedIncomeTaxReturn({
                     borderColor: 'divider',
                     display: 'flex',
                     alignItems: 'center',
+                    minWidth: 0,
                     '&:last-child': {
                       borderRight: 'none',
                       justifyContent: 'center',
@@ -367,7 +382,16 @@ export default function AuditedIncomeTaxReturn({
                       Not Uploaded
                     </Typography>
                   ) : (
-                    <Typography variant="body2">
+                    <Typography
+                      variant="body2"
+                      title={doc.file.fileOriginalName || doc.file.fileName}
+                      sx={{
+                        maxWidth: '100%',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {doc.file.fileOriginalName || doc.file.fileName}
                     </Typography>
                   )}
@@ -393,6 +417,7 @@ export default function AuditedIncomeTaxReturn({
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box
@@ -428,7 +453,7 @@ export default function AuditedIncomeTaxReturn({
 
                 <Box sx={{ gap: 1, display: 'flex' }}>
                   {doc.file && (
-                    <IconButton size="small" color="primary">
+                    <IconButton size="small" color="primary" onClick={() => handleViewFile(doc.file)}>
                       <Iconify icon="solar:eye-bold" width={20} />
                     </IconButton>
                   )}
@@ -436,6 +461,8 @@ export default function AuditedIncomeTaxReturn({
                     <input
                       id={`file-upload-${doc.id}`}
                       type="file"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
                       style={{ display: 'none' }}
                       onChange={(e) => handleFileUpload(e, doc.id)}
                       key={doc.id}
@@ -547,6 +574,7 @@ export default function AuditedIncomeTaxReturn({
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -597,6 +625,8 @@ export default function AuditedIncomeTaxReturn({
                       <input
                         id={`mobile-file-upload-${doc.id}`}
                         type="file"
+                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
                         style={{ display: 'none' }}
                         onChange={(e) => handleFileUpload(e, doc.id)}
                       />

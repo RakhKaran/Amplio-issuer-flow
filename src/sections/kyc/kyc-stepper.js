@@ -9,6 +9,7 @@ import { paths } from 'src/routes/paths';
 import KYCSignatories from './kyc-signatories';
 import KYCCompanyDetails from './kyc-company-details';
 import KYCBankDetails from './kyc-bank-details';
+import Logo from 'src/components/logo';
 
 export default function Stepper() {
   const router = useRouter();
@@ -89,6 +90,17 @@ export default function Stepper() {
 
   return (
     <Box sx={{ p: 3 }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
+
       <ProgressStepper
         steps={steps}
         activeStepId={activeStepId}

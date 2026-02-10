@@ -138,15 +138,7 @@ export default function CustomUploadBox({
                                 </Typography>}
                             </Box>
                             {/* MAX SIZE */}
-                            <Typography variant="caption" color="text.disabled">
-                                Max size: {maxSizeMB} MB
-                            </Typography>
 
-                            {supportedFormats && (
-                                <Typography variant="caption" color="text.secondary">
-                                    Supported: {supportedFormats}
-                                </Typography>
-                            )}
                         </Stack>
                     </Grid>
 
@@ -170,6 +162,16 @@ export default function CustomUploadBox({
                         <Typography variant="caption" color="text.disabled">
                             or click to browse
                         </Typography>
+
+                        <Typography variant="caption" color="text.disabled">
+                            Max size: {maxSizeMB} MB
+                        </Typography>
+
+                        {supportedFormats && (
+                            <Typography variant="caption" color="text.secondary">
+                                Supported: {supportedFormats}
+                            </Typography>
+                        )}
 
                         {/* UPLOAD PROGRESS */}
                         {uploadProgress > 0 && (

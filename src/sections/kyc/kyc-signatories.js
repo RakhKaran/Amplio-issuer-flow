@@ -27,6 +27,8 @@ import KYCTitle from './kyc-title';
 import KYCFooter from './kyc-footer';
 import KYCAddSignatoriesForm from './kyc-add-signatories-form';
 import { useGetSignatories } from 'src/api/companyKyc';
+import { Card } from '@mui/material';
+import { TableNoData } from 'src/components/table';
 
 // ----------------------------------------------------------------------
 
@@ -75,6 +77,8 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
     )
   );
 
+  const format = 'dd/MM/yyyy'
+
   useEffect(() => {
     if (!loading && signatories && signatories.length >= 1) {
       percent(100);
@@ -85,172 +89,208 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
     refreshSignatories();
   }, []);
 
+  const notFound =
+    !loading &&
+    (signatories.length === 0 || filteredRows.length === 0);
+
   return (
     <Container sx={{ position: 'relative', py: { xs: 6, sm: 8, md: 10 } }}>
-      <KYCTitle
-        title="Authorized Signatories"
-        subtitle={'Add director and authorized signatories for your company'}
-      />
-
-      <Box
+      <Card
         sx={{
-          boxShadow: '0px 0px 12px 0px #00000040',
-          p: { xs: 2, sm: 3, md: 4 },
-          borderRadius: '23px',
+          p: 4,
+          borderRadius: 3,
+          width: '100%',
+          boxShadow: '0px 8px 25px rgba(0,0,0,0.08)',
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: 600,
         }}
       >
+        <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              color: '#206CFE',
+              textAlign: 'left',
+            }}
+          >
+            Authorized Signatories
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 500,
+              color: '#000000',
+              textAlign: 'left',
+            }}
+          >
+            Add director and authorized signatories for your company.
+          </Typography>
+        </Stack>
+
         <Box
           sx={{
-            mb: 5,
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'space-between',
-            alignItems: { xs: 'stretch', sm: 'center' },
-            gap: { xs: 2, sm: 0 },
-            //   boxShadow: '0px 0px 12px 0px #00000040',
-            // p: { xs: 2, sm: 3, md: 4 },
-            // borderRadius: '23px',
+            boxShadow: '0px 0px 3px 0px #00000040',
+            p: { xs: 2, sm: 3, md: 4 },
+            borderRadius: '23px',
           }}
         >
-          <Typography variant="h4" sx={{ mb: { xs: 1, sm: 0 } }}>
-            Add Signatories
-          </Typography>
           <Box
             sx={{
+              mb: 5,
               display: 'flex',
               flexDirection: { xs: 'column', sm: 'row' },
-              gap: 2,
-              width: { xs: '100%', sm: 'auto' },
+              justifyContent: 'space-between',
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: { xs: 2, sm: 0 },
+              //   boxShadow: '0px 0px 12px 0px #00000040',
+              // p: { xs: 2, sm: 3, md: 4 },
+              // borderRadius: '23px',
             }}
           >
-            <StyledSearch
-              placeholder="Search signatories..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ width: { xs: '100%', sm: 300 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="eva:plus-fill" />}
-              onClick={handleOpen}
+            <Typography variant="h4" sx={{ mb: { xs: 1, sm: 0 } }}>
+              Add Signatories
+            </Typography>
+            <Box
               sx={{
-                height: 40,
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
                 width: { xs: '100%', sm: 'auto' },
-                order: { xs: -1, sm: 1 },
               }}
             >
-              Add Signatory
-            </Button>
+              <StyledSearch
+                placeholder="Search signatories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{ width: { xs: '100%', sm: 300 } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                variant="contained"
+                startIcon={<Iconify icon="eva:plus-fill" />}
+                onClick={handleOpen}
+                sx={{
+                  height: 40,
+                  width: { xs: '100%', sm: 'auto' },
+                  order: { xs: -1, sm: 1 },
+                }}
+              >
+                Add Signatory
+              </Button>
 
-            <KYCAddSignatoriesForm
-              open={open}
-              onClose={handleClose}
-              onSuccess={() => {
-                refreshSignatories();
-                setOpen(false);
+              <KYCAddSignatoriesForm
+                open={open}
+                onClose={handleClose}
+                onSuccess={() => {
+                  refreshSignatories();
+                  setOpen(false);
+                }}
+              />
+            </Box>
+          </Box>
+          <TableContainer component={Paper} sx={{ mb: 5 }}>
+            <Table sx={{ minWidth: 650 }} aria-label="signatories table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell align="left">Role</TableCell>
+                  <TableCell align="left">Email</TableCell>
+                  <TableCell align="left">Phone</TableCell>
+                  <TableCell align="left">DOB</TableCell>
+                  <TableCell align="left">PAN</TableCell>
+                  <TableCell align="left">Board Resolution</TableCell>
+                  <TableCell align="left">Status</TableCell>
+                  {/* <TableCell align="right">Actions</TableCell> */}
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {filteredRows.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{row.fullName}</TableCell>
+
+                    <TableCell>{row.designationValue}</TableCell>
+
+                    <TableCell>{row.email}</TableCell>
+
+                    <TableCell>{row.phone}</TableCell>
+
+                    <TableCell>
+                      {row.submittedDateOfBirth
+                        ? new Date(row.submittedDateOfBirth).toLocaleDateString()
+                        : '-'}
+                    </TableCell>
+
+                    {/* PAN */}
+                    <TableCell>
+                      {row.panCardFile?.fileUrl ? (
+                        <a
+                          href={row.panCardFile.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#1976d2', textDecoration: 'underline' }}
+                        >
+                          View
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+
+                    {/* Board Resolution */}
+                    <TableCell>
+                      {row.boardResolutionFile?.fileUrl ? (
+                        <a
+                          href={row.boardResolutionFile.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#1976d2', textDecoration: 'underline' }}
+                        >
+                          View
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell>{row.status === 1 ? 'Verified' : 'Pending'}</TableCell>
+
+                    {/* Actions */}
+                    {/* <TableCell align="right">
+                      <IconButton color="error">
+                        <Iconify icon="eva:trash-2-outline" />
+                      </IconButton>
+                    </TableCell> */}
+                  </TableRow>
+                ))}
+
+                <TableNoData notFound={notFound} />
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box sx={{ textAlign: 'right', mt: 3 }}>
+            <Button
+              variant="contained"
+              disabled={signatories.length < 1}
+              onClick={() => {
+                percent(100);
+                setActiveStepId();
               }}
-            />
+            >
+              Next
+            </Button>
           </Box>
         </Box>
-        <TableContainer component={Paper} sx={{ mb: 5 }}>
-          <Table sx={{ minWidth: 650 }} aria-label="signatories table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell align="left">Role</TableCell>
-                <TableCell align="left">Email</TableCell>
-                <TableCell align="left">Phone</TableCell>
-                <TableCell align="left">DOB</TableCell>
-                <TableCell align="left">PAN</TableCell>
-                <TableCell align="left">Board Resolution</TableCell>
-                <TableCell align="left">Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {filteredRows.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>{row.fullName}</TableCell>
-
-                  <TableCell>{row.designationValue}</TableCell>
-
-                  <TableCell>{row.email}</TableCell>
-
-                  <TableCell>{row.phone}</TableCell>
-
-                  <TableCell>
-                    {row.submittedDateOfBirth
-                      ? new Date(row.submittedDateOfBirth).toLocaleDateString()
-                      : '-'}
-                  </TableCell>
-
-                  {/* PAN */}
-                  <TableCell>
-                    {row.panCardFile?.fileUrl ? (
-                      <a
-                        href={row.panCardFile.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#1976d2', textDecoration: 'underline' }}
-                      >
-                        View
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-
-                  {/* Board Resolution */}
-                  <TableCell>
-                    {row.boardResolutionFile?.fileUrl ? (
-                      <a
-                        href={row.boardResolutionFile.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#1976d2', textDecoration: 'underline' }}
-                      >
-                        View
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-
-                  {/* Status */}
-                  <TableCell>{row.status === 1 ? 'Verified' : 'Pending'}</TableCell>
-
-                  {/* Actions */}
-                  <TableCell align="right">
-                    <IconButton color="error">
-                      <Iconify icon="eva:trash-2-outline" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Box sx={{ textAlign: 'right', mt: 3 }}>
-          <Button
-            variant="contained"
-            disabled={signatories.length < 1}
-            onClick={() => {
-              percent(100);
-              setActiveStepId();
-            }}
-          >
-            Next
-          </Button>
-        </Box>
-      </Box>
+      </Card>
       <KYCFooter />
     </Container>
   );

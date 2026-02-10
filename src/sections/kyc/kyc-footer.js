@@ -73,8 +73,18 @@ export default function KYCFooter() {
               Email support@domain.com
             </Link>
           </Box>
+         
         </Stack>
+      
       </Stack>
+         <Typography
+        variant="body2"
+        color="text.secondary"
+        align="center"
+        sx={{ mt: 4 }}
+      >
+        © 2026 InvoiceDiscounting. All rights reserved.
+      </Typography>
     </Container>
   );
 }

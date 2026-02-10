@@ -74,7 +74,7 @@ export default function ReviewAndSubmitPage({ formData }) {
         <KycDetailsPage />
         <ReviewBusinessProfilePage />
         <CollateralAssetsPage />
-        <GuarantorDetailsPage data={formData.guarantor_details} />
+        <GuarantorDetailsPage onEdit={null}  />
         {/* <ClientSummary data={formData.client_details} /> */}
 
         <Box mt={5} display="flex" flexDirection="column" alignItems="center">

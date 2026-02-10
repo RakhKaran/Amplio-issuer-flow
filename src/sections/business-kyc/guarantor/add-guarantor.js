@@ -331,11 +331,27 @@ export default function AddGuarantorForm({
           }}
         >
           <Grid container spacing={3} mt={1}>
+
+            <Grid item xs={12} md={6}>
+              <RHFSelect
+                name="guarantorType"
+                label="Guarantor Type*"
+                // disabled={isViewMode}
+                InputLabelProps={{ shrink: true }}
+              >
+                {guarantorType.map((role) => (
+                  <MenuItem key={role.value} value={role.value}>
+                    {role.label}
+                  </MenuItem>
+                ))}
+              </RHFSelect>
+            </Grid>
+
             {/* Row 1 */}
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="guarantorName"
-                label="Name*"
+                label="Company Name*"
                 InputLabelProps={{ shrink: true }}
               // disabled={isViewMode}
               />
@@ -373,20 +389,6 @@ export default function AddGuarantorForm({
             </Grid>
 
             {/* Row 3 */}
-            <Grid item xs={12} md={6}>
-              <RHFSelect
-                name="guarantorType"
-                label="Guarantor Type*"
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
-              >
-                {guarantorType.map((role) => (
-                  <MenuItem key={role.value} value={role.value}>
-                    {role.label}
-                  </MenuItem>
-                ))}
-              </RHFSelect>
-            </Grid>
 
             <Grid item xs={12} md={6}>
               <RHFPriceField
@@ -405,6 +407,22 @@ export default function AddGuarantorForm({
                 InputLabelProps={{ shrink: true }}
               // disabled={isViewMode}
               />
+            </Grid>
+
+            {/* Full width uploads */}
+            <Grid item xs={12}>
+              <RHFCustomFileUploadBox
+                name="panCardFile"
+                label="Upload PAN Card*"
+                accept={{
+                  'application/pdf': ['.pdf'],
+                  'image/png': ['.png'],
+                  'image/jpeg': ['.jpg', '.jpeg'],
+                }}
+                fullWidth
+              // disabled={isViewMode}
+              />
+              {getErrorMessage('panCardFile')}
             </Grid>
 
             <Grid item xs={12} md={6}>
@@ -428,32 +446,6 @@ export default function AddGuarantorForm({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="adharNumber"
-                label="Aadhaar Number*"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ maxLength: 12 }}
-              // disabled={isViewMode}
-              />
-            </Grid>
-
-            {/* Full width uploads */}
-            <Grid item xs={12}>
-              <RHFCustomFileUploadBox
-                name="panCardFile"
-                label="Upload PAN Card*"
-                accept={{
-                  'application/pdf': ['.pdf'],
-                  'image/png': ['.png'],
-                  'image/jpeg': ['.jpg', '.jpeg'],
-                }}
-                fullWidth
-              // disabled={isViewMode}
-              />
-              {getErrorMessage('panCardFile')}
-            </Grid>
-
             <Grid item xs={12}>
               <RHFCustomFileUploadBox
                 name="adharCardFile"
@@ -467,6 +459,16 @@ export default function AddGuarantorForm({
               // disabled={isViewMode}
               />
               {getErrorMessage('adharCardFile')}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <RHFTextField
+                name="adharNumber"
+                label="Aadhaar Number*"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ maxLength: 12 }}
+              // disabled={isViewMode}
+              />
             </Grid>
           </Grid>
           <Grid item xs={12}>

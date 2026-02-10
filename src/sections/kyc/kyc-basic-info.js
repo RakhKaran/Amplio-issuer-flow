@@ -36,6 +36,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
 import { useGetKycProgress } from 'src/api/companyKyc';
 import { useGetCompanySectorTypes } from 'src/api/sectorType';
+import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -169,21 +170,21 @@ export default function KYCBasicInfo() {
       // Build extracted PAN object
       const extractedPan = extractedPanDetails
         ? {
-            extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
-            extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
-          }
+          extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
+          extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
+        }
         : undefined;
 
       // Build submitted PAN object
       const submittedPan = humanEdited
         ? {
-            submittedCompanyName: formData.panHoldersName,
-            submittedPanNumber: formData.panNumber,
-          }
+          submittedCompanyName: formData.panHoldersName,
+          submittedPanNumber: formData.panNumber,
+        }
         : {
-            submittedCompanyName: formData.panHoldersName,
-            submittedPanNumber: formData.panNumber,
-          };
+          submittedCompanyName: formData.panHoldersName,
+          submittedPanNumber: formData.panNumber,
+        };
 
       // FINAL API PAYLOAD — 100% MATCHES THE API FORMAT YOU GAVE
       const payload = {
@@ -377,11 +378,22 @@ export default function KYCBasicInfo() {
   }, [panFile?.id]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
       {/* <KYCTitle
       title="Basic Information"
       subtitle="Please provide your company details to proceed"
     /> */}
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
 
       <FormProvider methods={methods} onSubmit={onSubmit}>
         <Card

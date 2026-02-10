@@ -80,7 +80,7 @@ export default function ReviewBusinessProfilePage() {
       >
 
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3 }}>
+          <Card sx={{ p: 3,  height: '100%' }}>
             <Grid
               spacing={2}
               container
@@ -99,12 +99,12 @@ export default function ReviewBusinessProfilePage() {
               </Grid>
               {businessProfileRows.map((item, index) => (
                 <>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
-                      {item.label}
+                      {item.label} :
                     </Typography>
                   </Grid>
-                  <Grid sx={{ textAlign: 'right' }} item xs={4} md={4}>
+                  <Grid sx={{ textAlign: 'right' }} item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {item.value}
                     </Typography>

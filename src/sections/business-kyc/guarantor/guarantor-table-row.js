@@ -29,7 +29,7 @@ export default function GuarantorTableRow({ row, selected, onSelectRow, onViewRo
 
   return (
     <TableRow hover selected={selected}>
-      <TableCell>{guarantorCompanyName}</TableCell>
+      <TableCell>{guarantorCompanyName || 'NA'}</TableCell>
 
       <TableCell>{guarantorType}</TableCell>
       <TableCell>{guaranteedAmountLimit}</TableCell>

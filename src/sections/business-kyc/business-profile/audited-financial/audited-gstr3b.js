@@ -111,10 +111,8 @@ export default function AuditedGST3B({
       const formData = new FormData();
       formData.append('file', file);
 
-      // ✅ correct upload endpoint for your backend
       const res = await axiosInstance.post('/files', formData);
 
-      // ✅ backend sends files[]
       const uploadedFile = res?.data?.files?.[0];
 
       if (!uploadedFile?.id) {
@@ -127,15 +125,11 @@ export default function AuditedGST3B({
         prev.map((doc) =>
           doc.id === id
             ? {
-                ...doc,
-                file: {
-                  id: uploadedFile.id, // ✅ UUID from DB
-                  fileOriginalName: uploadedFile.fileOriginalName,
-                  fileUrl: uploadedFile.fileUrl,
-                },
-                status: 'Uploaded',
-                reportDate: new Date(),
-              }
+              ...doc,
+              file: uploadedFile,
+              status: 'Uploaded',
+              reportDate: new Date(),
+            }
             : doc
         )
       );
@@ -143,7 +137,6 @@ export default function AuditedGST3B({
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
       console.error('File upload error:', error);
-
       enqueueSnackbar(error?.response?.data?.error?.message || 'File upload failed', {
         variant: 'error',
       });
@@ -151,7 +144,22 @@ export default function AuditedGST3B({
   };
 
   const handleDelete = (id) => {
-    setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
+    setDocuments(docs =>
+      docs.map(d =>
+        d.id === id
+          ? { ...d, file: null, status: 'Pending', reportDate: null }
+          : d
+      )
+    );
+  };
+
+  const handleViewFile = (file) => {
+    if (!file?.fileUrl) {
+      enqueueSnackbar('File URL not available', { variant: 'warning' });
+      return;
+    }
+
+    window.open(file.fileUrl, '_blank', 'noopener,noreferrer');
   };
 
   const getStatusColor = (status) => {
@@ -285,7 +293,7 @@ export default function AuditedGST3B({
 
       enqueueSnackbar(
         error?.response?.data?.error?.message ||
-          'Something went wrong while saving audited financials',
+        'Something went wrong while saving audited financials',
         { variant: 'error' }
       );
     }
@@ -423,6 +431,7 @@ export default function AuditedGST3B({
                     borderColor: 'divider',
                     display: 'flex',
                     alignItems: 'center',
+                    minWidth: 0,
                     '&:last-child': {
                       borderRight: 'none',
                       justifyContent: 'center',
@@ -482,8 +491,17 @@ export default function AuditedGST3B({
                       Not Uploaded
                     </Typography>
                   ) : (
-                    <Typography variant="body2">
-                      {doc.file.fileOriginalName}
+                    <Typography
+                      variant="body2"
+                      title={doc.file.fileOriginalName || doc.file.fileName}
+                      sx={{
+                        maxWidth: '100%',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {doc.file.fileOriginalName || doc.file.fileName}
                     </Typography>
                   )}
                 </Box>
@@ -508,6 +526,7 @@ export default function AuditedGST3B({
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box
@@ -543,7 +562,7 @@ export default function AuditedGST3B({
 
                 <Box sx={{ gap: 1, display: 'flex' }}>
                   {doc.file && (
-                    <IconButton size="small" color="primary">
+                    <IconButton size="small" color="primary" onClick={() => handleViewFile(doc.file)}>
                       <Iconify icon="solar:eye-bold" width={20} />
                     </IconButton>
                   )}
@@ -552,9 +571,10 @@ export default function AuditedGST3B({
                       id={`file-upload-${doc.id}`}
                       type="file"
                       accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
                       style={{ display: 'none' }}
+                      key={`${doc.id}-${doc.file?.id || 'empty'}`}
                       onChange={(e) => handleFileUpload(e, doc.id)}
-                      key={doc.id}
                     />
                     <IconButton
                       size="small"
@@ -663,6 +683,7 @@ export default function AuditedGST3B({
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -720,7 +741,7 @@ export default function AuditedGST3B({
                     </label>
                   ) : (
                     <Typography variant="body2" sx={{ flexGrow: 1, mr: 1 }}>
-                      {doc.file.fileOriginalName}
+                      {doc.file.fileOriginalName || doc.file.fileName}
                     </Typography>
                   )}
                   <Box sx={{ display: 'flex', gap: 1 }}>

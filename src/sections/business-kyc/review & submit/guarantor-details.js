@@ -129,7 +129,7 @@ export default function GuarantorDetailsPage({ data }) {
       <Grid container spacing={2} sx={{ maxWidth: 900, mx: 'auto' }}>
         {guarantorsDetails.slice(0, visibleCount).map((item, index) => (
           <Grid item xs={12} md={6} key={index}>
-            <Card sx={{ p: 3 }}>
+            <Card sx={{ p: 3,   height: '100%' }}>
               <Grid container justifyContent="flex-end" alignItems="flex-end" mb={2}>
                 <Box display="flex" flexDirection="row" alignItems="flex-end" gap={0.5}>
                   <Chip
@@ -164,7 +164,7 @@ export default function GuarantorDetailsPage({ data }) {
                 <Grid container key={idx} sx={{ mb: 1 }}>
                   <Grid item xs={7}>
                     <Typography variant="body2" fontWeight={600}>
-                      {label}
+                      {label} :
                     </Typography>
                   </Grid>
                   <Grid item xs={5} textAlign="right">

@@ -52,95 +52,94 @@ export default function KycDetailsPage() {
         </Typography>
       </Box>
 
-      <Grid container spacing={2} columns={12} sx={{ maxWidth: '900px', mx: 'auto', mb: 4 }}>
+      <Grid container spacing={2} columns={12} sx={{ maxWidth: '900px',  mx: 'auto', mb: 4 }}>
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3 }}>
+          <Card sx={{ p: 3,  height: '100%'  }}>
             <Grid spacing={2} container alignItems="center" justifyContent="space-between">
               <Grid item xs={8} md={10}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Company information
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: 'right' }} item xs={4} md={2}>
+              {/* <Grid sx={{ textAlign: 'right' }} item xs={4} md={2}>
                 <Tooltip title="View">
                   <IconButton size="small">
                     <Iconify icon="solar:eye-bold" />
                   </IconButton>
                 </Tooltip>
-              </Grid>
+              </Grid> */}
               {data && (
                 <>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       Company Name :
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {data.companyName}
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       CIN :
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Tooltip title={data.CIN} arrow placement="top">
                       <Typography
                         variant="body2"
                         fontWeight={500}
                         noWrap
-                        sx={{ cursor: 'pointer', maxWidth: 140 }}
                       >
                         {data.CIN}
                       </Typography>
                     </Tooltip>
                   </Grid>
 
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       GSTIN :
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {data.GSTIN}
                     </Typography>
                   </Grid>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       Place of Incorporation :
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {data.cityOfIncorporation}
                     </Typography>
                   </Grid>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       PAN Number :
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {data?.companyPanCards?.submittedPanNumber}
                     </Typography>
                   </Grid>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       PAN Holder Name :
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {data?.companyPanCards?.submittedCompanyName}
                     </Typography>
@@ -160,22 +159,22 @@ export default function KycDetailsPage() {
                   Address Information
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: 'right' }} item xs={4} md={2}>
+              {/* <Grid sx={{ textAlign: 'right' }} item xs={4} md={2}>
                 <Tooltip title="View">
                   <IconButton size="small">
                     <Iconify icon="solar:eye-bold" />
                   </IconButton>
                 </Tooltip>
-              </Grid>
+              </Grid> */}
 
               {financialDocuments.map((item, index) => (
                 <>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       {item.label} :
                     </Typography>
                   </Grid>
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {item.value}
                     </Typography>
@@ -193,43 +192,43 @@ export default function KycDetailsPage() {
                   Bank Details
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: 'right' }} item xs={4} md={2}>
+              {/* <Grid sx={{ textAlign: 'right' }} item xs={4} md={2}>
                 <Tooltip title="View">
                   <IconButton size="small">
                     <Iconify icon="solar:eye-bold" />
                   </IconButton>
                 </Tooltip>
-              </Grid>
+              </Grid> */}
 
 
               {bankData ? (
                 <>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       Bank Name :
                     </Typography>
                   </Grid>
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {bankData.bankName}
                     </Typography>
                   </Grid>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       Account Number :
                     </Typography>
                   </Grid>
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {bankData.accountNumber}
                     </Typography>
                   </Grid>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
                       IFSC Code :
                     </Typography>
                   </Grid>
-                  <Grid item xs={4} md={4}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {bankData.ifscCode}
                     </Typography>
