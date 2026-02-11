@@ -8,6 +8,7 @@ import DeedOfHypo from './documents-letter/deed-of-hypo';
 import ESignVerify from './e-sign/verify-e-sign';
 
 import { useGetAgreements } from 'src/api/agreement';
+import Logo from 'src/components/logo';
 
 export default function AgreementStepper() {
   const { agreements = [], agreementsLoading } = useGetAgreements();
@@ -121,6 +122,16 @@ export default function AgreementStepper() {
 
   return (
     <Box sx={{ p: 3 }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <ProgressStepper
         steps={steps}
         activeStepId={activeStepId}

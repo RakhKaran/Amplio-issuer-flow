@@ -3,6 +3,7 @@ import { Container, Grid, Typography, TextField, Stack, Button, Alert, Box } fro
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
 import AgreementSuccessDialog from '../success/agreement-success';
+import Logo from 'src/components/logo';
 
 export default function ESignVerify() {
   const { enqueueSnackbar } = useSnackbar();
@@ -133,6 +134,16 @@ export default function ESignVerify() {
         justifyContent: 'center',
       }}
     >
+         <Box
+              sx={{
+                position: 'fixed',
+                top: 16,
+                left: 16,
+                zIndex: 1300,
+              }}
+            >
+              <Logo />
+            </Box>
       <Container maxWidth="sm">
         <Grid container spacing={3}>
           <Grid item xs={12}>
