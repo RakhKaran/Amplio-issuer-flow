@@ -336,8 +336,7 @@ export default function AddGuarantorForm({
               <RHFSelect
                 name="guarantorType"
                 label="Guarantor Type*"
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
+              // disabled={isViewMode}
               >
                 {guarantorType.map((role) => (
                   <MenuItem key={role.value} value={role.value}>
@@ -352,8 +351,8 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="guarantorName"
                 label="Company Name*"
-                InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
+                inputProps={{ style: { textTransform: 'uppercase' } }}
               />
             </Grid>
 
@@ -362,7 +361,7 @@ export default function AddGuarantorForm({
                 <RHFTextField
                   name="cin"
                   label="CIN*"
-                  InputLabelProps={{ shrink: true }}
+
                 // disabled={isViewMode}
                 />
               </Grid>
@@ -373,8 +372,7 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="email"
                 label="Email*"
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -383,8 +381,7 @@ export default function AddGuarantorForm({
                 name="phoneNumber"
                 label="Phone Number*"
                 inputProps={{ maxLength: 10 }}
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -394,7 +391,6 @@ export default function AddGuarantorForm({
               <RHFPriceField
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
-                InputLabelProps={{ shrink: true }}
               // disabled={isViewMode}
               />
             </Grid>
@@ -404,7 +400,6 @@ export default function AddGuarantorForm({
               <RHFPriceField
                 name="estimetedNetWorth"
                 label="Estimated Net Worth*"
-                InputLabelProps={{ shrink: true }}
               // disabled={isViewMode}
               />
             </Grid>
@@ -429,7 +424,6 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="fullName"
                 label="Full Name* (as per PAN)"
-                InputLabelProps={{ shrink: true }}
                 inputProps={{ style: { textTransform: 'uppercase' } }}
               // disabled={isViewMode}
               />
@@ -440,7 +434,6 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="panNumber"
                 label="PAN Number*"
-                InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 10 }}
               // disabled={isViewMode}
               />
@@ -465,7 +458,6 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="adharNumber"
                 label="Aadhaar Number*"
-                InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 12 }}
               // disabled={isViewMode}
               />
