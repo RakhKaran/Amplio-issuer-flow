@@ -5,32 +5,37 @@ import Iconify from 'src/components/iconify';
 import { useRouter } from 'src/routes/hook';
 import axiosInstance from 'src/utils/axios';
 import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
+import DocumentReviewAndVerification from '../../verify-all-agreement/document-review-verification';
 
-export default function AgreementSuccessDialog({ open, onClose }) {
+export default function AgreementSuccessDialog({ open, onClose, onNext }) {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
 
-  const handleNext = async () => {
-    try {
-      // setLoading(true);
+  // const handleNext = async () => {
+  //   try {
+  //     setLoading(true);
 
-      // await axiosInstance.post('/business-kyc/agreement-next-status');
-      sessionStorage.removeItem('agreementJustCompleted');
+  //     await axiosInstance.post('/business-kyc/roc-next-status');
 
-      enqueueSnackbar('Moved to next step successfully', {
-        variant: 'success',
-      });
+  //     enqueueSnackbar('Moved to next step successfully', {
+  //       variant: 'success',
+  //     });
 
-      onClose?.();
-      router.push(KYC_STAGE_ROUTE_MAP.ROC);
-    } catch (error) {
-      enqueueSnackbar(error?.error?.message || 'Failed to move to next step', {
-        variant: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
+  //     onClose?.();
+  //     setShowDocumentReview(true);
+  //     // router.push(KYC_STAGE_ROUTE_MAP.ROC);
+  //   } catch (error) {
+  //     enqueueSnackbar(error?.error?.message || 'Failed to move to next step', {
+  //       variant: 'error',
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handleNext = () => {
+    // onClose?.(); // optional
+    onNext();
   };
 
   return (

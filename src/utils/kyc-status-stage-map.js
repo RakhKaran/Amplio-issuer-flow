@@ -10,6 +10,7 @@ export const KYC_STATUS_STAGE_MAP = {
   // Post-stepper
   agreement: KYC_STAGE_ROUTE_MAP.AGREEMENTS,
   roc: KYC_STAGE_ROUTE_MAP.ROC,
+  dpn: KYC_STAGE_ROUTE_MAP.DPN,
 
   // Final
   pending: KYC_STAGE_ROUTE_MAP.PENDING,

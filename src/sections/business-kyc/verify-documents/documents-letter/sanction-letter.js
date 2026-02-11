@@ -1,23 +1,74 @@
-import { Box, Button, Card, Container, Grid, Stack, Typography } from '@mui/material';
+import * as Yup from 'yup';
+import {
+  Box,
+  Button,
+  Card,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  FormHelperText,
+  Grid,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
+import axiosInstance from 'src/utils/axios';
 
 export default function SanctionLetter({ document, onNext }) {
-  const methods = useForm({
-    defaultValues: {
-      remark: '',
-    },
+  const [loading, setLoading] = useState(false);
+
+  const SanctionSchema = Yup.object().shape({
+    remark: Yup.string().max(500, 'Maximum 500 characters'),
+    agreement: Yup.boolean().oneOf([true], 'You must accept the agreement'),
   });
 
-  const { handleSubmit } = methods;
+  const defaultValues = {
+    remark: '',
+    agreement: false,
+  };
 
-  const onSubmit = (formData) => {
-    console.log('Remarks:', formData);
-    enqueueSnackbar('Agreement accepted successfully', {
-      variant: 'success',
-    });
+  const methods = useForm({
+    resolver: yupResolver(SanctionSchema),
+    defaultValues,
+  });
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isValid },
+  } = methods;
+
+  const onSubmit = async (formData) => {
+    console.log('Form submitted');
+    console.log('Form Data:', formData);
+    try {
+      setLoading(true);
+      console.log('Calling API...');
+
+      const response = await axiosInstance.patch('/business-kyc/agreements', {
+        agreementId: document.id,
+        isAccepted: true,
+        reason: formData.remark || '',
+      });
+
+      console.log('API Success:', response?.data);
+      enqueueSnackbar('Agreement accepted successfully', {
+        variant: 'success',
+      });
+
+      onNext?.();
+    } catch (error) {
+      console.log('API Error:', error);
+      console.log('Error Response:', error?.response);
+      enqueueSnackbar(error?.error?.message || 'Failed to accept agreement', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,8 +106,45 @@ export default function SanctionLetter({ document, onNext }) {
             </Stack>
           </Grid>
           <Grid item xs={12}>
+            <Controller
+              name="agreement"
+              control={control}
+              render={({ field }) => (
+                <Box
+                  sx={{
+                    width: '100%',
+                    backgroundColor: 'primary.lighter',
+                    borderRadius: 1.5,
+                    border: errors.agreement ? '1px solid #d32f2f' : '1px solid #cfd8dc',
+                    px: 2,
+                    py: 1.2,
+                  }}
+                >
+                  <FormControlLabel
+                    control={<Checkbox {...field} checked={field.value} />}
+                    label={
+                      <Box>
+                        <Typography fontWeight={600}>
+                          I have read and agree to the Platform Agreement
+                        </Typography>
+
+                        <Typography variant="body2" color="text.secondary">
+                          I authorize escrow-based settlements and acknowledge the key terms above.
+                        </Typography>
+                      </Box>
+                    }
+                  />
+
+                  {errors.agreement && (
+                    <FormHelperText error>{errors.agreement.message}</FormHelperText>
+                  )}
+                </Box>
+              )}
+            />
+          </Grid>
+          <Grid item xs={12}>
             <Stack direction="row" spacing={3} justifyContent="center" alignItems="center">
-              <Button
+              {/* <Button
                 type="submit"
                 variant="contained"
                 sx={{
@@ -74,10 +162,15 @@ export default function SanctionLetter({ document, onNext }) {
                 }}
               >
                 Submit Remarks
-              </Button>
+              </Button> */}
 
-              <Button variant="contained" color="primary" onClick={onNext}>
-                Next
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={!isValid || loading}
+              >
+                {loading ? 'Processing...' : 'Next'}
               </Button>
             </Stack>
           </Grid>

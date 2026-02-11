@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import DocumentFlow from 'src/sections/business-kyc/verify-documents/document-flow';
+import AgreementStepper from 'src/sections/business-kyc/verify-documents/agreement-stepper';
+// import DocumentFlow from 'src/sections/business-kyc/verify-documents/document-flow';
 
 export default function AgreementsPage() {
   return (
@@ -8,7 +9,8 @@ export default function AgreementsPage() {
         <title> Agreements </title>
       </Helmet>
 
-      <DocumentFlow />
+      {/* <DocumentFlow /> */}
+      <AgreementStepper />
     </>
   );
 }

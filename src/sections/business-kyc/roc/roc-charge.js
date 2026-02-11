@@ -16,19 +16,28 @@ import {
 import FormProvider, { RHFTextField, RHFCustomFileUploadBox } from 'src/components/hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { DatePicker } from '@mui/x-date-pickers';
+import { useSnackbar } from 'notistack';
+import { useState } from 'react';
+import { useRouter } from 'src/routes/hook';
+import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
+import axiosInstance from 'src/utils/axios';
 
 export default function RocChagre() {
+  const router = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
+
   const RocChargeSchema = Yup.object().shape({
     srn: Yup.string().required('Service Request Number is required'),
     filingDate: Yup.date().required('Filing date is required'),
 
     rocAcknowledgement: Yup.mixed().required('ROC filing acknowledgement is required'),
 
-    pdc: Yup.mixed().required('PDC document is required'),
-    chequeNo: Yup.string().required('Cheque number is required'),
-    bankName: Yup.string().required('Bank name is required'),
-    amount: Yup.number().required('Amount is required'),
-    chequeDate: Yup.date().required('Cheque date is required'),
+    // pdc: Yup.mixed().required('PDC document is required'),
+    // chequeNo: Yup.string().required('Cheque number is required'),
+    // bankName: Yup.string().required('Bank name is required'),
+    // amount: Yup.number().required('Amount is required'),
+    // chequeDate: Yup.date().required('Cheque date is required'),
 
     escrowConfirmed: Yup.boolean().oneOf([true], 'Confirmation is required'),
   });
@@ -53,8 +62,28 @@ export default function RocChagre() {
 
   const { handleSubmit, control, watch, reset } = methods;
 
-  const onSubmit = (data) => {
-    console.log('ROC Charge Data:', data);
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+
+      console.log('ROC Charge Data:', data);
+
+      // ✅ CALL YOUR API
+      await axiosInstance.post('/business-kyc/roc-next-status');
+
+      enqueueSnackbar('ROC submitted successfully', {
+        variant: 'success',
+      });
+
+      // ✅ ROUTE TO DPN
+      router.push(KYC_STAGE_ROUTE_MAP.DPN);
+    } catch (error) {
+      enqueueSnackbar(error?.response?.data?.error?.message || 'Failed to move to next step', {
+        variant: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -85,6 +114,7 @@ export default function RocChagre() {
                     label="Filling Date*"
                     value={field.value}
                     onChange={field.onChange}
+                    format="dd/MM/yyyy"
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -119,11 +149,14 @@ export default function RocChagre() {
         </Card>
 
         <Card sx={{ p: 3 }}>
-          <Typography variant="h6" color="primary" mb={2}>
-            Backup Security
-          </Typography>
+          <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="h6" color="primary" mb={2}>
+              Backup Security
+            </Typography>
+            <Button variant="contained">Activate your Nash</Button>
+          </Stack>
 
-          <Stack spacing={2}>
+          {/* <Stack spacing={2}>
             <Typography variant="subtitle2">Backup Security*</Typography>
 
             <RHFCustomFileUploadBox
@@ -174,7 +207,7 @@ export default function RocChagre() {
                 />
               </Grid>
             </Grid>
-          </Stack>
+          </Stack> */}
         </Card>
 
         <Card sx={{ p: 3, backgroundColor: '#f6f9fc' }}>
@@ -211,7 +244,7 @@ export default function RocChagre() {
 
         {/* ================= Action ================= */}
         <Stack direction="row" justifyContent="flex-end">
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" loading={loading}>
             Save & Continue
           </Button>
         </Stack>

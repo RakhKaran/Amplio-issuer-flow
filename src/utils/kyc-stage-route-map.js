@@ -7,6 +7,7 @@ export const KYC_STAGE_ROUTE_MAP = {
   // Post-stepper flows
   AGREEMENTS: paths.kyc.invoiceFinancing.agreements,
   ROC: paths.kyc.invoiceFinancing.roc,
+  DPN: paths.kyc.invoiceFinancing.dpn,
 
   // Final states
   PENDING: paths.kyc.invoiceFinancing.pending,

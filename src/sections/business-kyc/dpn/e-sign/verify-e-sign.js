@@ -3,6 +3,7 @@ import { Container, Grid, Typography, TextField, Stack, Button, Alert, Box } fro
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
 import AgreementSuccessDialog from '../success/agreement-success';
+import DocumentReviewAndVerification from '../../verify-all-agreement/document-review-verification';
 
 export default function ESignVerify() {
   const { enqueueSnackbar } = useSnackbar();
@@ -10,6 +11,8 @@ export default function ESignVerify() {
   const OTP_LENGTH = 4;
 
   const RESEND_TIME = 30;
+
+  const [step, setStep] = useState('otp');
 
   const [timer, setTimer] = useState(RESEND_TIME);
   const [canResend, setCanResend] = useState(false);
@@ -49,8 +52,6 @@ export default function ESignVerify() {
       await axiosInstance.post('/auth/company-esign/verify-otp', {
         otp: enteredOtp,
       });
-
-      sessionStorage.setItem('agreementJustCompleted', 'true');
 
       enqueueSnackbar('OTP verified successfully', {
         variant: 'success',
@@ -96,6 +97,10 @@ export default function ESignVerify() {
 
     return () => clearInterval(interval);
   }, [timer]);
+
+  if (step === 'review') {
+    return <DocumentReviewAndVerification />;
+  }
 
   const renderOtpBoxes = (
     <Grid container spacing={2} justifyContent="center">
@@ -223,6 +228,10 @@ export default function ESignVerify() {
         <AgreementSuccessDialog
           open={openSuccessDialog}
           onClose={() => setOpenSuccessDialog(false)}
+          onNext={() => {
+            setOpenSuccessDialog(false); // close dialog
+            setStep('review'); // destroy OTP screen
+          }}
         />
       </Container>
     </Box>

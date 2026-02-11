@@ -309,33 +309,20 @@ export default function KYCAddSignatoriesForm({
             <RHFTextField
               name="name"
               label="Name*"
-              InputLabelProps={{ shrink: true }}
               disabled={isViewMode}
               inputProps={{ style: { textTransform: 'uppercase' } }}
             />
 
-            <RHFTextField
-              name="email"
-              label="Email*"
-              type="email"
-              InputLabelProps={{ shrink: true }}
-              disabled={isViewMode}
-            />
+            <RHFTextField name="email" label="Email*" type="email" disabled={isViewMode} />
 
             <RHFTextField
               name="phoneNumber"
               label="Phone Number*"
               type="tel"
               disabled={isViewMode}
-              InputLabelProps={{ shrink: true }}
               inputProps={{ maxLength: 10 }}
             />
-            <RHFSelect
-              name="role"
-              label="Designation*"
-              InputLabelProps={{ shrink: true }}
-              disabled={isViewMode}
-            >
+            <RHFSelect name="role" label="Designation*" disabled={isViewMode}>
               {ROLES.map((role) => (
                 <MenuItem key={role.value} value={role.value}>
                   {role.label}
@@ -348,24 +335,13 @@ export default function KYCAddSignatoriesForm({
                 name="customDesignation"
                 label="Enter Custom Designation*"
                 placeholder="Enter custom designation"
-                InputLabelProps={{ shrink: true }}
               />
             )}
 
             {isViewMode ? (
               <>
-                <RHFTextField
-                  name="panNumber"
-                  label="PAN Number*"
-                  InputLabelProps={{ shrink: true }}
-                  disabled
-                />
-                <RHFTextField
-                  name="boardResolution"
-                  label="Board Resolution*"
-                  InputLabelProps={{ shrink: true }}
-                  disabled
-                />
+                <RHFTextField name="panNumber" label="PAN Number*" disabled />
+                <RHFTextField name="boardResolution" label="Board Resolution*" disabled />
               </>
             ) : (
               <>
@@ -384,7 +360,6 @@ export default function KYCAddSignatoriesForm({
                 <RHFTextField
                   name="submittedPanFullName"
                   label="PAN Holder Full Name*"
-                  InputLabelProps={{ shrink: true }}
                   disabled={!isPanUploaded}
                   inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
@@ -392,7 +367,6 @@ export default function KYCAddSignatoriesForm({
                 <RHFTextField
                   name="submittedPanNumber"
                   label="PAN Number*"
-                  InputLabelProps={{ shrink: true }}
                   disabled={!isPanUploaded}
                   inputProps={{ style: { textTransform: 'uppercase' } }}
                 />

@@ -29,15 +29,6 @@ export default function KYCStepperGuard({ children }) {
         /* ---------------- 3️⃣ Determine stage ---------------- */
         let stage = state.currentStage;
 
-        // ⛑️ Fallback logic if backend hasn’t added `currentStage` yet
-        // if (!stage) {
-        //   if (state.activeStep?.code === 'review_and_submit') {
-        //     stage = 'AGREEMENTS';
-        //   } else {
-        //     stage = 'KYC_STEPPER';
-        //   }
-        // }
-
         const targetRoute = KYC_STAGE_ROUTE_MAP[stage];
 
         if (targetRoute) {

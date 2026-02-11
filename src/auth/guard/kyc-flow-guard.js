@@ -41,6 +41,26 @@ export default function KycFlowGuard({ children }) {
           return;
         }
 
+        if (state.currentStage === 'ROC') {
+          const currentPath = window.location.pathname;
+          const rocPath = paths.kyc.invoiceFinancing.roc;
+
+          // ⭐ ALWAYS redirect if not already on ROC
+          if (currentPath !== rocPath) {
+            router.replace(rocPath);
+            return;
+          }
+
+          setChecking(false);
+          return;
+        }
+
+        if (state.currentStage === 'DPN') {
+          setChecking(false);
+          router.replace(paths.kyc.invoiceFinancing.dpn);
+          return;
+        }
+
         /* ---------- DEFAULT → STEPPER ---------- */
         router.replace(paths.kyc.invoiceFinancing.create);
         setChecking(false); // ⭐ UNLOCK UI

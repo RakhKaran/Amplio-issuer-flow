@@ -1,3 +1,4 @@
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Box,
   Button,
@@ -5,22 +6,22 @@ import {
   Container,
   Stack,
   Typography,
-  Checkbox,
+  Paper,
   FormControlLabel,
+  Checkbox,
   FormHelperText,
 } from '@mui/material';
-
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import axiosInstance from 'src/utils/axios';
-import FormProvider from 'src/components/hook-form';
+import * as Yup from 'yup';
+import ESignVerify from './e-sign/verify-e-sign';
 
-export default function PlatformAgreement({ document, onNext }) {
-  const [loading, setLoading] = useState(false);
-
+export default function DPN() {
+  const [showEsignVerify, setShowEsignVerify] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const pdfUrl = '/assets/Demand_Promissory_Note.pdf';
   const AgreementSchema = Yup.object().shape({
     agreement: Yup.boolean().oneOf(
       [true],
@@ -28,63 +29,50 @@ export default function PlatformAgreement({ document, onNext }) {
     ),
   });
 
-  const defaultValues = {
-    agreement: false,
-  };
-
-  const methods = useForm({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm({
     resolver: yupResolver(AgreementSchema),
-    defaultValues,
+    defaultValues: {
+      agreement: false,
+    },
+    mode: 'onChange', // enables instant validation
   });
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isValid },
-  } = methods;
-
   const onSubmit = async () => {
+    setSendingOtp(true);
     try {
-      setLoading(true);
+      await axiosInstance.post('/auth/company-esign/send-otp');
 
-      await axiosInstance.patch('/business-kyc/agreements', {
-        agreementId: document.id,
-        isAccepted: true,
-      });
-
-      enqueueSnackbar('Agreement accepted successfully', {
+      enqueueSnackbar('OTP sent successfully', {
         variant: 'success',
       });
-
-      onNext?.();
-    } catch (error) {
-      enqueueSnackbar(error?.error?.message || 'Failed to accept agreement', { variant: 'error' });
+      setShowEsignVerify(true);
+    } catch (err) {
+      enqueueSnackbar(err?.response?.data?.message || 'Failed to send OTP', { variant: 'error' });
     } finally {
-      setLoading(false);
+      setSendingOtp(false);
     }
   };
 
+  if (showEsignVerify) {
+    return <ESignVerify />;
+  }
+
   return (
-    <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-      <Container maxWidth="md">
-        <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
-          {document?.title}
-        </Typography>
-        <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
-          {document?.subtitle}
-        </Typography>
-
-        <Card sx={{ height: '75vh', mb: 3 }}>
-          <Box
-            component="iframe"
-            src={document?.pdfUrl}
-            width="100%"
-            height="100%"
-            sx={{ border: 'none' }}
-          />
-        </Card>
-
-        {/* FORM */}
+    <Container maxWidth="md">
+      <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
+        Demand Promissory Note
+      </Typography>
+      <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
+        {document?.subtitle}
+      </Typography>
+      <Card sx={{ height: '75vh', mb: 4 }}>
+        <Box component="iframe" src={pdfUrl} width="100%" height="100%" sx={{ border: 'none' }} />
+      </Card>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={3} alignItems="center">
           {/* Checkbox Container */}
           <Controller
@@ -122,22 +110,13 @@ export default function PlatformAgreement({ document, onNext }) {
               </Box>
             )}
           />
-
-          {/* Next Button */}
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            disabled={!isValid}
-            sx={{
-              px: 4,
-              borderRadius: 2,
-            }}
-          >
-            {loading ? 'Processing...' : 'Next'}
+        </Stack>
+        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+          <Button type="submit" variant="contained" size="large" sx={{ px: 4, borderRadius: 2 }}>
+            {sendingOtp ? 'Sending OTP...' : 'Continue to E-Sign'}
           </Button>
         </Stack>
-      </Container>
-    </FormProvider>
+      </form>
+    </Container>
   );
 }

@@ -17,6 +17,8 @@ const BusinessKycPage = lazy(() => import('src/pages/business-kyc/kyc'));
 const AgreementsPage = lazy(() => import('src/pages/business-kyc/agreement'));
 const KYCPendingPage = lazy(() => import('src/pages/business-kyc/pending'));
 const RocPage = lazy(() => import('src/pages/business-kyc/roc'));
+const DpnPage = lazy(() => import('src/pages/business-kyc/dpn'));
+
 
 export const kycRoutes = [
   {
@@ -55,6 +57,7 @@ export const kycRoutes = [
           },
           { path: 'pending', element: <KYCPendingPage /> },
           { path: 'roc', element: <RocPage /> },
+          { path: 'dpn', element: <DpnPage /> },
         ],
       },
     ],
