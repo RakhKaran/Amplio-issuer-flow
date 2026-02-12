@@ -13,6 +13,7 @@ import { RouterLink } from 'src/routes/components';
 import { MotionContainer, varFade } from 'src/components/animate';
 import { paths } from 'src/routes/paths';
 import { Divider } from '@mui/material';
+import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -51,6 +52,16 @@ export default function BusinessKycPending() {
     <Container maxWidth="md" sx={{ position: 'relative', py: { xs: 2, sm: 4, md: 5 } }}>
       <Box
         sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
+      <Box
+        sx={{
           textAlign: 'center',
           maxWidth: 1200,
           mx: 'auto',
@@ -63,15 +74,11 @@ export default function BusinessKycPending() {
       >
         <MotionContainer>
           <m.div variants={varFade().inUp}>
-            <Typography
-              variant="subtitle2"
-              sx={{ mb: 2, fontWeight: 600 }}
-            >
+            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
               Status Timeline
             </Typography>
 
             <Grid container mb={3} alignItems="center">
-
               <Grid item xs>
                 <Stack alignItems="center" spacing={1}>
                   <Box
@@ -91,7 +98,6 @@ export default function BusinessKycPending() {
                   <Typography variant="caption">Submitted</Typography>
                 </Stack>
               </Grid>
-
 
               <Grid item xs>
                 <Box sx={{ height: 2, backgroundColor: '#0B63F6' }} />
@@ -145,7 +151,6 @@ export default function BusinessKycPending() {
             </Grid>
           </m.div>
           <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-
             <m.div variants={varFade().inUp}>
               <Box
                 component="img"
@@ -155,7 +160,7 @@ export default function BusinessKycPending() {
                   width: 520,
                   display: 'block',
                   mx: 'auto',
-                  mb: 3
+                  mb: 3,
                 }}
               />
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -171,19 +176,17 @@ export default function BusinessKycPending() {
 
           <m.div variants={varFade().inUp}>
             <Typography variant="h6" sx={{ mb: 1, color: '#000' }}>
-              We are reviewing your application and will notify you once the review is completed.<br />
+              We are reviewing your application and will notify you once the review is completed.
+              <br />
               Expected review time:
               <Box component="span" sx={{ pl: 0.2, color: 'error.main' }}>
                 24 – 48 business hours
               </Box>
-
             </Typography>
           </m.div>
           {/* <m.div variants={varFade().inUp}>
             <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
           </m.div> */}
-
-
         </MotionContainer>
       </Box>
     </Container>

@@ -3,7 +3,6 @@ import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import Iconify from 'src/components/iconify';
 import { useRouter } from 'src/routes/hook';
-import axiosInstance from 'src/utils/axios';
 import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
 
 export default function DpnSuccessDialog({ open, onClose }) {

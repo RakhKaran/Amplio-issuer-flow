@@ -49,7 +49,7 @@ const StyledIcon = styled('div')(({ theme }) => ({
 export default function Pending() {
   return (
     <Container maxWidth="md" sx={{ position: 'relative', py: { xs: 1, sm: 2, md: 2 } }}>
-           <Box
+      <Box
         sx={{
           position: 'fixed',
           top: 16,
@@ -99,7 +99,8 @@ export default function Pending() {
 
           <m.div variants={varFade().inUp}>
             <Typography variant="h5" sx={{ mb: 1, color: '#000' }}>
-             We are finalizing your credit approval and documentation. Your credit line will be activated shortly
+              We are finalizing your credit approval and documentation. Your credit line will be
+              activated shortly
             </Typography>
           </m.div>
         </MotionContainer>
