@@ -101,6 +101,7 @@ export default function AgreementSuccessDialog({ open, onClose }) {
               color="primary"
               startIcon={<Iconify icon="mdi:eye-outline" />}
               sx={{ borderRadius: 20, px: 3 }}
+              disabled
             >
               View Signed Agreement
             </Button>
@@ -109,6 +110,7 @@ export default function AgreementSuccessDialog({ open, onClose }) {
               variant="outlined"
               startIcon={<Iconify icon="mdi:download-outline" />}
               sx={{ borderRadius: 20, px: 3 }}
+              disabled
             >
               Download PDF
             </Button>

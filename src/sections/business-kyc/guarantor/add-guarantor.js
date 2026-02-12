@@ -223,7 +223,6 @@ export default function AddGuarantorForm({
     }
   });
 
-
   useEffect(() => {
     if (open) {
       reset(defaultValues);
@@ -331,12 +330,11 @@ export default function AddGuarantorForm({
           }}
         >
           <Grid container spacing={3} mt={1}>
-
             <Grid item xs={12} md={6}>
               <RHFSelect
                 name="guarantorType"
                 label="Guarantor Type*"
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               >
                 {guarantorType.map((role) => (
                   <MenuItem key={role.value} value={role.value}>
@@ -362,7 +360,7 @@ export default function AddGuarantorForm({
                   name="cin"
                   label="CIN*"
 
-                // disabled={isViewMode}
+                  // disabled={isViewMode}
                 />
               </Grid>
             )}
@@ -372,7 +370,7 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="email"
                 label="Email*"
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -381,7 +379,7 @@ export default function AddGuarantorForm({
                 name="phoneNumber"
                 label="Phone Number*"
                 inputProps={{ maxLength: 10 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -391,7 +389,7 @@ export default function AddGuarantorForm({
               <RHFPriceField
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -400,11 +398,15 @@ export default function AddGuarantorForm({
               <RHFPriceField
                 name="estimetedNetWorth"
                 label="Estimated Net Worth*"
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
             {/* Full width uploads */}
+            <Grid item xs={12} md={12}>
+              <Typography variant="h6">Pan card section</Typography>
+            </Grid>
+
             <Grid item xs={12}>
               <RHFCustomFileUploadBox
                 name="panCardFile"
@@ -415,7 +417,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
               {getErrorMessage('panCardFile')}
             </Grid>
@@ -425,7 +427,7 @@ export default function AddGuarantorForm({
                 name="fullName"
                 label="Full Name* (as per PAN)"
                 inputProps={{ style: { textTransform: 'uppercase' } }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -435,10 +437,13 @@ export default function AddGuarantorForm({
                 name="panNumber"
                 label="PAN Number*"
                 inputProps={{ maxLength: 10 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
+            <Grid item xs={12} md={12}>
+              <Typography variant="h6">Aadhar card section</Typography>
+            </Grid>
             <Grid item xs={12}>
               <RHFCustomFileUploadBox
                 name="adharCardFile"
@@ -449,7 +454,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
               {getErrorMessage('adharCardFile')}
             </Grid>
@@ -459,7 +464,7 @@ export default function AddGuarantorForm({
                 name="adharNumber"
                 label="Aadhaar Number*"
                 inputProps={{ maxLength: 12 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
           </Grid>

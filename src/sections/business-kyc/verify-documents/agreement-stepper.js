@@ -27,12 +27,12 @@ export default function AgreementStepper() {
     const map = {};
 
     agreements.forEach((doc) => {
-      const order = doc.businessKycDocumentType.sequenceOrder;
+      const order = doc.sequenceOrder; // ✅ FIXED
 
       map[order] = {
         id: doc.id,
-        title: doc.businessKycDocumentType.name,
-        subtitle: doc.businessKycDocumentType.description,
+        title: doc.businessKycDocumentType?.name,
+        subtitle: doc.businessKycDocumentType?.description,
         pdfUrl: doc.media?.fileUrl,
       };
     });

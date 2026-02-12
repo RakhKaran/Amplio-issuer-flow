@@ -64,6 +64,7 @@ export const endpoints = {
     dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`,
     guarantors: '/business-kyc/guarantor-details',
     agreements: '/business-kyc/agreements',
+    roc: '/business-kyc/roc',
     dpn: '/business-kyc/dpn',
   },
 

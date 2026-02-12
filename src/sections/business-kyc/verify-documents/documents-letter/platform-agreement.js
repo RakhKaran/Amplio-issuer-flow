@@ -132,6 +132,7 @@ export default function PlatformAgreement({ document, onNext }) {
             sx={{
               px: 4,
               borderRadius: 2,
+              backgroundColor: 'primary.main',
             }}
           >
             {loading ? 'Processing...' : 'Next'}

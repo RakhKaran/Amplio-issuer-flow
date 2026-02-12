@@ -97,6 +97,7 @@ export default function DpnSuccessDialog({ open, onClose }) {
               color="primary"
               startIcon={<Iconify icon="mdi:eye-outline" />}
               sx={{ borderRadius: 20, px: 3 }}
+              disabled
             >
               View Signed Dpn
             </Button>
@@ -105,6 +106,7 @@ export default function DpnSuccessDialog({ open, onClose }) {
               variant="outlined"
               startIcon={<Iconify icon="mdi:download-outline" />}
               sx={{ borderRadius: 20, px: 3 }}
+              disabled
             >
               Download PDF
             </Button>

@@ -124,7 +124,16 @@ export default function DeedOfHypo({ document, onNext }) {
           />
         </Stack>
         <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-          <Button type="submit" variant="contained" size="large" sx={{ px: 4, borderRadius: 2 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            sx={{
+              px: 4,
+              borderRadius: 2,
+              backgroundColor: 'primary.main',
+            }}
+          >
             {sendingOtp ? 'Sending OTP...' : 'Continue to E-Sign'}
           </Button>
         </Stack>

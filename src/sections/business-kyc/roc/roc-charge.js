@@ -10,6 +10,7 @@ import {
   FormControlLabel,
   Checkbox,
   FormHelperText,
+  Container,
 } from '@mui/material';
 
 import FormProvider, { RHFTextField, RHFCustomFileUploadBox } from 'src/components/hook-form';
@@ -22,14 +23,15 @@ import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
 import axiosInstance from 'src/utils/axios';
 import Logo from 'src/components/logo';
 import { LoadingButton } from '@mui/lab';
+import { useGetRoc } from 'src/api/roc';
 
 export default function RocChagre() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
+  const { roc, rocLoading } = useGetRoc();
+  console.log('roc data', roc[0]?.chargeFiling?.fileUrl);
   const [nashLoading, setNashLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-
-  const pdfUrl = '/assets/Demand_Promissory_Note.pdf';
 
   const RocChargeSchema = Yup.object().shape({
     srn: Yup.string(),
@@ -67,29 +69,6 @@ export default function RocChagre() {
 
   const { handleSubmit, control, watch, reset } = methods;
 
-  // const onSubmit = async (data) => {
-  //   try {
-  //     setLoading(true);
-
-  //     console.log('ROC Charge Data:', data);
-
-  //     // ✅ CALL YOUR API
-  //     await axiosInstance.post('/business-kyc/roc-next-status');
-
-  //     enqueueSnackbar('ROC submitted successfully', {
-  //       variant: 'success',
-  //     });
-
-  //     // ✅ ROUTE TO DPN
-  //     router.push(KYC_STAGE_ROUTE_MAP.DPN);
-  //   } catch (error) {
-  //     enqueueSnackbar(error?.response?.data?.error?.message || 'Failed to move to next step', {
-  //       variant: 'error',
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const onSubmit = async () => {
     try {
       setSubmitLoading(true);
@@ -102,68 +81,73 @@ export default function RocChagre() {
 
       router.push(KYC_STAGE_ROUTE_MAP.DPN);
     } catch (error) {
-      enqueueSnackbar(
-        error?.response?.data?.error?.message || 'Please activate Nash before continuing',
-        { variant: 'error' }
-      );
+      enqueueSnackbar(error?.error?.message || 'Please activate Nash before continuing', {
+        variant: 'error',
+      });
     } finally {
       setSubmitLoading(false);
     }
   };
 
+  if (rocLoading) return <>Loading...</>;
+
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-         <Box
-              sx={{
-                position: 'fixed',
-                top: 16,
-                left: 16,
-                zIndex: 1300,
-              }}
-            >
-              <Logo />
-            </Box>
-      <Stack spacing={4}>
-        <Card sx={{ p: 3 }}>
-          <Typography variant="h6" color="primary" mb={2}>
-            ROC Charge & Activation
-          </Typography>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
+      <Container maxWidth="md">
+        <Stack spacing={4}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
+              {roc[0]?.businessKycDocumentType?.name || 'ROC Charge & Activation'}
+            </Typography>
+            <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
+              {roc[0]?.businessKycDocumentType?.description}
+            </Typography>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="srn"
-                label="Service Request Number (SRN)"
-                placeholder="e.g. G123456"
-                helperText="Founding on your MCA payment receipt"
-              />
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="srn"
+                  label="Service Request Number (SRN)"
+                  placeholder="e.g. G123456"
+                  helperText="Founding on your MCA payment receipt"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Controller
+                  name="filingDate"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <DatePicker
+                      {...field}
+                      label="Filling Date*"
+                      value={field.value}
+                      onChange={field.onChange}
+                      format="dd/MM/yyyy"
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!fieldState.error,
+                          helperText: fieldState.error?.message,
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Controller
-                name="filingDate"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <DatePicker
-                    {...field}
-                    label="Filling Date*"
-                    value={field.value}
-                    onChange={field.onChange}
-                    format="dd/MM/yyyy"
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        error: !!fieldState.error,
-                        helperText: fieldState.error?.message,
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Grid>
-          </Grid>
-
-          {/* <Box mt={3}>
+            {/* <Box mt={3}>
             <Typography variant="subtitle2" mb={1}>
               ROC Charge filing Acknowledgement
             </Typography>
@@ -181,49 +165,49 @@ export default function RocChagre() {
               }}
             />
           </Box> */}
-          <Card sx={{ height: '75vh', my: 4 }}>
-            <Box
-              component="iframe"
-              src={pdfUrl}
-              width="100%"
-              height="100%"
-              sx={{ border: 'none' }}
-            />
+            <Card sx={{ height: '75vh', my: 4 }}>
+              <Box
+                component="iframe"
+                src={roc[0]?.chargeFiling?.fileUrl}
+                width="100%"
+                height="100%"
+                sx={{ border: 'none' }}
+              />
+            </Card>
           </Card>
-        </Card>
 
-        <Card sx={{ p: 3 }}>
-          <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="h6" color="primary" mb={2}>
-              Backup Security
-            </Typography>
-            <Button
-              variant="contained"
-              disabled={nashLoading}
-              onClick={async () => {
-                try {
-                  setNashLoading(true);
+          <Card sx={{ p: 3 }}>
+            <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="h6" color="primary" mb={2}>
+                Backup Security
+              </Typography>
+              <Button
+                variant="contained"
+                disabled={nashLoading}
+                onClick={async () => {
+                  try {
+                    setNashLoading(true);
 
-                  await axiosInstance.patch('/business-kyc/roc/nash');
+                    await axiosInstance.patch('/business-kyc/roc/nash');
 
-                  enqueueSnackbar('Nash activated successfully', {
-                    variant: 'success',
-                  });
-                } catch (error) {
-                  enqueueSnackbar(
-                    error?.response?.data?.error?.message || 'Failed to activate Nash',
-                    { variant: 'error' }
-                  );
-                } finally {
-                  setNashLoading(false);
-                }
-              }}
-            >
-              Activate your Nash
-            </Button>
-          </Stack>
+                    enqueueSnackbar('Nash activated successfully', {
+                      variant: 'success',
+                    });
+                  } catch (error) {
+                    enqueueSnackbar(
+                      error?.response?.data?.error?.message || 'Failed to activate Nash',
+                      { variant: 'error' }
+                    );
+                  } finally {
+                    setNashLoading(false);
+                  }
+                }}
+              >
+                Activate your Nash
+              </Button>
+            </Stack>
 
-          {/* <Stack spacing={2}>
+            {/* <Stack spacing={2}>
             <Typography variant="subtitle2">Backup Security*</Typography>
 
             <RHFCustomFileUploadBox
@@ -275,47 +259,48 @@ export default function RocChagre() {
               </Grid>
             </Grid>
           </Stack> */}
-        </Card>
+          </Card>
 
-        <Card sx={{ p: 3, backgroundColor: '#f6f9fc' }}>
-          <Typography variant="h6" color="primary" mb={2}>
-            Escrow Activation Confirmation
-          </Typography>
+          <Card sx={{ p: 3, backgroundColor: '#f6f9fc' }}>
+            <Typography variant="h6" color="primary" mb={2}>
+              Escrow Activation Confirmation
+            </Typography>
 
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            By continuing, you confirm that the Seller’s Escrow Account has been successfully linked
-            to the NBFC nodal account for repayment routing.
-          </Typography>
+            <Typography variant="body2" color="text.secondary" mb={2}>
+              By continuing, you confirm that the Seller’s Escrow Account has been successfully
+              linked to the NBFC nodal account for repayment routing.
+            </Typography>
 
-          <Controller
-            name="escrowConfirmed"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Box>
-                <FormControlLabel
-                  control={<Checkbox {...field} checked={field.value} />}
-                  label={
-                    <Typography variant="body2">
-                      I confirm that the Escrow Account is active
-                    </Typography>
-                  }
-                />
+            <Controller
+              name="escrowConfirmed"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Box>
+                  <FormControlLabel
+                    control={<Checkbox {...field} checked={field.value} />}
+                    label={
+                      <Typography variant="body2">
+                        I confirm that the Escrow Account is active
+                      </Typography>
+                    }
+                  />
 
-                {fieldState.error && (
-                  <FormHelperText error>{fieldState.error.message}</FormHelperText>
-                )}
-              </Box>
-            )}
-          />
-        </Card>
+                  {fieldState.error && (
+                    <FormHelperText error>{fieldState.error.message}</FormHelperText>
+                  )}
+                </Box>
+              )}
+            />
+          </Card>
 
-        {/* ================= Action ================= */}
-        <Stack direction="row" justifyContent="flex-end">
-          <LoadingButton type="submit" variant="contained" loading={submitLoading}>
-            Save & Continue
-          </LoadingButton>
+          {/* ================= Action ================= */}
+          <Stack direction="row" justifyContent="flex-end">
+            <LoadingButton type="submit" variant="contained" loading={submitLoading}>
+              Save & Continue
+            </LoadingButton>
+          </Stack>
         </Stack>
-      </Stack>
+      </Container>
     </FormProvider>
   );
 }

@@ -59,7 +59,7 @@ export default function SanctionLetter({ document, onNext }) {
 
       onNext?.();
     } catch (error) {
-      enqueueSnackbar(error?.error?.message || 'Failed to accept agreement', { variant: 'error' });
+      enqueueSnackbar(error?.error?.message || 'Failed to accept agreement1', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -161,7 +161,8 @@ export default function SanctionLetter({ document, onNext }) {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
+                size="large"
+                sx={{ px: 4, borderRadius: 2, backgroundColor: 'primary.main' }}
                 disabled={!isValid || loading}
               >
                 {loading ? 'Processing...' : 'Next'}
