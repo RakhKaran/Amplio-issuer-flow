@@ -15,6 +15,8 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
+import ESignVerify from './e-sign/verify-e-sign';
+import Logo from 'src/components/logo';
 import { useGetDpn } from 'src/api/dpn';
 import ESignVerifyDpn from './e-sign/verify-e-sign';
 import FormProvider from 'src/components/hook-form';
@@ -78,6 +80,27 @@ export default function DPN() {
   }
 
   return (
+    <Container maxWidth="md">
+         <Box
+              sx={{
+                position: 'fixed',
+                top: 16,
+                left: 16,
+                zIndex: 1300,
+              }}
+            >
+              <Logo />
+            </Box>
+      <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
+        Demand Promissory Note
+      </Typography>
+      <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
+        {document?.subtitle}
+      </Typography>
+      <Card sx={{ height: '75vh', mb: 4 }}>
+        <Box component="iframe" src={pdfUrl} width="100%" height="100%" sx={{ border: 'none' }} />
+      </Card>
+      <form onSubmit={handleSubmit(onSubmit)}>
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Container maxWidth="md">
         <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>

@@ -12,6 +12,7 @@ import { Icon } from '@iconify/react';
 import { RouterLink } from 'src/routes/components';
 import { MotionContainer, varFade } from 'src/components/animate';
 import { paths } from 'src/routes/paths';
+import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -48,6 +49,16 @@ const StyledIcon = styled('div')(({ theme }) => ({
 export default function Pending() {
   return (
     <Container maxWidth="md" sx={{ position: 'relative', py: { xs: 1, sm: 2, md: 2 } }}>
+           <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <Box
         sx={{
           textAlign: 'center',
@@ -80,7 +91,7 @@ export default function Pending() {
                   <div className="icon-container">
                     <Icon icon="mdi:clock-time-four-outline" width="100%" height="100%" />
                   </div>
-                  <div className="status-text">Pending Compliance Review</div>
+                  <div className="status-text">Under Review</div>
                 </StyledIcon>
               </div>
             </m.div>
@@ -88,11 +99,7 @@ export default function Pending() {
 
           <m.div variants={varFade().inUp}>
             <Typography variant="h5" sx={{ mb: 1, color: '#000' }}>
-              Our compliance team will review your application within{' '}
-              <Box component="span" sx={{ pl: 0.2, color: 'error.main' }}>
-                2-3 business days
-              </Box>
-              . You'll receive email updates on your application status.
+             We are finalizing your credit approval and documentation. Your credit line will be activated shortly
             </Typography>
           </m.div>
         </MotionContainer>

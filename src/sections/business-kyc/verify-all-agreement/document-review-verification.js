@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import Iconify from 'src/components/iconify';
+import Logo from 'src/components/logo';
 import * as Yup from 'yup';
 
 // ----------------------------------------------------------------------
@@ -99,6 +100,16 @@ export default function DocumentReviewAndVerification() {
 
   return (
     <Box display="flex" flexDirection="column">
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <Typography variant="h4" mb={1} color="primary" textAlign="center">
         Document Review & Confirmation
       </Typography>
