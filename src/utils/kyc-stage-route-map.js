@@ -11,5 +11,6 @@ export const KYC_STAGE_ROUTE_MAP = {
 
   // Final states
   PENDING: paths.kyc.invoiceFinancing.pending,
+  BUSINESS_KYC_PENDING: paths.kyc.invoiceFinancing.pending,
   COMPLETED: paths.dashboard.root,
 };

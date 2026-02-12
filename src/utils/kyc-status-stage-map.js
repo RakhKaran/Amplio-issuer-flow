@@ -14,5 +14,6 @@ export const KYC_STATUS_STAGE_MAP = {
 
   // Final
   pending: KYC_STAGE_ROUTE_MAP.PENDING,
+  businesskycpending: KYC_STAGE_ROUTE_MAP.BUSINESS_KYC_PENDING,
   completed: KYC_STAGE_ROUTE_MAP.COMPLETED,
 };

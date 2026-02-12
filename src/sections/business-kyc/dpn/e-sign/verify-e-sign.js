@@ -2,10 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Container, Grid, Typography, TextField, Stack, Button, Alert, Box } from '@mui/material';
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
-import AgreementSuccessDialog from '../success/agreement-success';
-import DocumentReviewAndVerification from '../../verify-all-agreement/document-review-verification';
+import DpnSuccessDialog from '../success/dpn-success';
 
-export default function ESignVerify() {
+export default function ESignVerifyDpn() {
   const { enqueueSnackbar } = useSnackbar();
 
   const OTP_LENGTH = 4;
@@ -49,7 +48,7 @@ export default function ESignVerify() {
     setVerifying(true);
 
     try {
-      await axiosInstance.post('/auth/company-esign/verify-otp', {
+      await axiosInstance.post('/auth/company-esign/dpn/verify-otp', {
         otp: enteredOtp,
       });
 
@@ -68,6 +67,8 @@ export default function ESignVerify() {
   const handleResendOtp = async () => {
     try {
       await axiosInstance.post('/auth/company-esign/send-otp');
+
+      sessionStorage.setItem('dpnJustCompleted', 'true');
 
       enqueueSnackbar('OTP resent successfully', {
         variant: 'success',
@@ -98,9 +99,9 @@ export default function ESignVerify() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  if (step === 'review') {
-    return <DocumentReviewAndVerification />;
-  }
+  // if (step === 'review') {
+  //   return <DocumentReviewAndVerification />;
+  // }
 
   const renderOtpBoxes = (
     <Grid container spacing={2} justifyContent="center">
@@ -225,12 +226,12 @@ export default function ESignVerify() {
             </Typography>
           </Grid>
         </Grid>
-        <AgreementSuccessDialog
+        <DpnSuccessDialog
           open={openSuccessDialog}
           onClose={() => setOpenSuccessDialog(false)}
           onNext={() => {
-            setOpenSuccessDialog(false); // close dialog
-            setStep('review'); // destroy OTP screen
+            setOpenSuccessDialog(false);
+            setStep('review');
           }}
         />
       </Container>

@@ -6,7 +6,6 @@ import {
   Container,
   Stack,
   Typography,
-  Paper,
   FormControlLabel,
   Checkbox,
   FormHelperText,
@@ -16,12 +15,15 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
-import ESignVerify from './e-sign/verify-e-sign';
+import { useGetDpn } from 'src/api/dpn';
+import ESignVerifyDpn from './e-sign/verify-e-sign';
+import FormProvider from 'src/components/hook-form';
 
 export default function DPN() {
+  const { dpn, dpnLoading } = useGetDpn();
   const [showEsignVerify, setShowEsignVerify] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
-  const pdfUrl = '/assets/Demand_Promissory_Note.pdf';
+  // const pdfUrl = '/assets/Demand_Promissory_Note.pdf';
   const AgreementSchema = Yup.object().shape({
     agreement: Yup.boolean().oneOf(
       [true],
@@ -29,50 +31,70 @@ export default function DPN() {
     ),
   });
 
+  const defaultValues = {
+    agreement: false,
+  };
+
+  const methods = useForm({
+    resolver: yupResolver(AgreementSchema),
+    defaultValues,
+    mode: 'onChange',
+  });
+
   const {
     control,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm({
-    resolver: yupResolver(AgreementSchema),
-    defaultValues: {
-      agreement: false,
-    },
-    mode: 'onChange', // enables instant validation
-  });
+  } = methods;
+
+  if (dpnLoading) return <>Loading...</>;
+
+  if (!dpn) return <>DPN document not available</>;
 
   const onSubmit = async () => {
-    setSendingOtp(true);
     try {
+      setSendingOtp(true);
+
+      await axiosInstance.patch('/business-kyc/dpn', {
+        dpnId: dpn.id,
+        isAccepted: true,
+      });
+
       await axiosInstance.post('/auth/company-esign/send-otp');
 
       enqueueSnackbar('OTP sent successfully', {
         variant: 'success',
       });
       setShowEsignVerify(true);
-    } catch (err) {
-      enqueueSnackbar(err?.response?.data?.message || 'Failed to send OTP', { variant: 'error' });
+    } catch (error) {
+      enqueueSnackbar(error?.error?.message || 'Failed to send OTP1', { variant: 'error' });
     } finally {
       setSendingOtp(false);
     }
   };
 
   if (showEsignVerify) {
-    return <ESignVerify />;
+    return <ESignVerifyDpn />;
   }
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
-        Demand Promissory Note
-      </Typography>
-      <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
-        {document?.subtitle}
-      </Typography>
-      <Card sx={{ height: '75vh', mb: 4 }}>
-        <Box component="iframe" src={pdfUrl} width="100%" height="100%" sx={{ border: 'none' }} />
-      </Card>
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+      <Container maxWidth="md">
+        <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
+          {dpn?.businessKycDocumentType?.name || 'Demand Promissory Note'}
+        </Typography>
+        <Typography variant="body2" align="center" sx={{ mb: 3, fontWeight: 400 }}>
+          {dpn?.businessKycDocumentType?.description}
+        </Typography>
+        <Card sx={{ height: '75vh', mb: 4 }}>
+          <Box
+            component="iframe"
+            src={dpn?.media?.fileUrl}
+            width="100%"
+            height="100%"
+            sx={{ border: 'none' }}
+          />
+        </Card>
         <Stack spacing={3} alignItems="center">
           {/* Checkbox Container */}
           <Controller
@@ -116,7 +138,7 @@ export default function DPN() {
             {sendingOtp ? 'Sending OTP...' : 'Continue to E-Sign'}
           </Button>
         </Stack>
-      </form>
-    </Container>
+      </Container>
+    </FormProvider>
   );
 }

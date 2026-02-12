@@ -61,6 +61,19 @@ export default function KycFlowGuard({ children }) {
           return;
         }
 
+        if (state.currentStage === 'BUSINESS_KYC_PENDING') {
+          const currentPath = window.location.pathname;
+          const pendingPath = paths.kyc.invoiceFinancing.pending;
+
+          if (currentPath !== pendingPath) {
+            router.replace(pendingPath);
+            return;
+          }
+
+          setChecking(false);
+          return;
+        }
+
         /* ---------- DEFAULT → STEPPER ---------- */
         router.replace(paths.kyc.invoiceFinancing.create);
         setChecking(false); // ⭐ UNLOCK UI

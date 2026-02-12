@@ -5,37 +5,29 @@ import Iconify from 'src/components/iconify';
 import { useRouter } from 'src/routes/hook';
 import axiosInstance from 'src/utils/axios';
 import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
-import DocumentReviewAndVerification from '../../verify-all-agreement/document-review-verification';
 
-export default function AgreementSuccessDialog({ open, onClose, onNext }) {
+export default function DpnSuccessDialog({ open, onClose }) {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
 
-  // const handleNext = async () => {
-  //   try {
-  //     setLoading(true);
+  const handleNext = async () => {
+    try {
+      sessionStorage.removeItem('dpnJustCompleted');
 
-  //     await axiosInstance.post('/business-kyc/roc-next-status');
+      enqueueSnackbar('Moved to next step successfully', {
+        variant: 'success',
+      });
 
-  //     enqueueSnackbar('Moved to next step successfully', {
-  //       variant: 'success',
-  //     });
-
-  //     onClose?.();
-  //     setShowDocumentReview(true);
-  //     // router.push(KYC_STAGE_ROUTE_MAP.ROC);
-  //   } catch (error) {
-  //     enqueueSnackbar(error?.error?.message || 'Failed to move to next step', {
-  //       variant: 'error',
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const handleNext = () => {
-    // onClose?.(); // optional
-    onNext();
+      onClose?.();
+      router.push(KYC_STAGE_ROUTE_MAP.PENDING);
+    } catch (error) {
+      enqueueSnackbar(error?.error?.message || 'Failed to move to next step', {
+        variant: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -62,7 +54,7 @@ export default function AgreementSuccessDialog({ open, onClose, onNext }) {
           <Iconify icon="mdi:check-circle" width={56} sx={{ color: 'success.main' }} />
 
           <Typography variant="h5" fontWeight={700}>
-            Agreement Signed Successfully
+            Dpn Signed Successfully
           </Typography>
         </Stack>
 
@@ -79,7 +71,7 @@ export default function AgreementSuccessDialog({ open, onClose, onNext }) {
 
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-                Agreement Reference ID
+                Dpn Reference ID
               </Typography>
               <Typography variant="body2" color="text.secondary" fontWeight={600}>
                 INV-AG2025-00421
@@ -107,7 +99,7 @@ export default function AgreementSuccessDialog({ open, onClose, onNext }) {
               startIcon={<Iconify icon="mdi:eye-outline" />}
               sx={{ borderRadius: 20, px: 3 }}
             >
-              View Signed Agreement
+              View Signed Dpn
             </Button>
 
             <Button

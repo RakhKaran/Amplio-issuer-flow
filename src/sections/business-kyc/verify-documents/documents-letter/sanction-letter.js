@@ -44,8 +44,6 @@ export default function SanctionLetter({ document, onNext }) {
   } = methods;
 
   const onSubmit = async (formData) => {
-    console.log('Form submitted');
-    console.log('Form Data:', formData);
     try {
       setLoading(true);
       console.log('Calling API...');
@@ -55,16 +53,12 @@ export default function SanctionLetter({ document, onNext }) {
         isAccepted: true,
         reason: formData.remark || '',
       });
-
-      console.log('API Success:', response?.data);
       enqueueSnackbar('Agreement accepted successfully', {
         variant: 'success',
       });
 
       onNext?.();
     } catch (error) {
-      console.log('API Error:', error);
-      console.log('Error Response:', error?.response);
       enqueueSnackbar(error?.error?.message || 'Failed to accept agreement', { variant: 'error' });
     } finally {
       setLoading(false);

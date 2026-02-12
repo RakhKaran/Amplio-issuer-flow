@@ -7,7 +7,6 @@ import {
   Stack,
   Typography,
   Button,
-  Divider,
   FormControlLabel,
   Checkbox,
   FormHelperText,
@@ -21,17 +20,22 @@ import { useState } from 'react';
 import { useRouter } from 'src/routes/hook';
 import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
 import axiosInstance from 'src/utils/axios';
+import { LoadingButton } from '@mui/lab';
 
 export default function RocChagre() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
-  const [loading, setLoading] = useState(false);
+  const [nashLoading, setNashLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  const pdfUrl = '/assets/Demand_Promissory_Note.pdf';
 
   const RocChargeSchema = Yup.object().shape({
-    srn: Yup.string().required('Service Request Number is required'),
-    filingDate: Yup.date().required('Filing date is required'),
-
-    rocAcknowledgement: Yup.mixed().required('ROC filing acknowledgement is required'),
+    srn: Yup.string(),
+    // .required('Service Request Number is required')
+    filingDate: Yup.date(),
+    // .required('Filing date is required')
+    // rocAcknowledgement: Yup.mixed().required('ROC filing acknowledgement is required'),
 
     // pdc: Yup.mixed().required('PDC document is required'),
     // chequeNo: Yup.string().required('Cheque number is required'),
@@ -43,8 +47,8 @@ export default function RocChagre() {
   });
 
   const defaultValues = {
-    srn: '',
-    filingDate: null,
+    srn: `SRN-${Date.now()}`,
+    filingDate: new Date(),
     rocAcknowledgement: null,
 
     pdc: null,
@@ -62,27 +66,47 @@ export default function RocChagre() {
 
   const { handleSubmit, control, watch, reset } = methods;
 
-  const onSubmit = async (data) => {
+  // const onSubmit = async (data) => {
+  //   try {
+  //     setLoading(true);
+
+  //     console.log('ROC Charge Data:', data);
+
+  //     // ✅ CALL YOUR API
+  //     await axiosInstance.post('/business-kyc/roc-next-status');
+
+  //     enqueueSnackbar('ROC submitted successfully', {
+  //       variant: 'success',
+  //     });
+
+  //     // ✅ ROUTE TO DPN
+  //     router.push(KYC_STAGE_ROUTE_MAP.DPN);
+  //   } catch (error) {
+  //     enqueueSnackbar(error?.response?.data?.error?.message || 'Failed to move to next step', {
+  //       variant: 'error',
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const onSubmit = async () => {
     try {
-      setLoading(true);
+      setSubmitLoading(true);
 
-      console.log('ROC Charge Data:', data);
-
-      // ✅ CALL YOUR API
-      await axiosInstance.post('/business-kyc/roc-next-status');
+      await axiosInstance.patch('/business-kyc/roc/accept');
 
       enqueueSnackbar('ROC submitted successfully', {
         variant: 'success',
       });
 
-      // ✅ ROUTE TO DPN
       router.push(KYC_STAGE_ROUTE_MAP.DPN);
     } catch (error) {
-      enqueueSnackbar(error?.response?.data?.error?.message || 'Failed to move to next step', {
-        variant: 'error',
-      });
+      enqueueSnackbar(
+        error?.response?.data?.error?.message || 'Please activate Nash before continuing',
+        { variant: 'error' }
+      );
     } finally {
-      setLoading(false);
+      setSubmitLoading(false);
     }
   };
 
@@ -128,7 +152,7 @@ export default function RocChagre() {
             </Grid>
           </Grid>
 
-          <Box mt={3}>
+          {/* <Box mt={3}>
             <Typography variant="subtitle2" mb={1}>
               ROC Charge filing Acknowledgement
             </Typography>
@@ -145,7 +169,16 @@ export default function RocChagre() {
                 ],
               }}
             />
-          </Box>
+          </Box> */}
+          <Card sx={{ height: '75vh', my: 4 }}>
+            <Box
+              component="iframe"
+              src={pdfUrl}
+              width="100%"
+              height="100%"
+              sx={{ border: 'none' }}
+            />
+          </Card>
         </Card>
 
         <Card sx={{ p: 3 }}>
@@ -153,7 +186,30 @@ export default function RocChagre() {
             <Typography variant="h6" color="primary" mb={2}>
               Backup Security
             </Typography>
-            <Button variant="contained">Activate your Nash</Button>
+            <Button
+              variant="contained"
+              disabled={nashLoading}
+              onClick={async () => {
+                try {
+                  setNashLoading(true);
+
+                  await axiosInstance.patch('/business-kyc/roc/nash');
+
+                  enqueueSnackbar('Nash activated successfully', {
+                    variant: 'success',
+                  });
+                } catch (error) {
+                  enqueueSnackbar(
+                    error?.response?.data?.error?.message || 'Failed to activate Nash',
+                    { variant: 'error' }
+                  );
+                } finally {
+                  setNashLoading(false);
+                }
+              }}
+            >
+              Activate your Nash
+            </Button>
           </Stack>
 
           {/* <Stack spacing={2}>
@@ -244,9 +300,9 @@ export default function RocChagre() {
 
         {/* ================= Action ================= */}
         <Stack direction="row" justifyContent="flex-end">
-          <Button type="submit" variant="contained" loading={loading}>
+          <LoadingButton type="submit" variant="contained" loading={submitLoading}>
             Save & Continue
-          </Button>
+          </LoadingButton>
         </Stack>
       </Stack>
     </FormProvider>
