@@ -78,7 +78,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
     )
   );
 
-  const format = 'dd/MM/yyyy'
+  const format = 'dd/MM/yyyy';
 
   useEffect(() => {
     if (!loading && signatories && signatories.length >= 1) {
@@ -90,9 +90,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
     refreshSignatories();
   }, []);
 
-  const notFound =
-    !loading &&
-    (signatories.length === 0 || filteredRows.length === 0);
+  const notFound = !loading && (signatories.length === 0 || filteredRows.length === 0);
 
   return (
     <Container sx={{ position: 'relative', py: { xs: 6, sm: 8, md: 10 } }}>
@@ -263,10 +261,13 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
                     </TableCell>
 
                     {/* Status */}
-                    <TableCell><Label  sx={{
-      backgroundColor: row.status === 1 ? 'success.light' : 'warning.light',
-      px: 1.5,
-    }}>{row.status === 1 ? 'Verified' : 'Pending'}</Label></TableCell>
+                    <TableCell>
+                      <Label
+                        color={row.status === 1 ? 'success' : 'warning'}
+                      >
+                        {row.status === 1 ? 'Verified' : 'Pending'}
+                      </Label>
+                    </TableCell>
 
                     {/* Actions */}
                     {/* <TableCell align="right">
