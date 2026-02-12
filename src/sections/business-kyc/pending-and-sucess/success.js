@@ -12,6 +12,7 @@ import { Icon } from '@iconify/react';
 import { RouterLink } from 'src/routes/components';
 import { MotionContainer, varFade } from 'src/components/animate';
 import { paths } from 'src/routes/paths';
+import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -35,6 +36,16 @@ const StyledIcon = styled('div')(({ theme }) => ({
 export default function Sucessfull() {
   return (
     <Container maxWidth="md" sx={{ position: 'relative', py: { xs: 2, sm: 4, md: 5 } }}>
+           <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <Box
         sx={{
           textAlign: 'center',

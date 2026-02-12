@@ -17,6 +17,7 @@ import { Controller, useForm } from 'react-hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 import ESignVerify from './e-sign/verify-e-sign';
+import Logo from 'src/components/logo';
 
 export default function DPN() {
   const [showEsignVerify, setShowEsignVerify] = useState(false);
@@ -63,6 +64,16 @@ export default function DPN() {
 
   return (
     <Container maxWidth="md">
+         <Box
+              sx={{
+                position: 'fixed',
+                top: 16,
+                left: 16,
+                zIndex: 1300,
+              }}
+            >
+              <Logo />
+            </Box>
       <Typography variant="h4" align="center" color="primary" sx={{ mb: 1, fontWeight: 600 }}>
         Demand Promissory Note
       </Typography>

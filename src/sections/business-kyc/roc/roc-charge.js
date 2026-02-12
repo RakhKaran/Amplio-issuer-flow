@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { useRouter } from 'src/routes/hook';
 import { KYC_STAGE_ROUTE_MAP } from 'src/utils/kyc-stage-route-map';
 import axiosInstance from 'src/utils/axios';
+import Logo from 'src/components/logo';
 
 export default function RocChagre() {
   const router = useRouter();
@@ -88,6 +89,16 @@ export default function RocChagre() {
 
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+         <Box
+              sx={{
+                position: 'fixed',
+                top: 16,
+                left: 16,
+                zIndex: 1300,
+              }}
+            >
+              <Logo />
+            </Box>
       <Stack spacing={4}>
         <Card sx={{ p: 3 }}>
           <Typography variant="h6" color="primary" mb={2}>

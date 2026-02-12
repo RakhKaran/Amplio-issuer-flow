@@ -133,6 +133,7 @@ export default function AuditedGST3B({
             : doc
         )
       );
+      e.target.value = null;
 
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
@@ -573,7 +574,6 @@ export default function AuditedGST3B({
                       accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
                       style={{ display: 'none' }}
-                      key={`${doc.id}-${doc.file?.id || 'empty'}`}
                       onChange={(e) => handleFileUpload(e, doc.id)}
                     />
                     <IconButton

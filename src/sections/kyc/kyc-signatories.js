@@ -29,6 +29,7 @@ import KYCAddSignatoriesForm from './kyc-add-signatories-form';
 import { useGetSignatories } from 'src/api/companyKyc';
 import { Card } from '@mui/material';
 import { TableNoData } from 'src/components/table';
+import Label from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
@@ -262,7 +263,10 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
                     </TableCell>
 
                     {/* Status */}
-                    <TableCell>{row.status === 1 ? 'Verified' : 'Pending'}</TableCell>
+                    <TableCell><Label  sx={{
+      backgroundColor: row.status === 1 ? 'success.light' : 'warning.light',
+      px: 1.5,
+    }}>{row.status === 1 ? 'Verified' : 'Pending'}</Label></TableCell>
 
                     {/* Actions */}
                     {/* <TableCell align="right">
