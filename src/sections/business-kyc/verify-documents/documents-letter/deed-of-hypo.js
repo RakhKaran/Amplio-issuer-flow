@@ -128,10 +128,10 @@ export default function DeedOfHypo({ document, onNext }) {
             type="submit"
             variant="contained"
             size="large"
+            color='primary'
             sx={{
               px: 4,
               borderRadius: 2,
-              backgroundColor: 'primary.main',
             }}
           >
             {sendingOtp ? 'Sending OTP...' : 'Continue to E-Sign'}

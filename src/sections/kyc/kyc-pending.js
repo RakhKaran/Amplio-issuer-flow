@@ -127,8 +127,25 @@ export default function KYCPending() {
               </Typography>
             </Box>
           </m.div>
+
         </MotionContainer>
       </Box>
+
+      <m.div variants={varFade().inUp}>
+        <Stack alignItems="center" sx={{ mt: 3 }}>
+          <Button
+            component={RouterLink}
+            to={paths.auth.jwt.login}
+            variant="contained"
+            color="primary"
+            size="small"
+     
+          >
+            Go To Login
+          </Button>
+        </Stack>
+      </m.div>
+
     </Container>
   );
 }

@@ -32,6 +32,8 @@ export default function RocChagre() {
   console.log('roc data', roc[0]?.chargeFiling?.fileUrl);
   const [nashLoading, setNashLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [isNashActivated, setIsNashActivated] = useState(false);
+
 
   const RocChargeSchema = Yup.object().shape({
     srn: Yup.string(),
@@ -183,12 +185,17 @@ export default function RocChagre() {
               </Typography>
               <Button
                 variant="contained"
-                disabled={nashLoading}
+                color="primary"
+                disabled={nashLoading || isNashActivated}
                 onClick={async () => {
                   try {
                     setNashLoading(true);
 
-                    await axiosInstance.patch('/business-kyc/roc/nash');
+                    const res = await axiosInstance.patch('/business-kyc/roc/nash');
+
+                    if (res?.data?.success) {
+                      setIsNashActivated(true);
+                    }
 
                     enqueueSnackbar('Nash activated successfully', {
                       variant: 'success',
@@ -203,8 +210,9 @@ export default function RocChagre() {
                   }
                 }}
               >
-                Activate your Nash
+                {isNashActivated ? 'Activated' : 'Activate your Nash'}
               </Button>
+
             </Stack>
 
             {/* <Stack spacing={2}>
@@ -295,7 +303,7 @@ export default function RocChagre() {
 
           {/* ================= Action ================= */}
           <Stack direction="row" justifyContent="flex-end">
-            <LoadingButton type="submit" variant="contained" loading={submitLoading}>
+            <LoadingButton type="submit" color='primary' variant="contained" loading={submitLoading}>
               Save & Continue
             </LoadingButton>
           </Stack>

@@ -74,7 +74,6 @@ export function AuthProvider({ children }) {
           payload: {
             user: {
               ...user,
-              isBusinessKycComplete: false,
             },
           },
         });
@@ -120,7 +119,6 @@ export function AuthProvider({ children }) {
         payload: {
           user: {
             ...user,
-            isBusinessKycComplete: false,
           },
         },
       });

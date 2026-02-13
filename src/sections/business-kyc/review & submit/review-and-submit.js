@@ -13,7 +13,7 @@ import { paths } from 'src/routes/paths';
 import { useSnackbar } from 'notistack';
 import axiosInstance from 'src/utils/axios';
 
-export default function ReviewAndSubmitPage({ formData }) {
+export default function ReviewAndSubmitPage({ formData, setActiveStepId }) {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -51,8 +51,8 @@ export default function ReviewAndSubmitPage({ formData }) {
     } catch (error) {
       enqueueSnackbar(
         error?.response?.data?.error?.message ||
-          error?.response?.data?.message ||
-          'Failed to submit review',
+        error?.response?.data?.message ||
+        'Failed to submit review',
         { variant: 'error' }
       );
       console.error('Review submit failed', error);
@@ -72,9 +72,18 @@ export default function ReviewAndSubmitPage({ formData }) {
           </Typography>
         </Stack>
         <KycDetailsPage />
-        <ReviewBusinessProfilePage />
-        <CollateralAssetsPage />
-        <GuarantorDetailsPage onEdit={null}  />
+
+        <ReviewBusinessProfilePage
+          onEdit={() => setActiveStepId('business_Profile_Finance')}
+        />
+
+        <CollateralAssetsPage
+          onEdit={() => setActiveStepId('collateral_assets_verification')}
+        />
+
+        <GuarantorDetailsPage
+          onEdit={() => setActiveStepId('guarantor_details')}
+        />
         {/* <ClientSummary data={formData.client_details} /> */}
 
         <Box mt={5} display="flex" flexDirection="column" alignItems="center">

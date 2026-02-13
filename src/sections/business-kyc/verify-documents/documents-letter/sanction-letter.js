@@ -161,8 +161,9 @@ export default function SanctionLetter({ document, onNext }) {
               <Button
                 type="submit"
                 variant="contained"
-                size="large"
-                sx={{ px: 4, borderRadius: 2, backgroundColor: 'primary.main' }}
+                size="large"              
+                color='primary'
+                sx={{ px: 4, width: '20%', borderRadius: 2}}
                 disabled={!isValid || loading}
               >
                 {loading ? 'Processing...' : 'Next'}

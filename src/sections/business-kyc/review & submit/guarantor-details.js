@@ -5,100 +5,13 @@ import { useGetGuarantors } from 'src/api/businessKyc';
 import Iconify from 'src/components/iconify';
 import { formatNumberIN } from 'src/utils/change-case';
 
-const guarantorDetails = [
-  {
-    guarantorType: 'Individual',
-    fullName: 'Rajesh Kumar Sharma',
-    pan: 'XXXXA45XX',
-    aadhaar: 'XXXX XXXX 1234',
-    netWorth: '₹12 Cr',
-    guaranteedAmount: '₹10 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Suresh Kumar Sharma',
-    pan: 'XXXXA45XX',
-    aadhaar: 'XXXX XXXX 1234',
-    netWorth: '₹12 Cr',
-    guaranteedAmount: '₹10 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Mahesh Kumar Sharma',
-    pan: 'XXXXA45XX',
-    aadhaar: 'XXXX XXXX 1234',
-    netWorth: '₹12 Cr',
-    guaranteedAmount: '₹10 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Naresh Kumar Sharma',
-    pan: 'XXXXA45XX',
-    aadhaar: 'XXXX XXXX 1234',
-    netWorth: '₹12 Cr',
-    guaranteedAmount: '₹10 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Ramesh Patel',
-    pan: 'XXXXB67XX',
-    aadhaar: 'XXXX XXXX 5678',
-    netWorth: '₹9 Cr',
-    guaranteedAmount: '₹7 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Amit Verma',
-    pan: 'XXXXC89XX',
-    aadhaar: 'XXXX XXXX 8899',
-    netWorth: '₹15 Cr',
-    guaranteedAmount: '₹12 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Sunil Mehta',
-    pan: 'XXXXD12XX',
-    aadhaar: 'XXXX XXXX 4455',
-    netWorth: '₹8 Cr',
-    guaranteedAmount: '₹6 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Vikas Jain',
-    pan: 'XXXXE34XX',
-    aadhaar: 'XXXX XXXX 7788',
-    netWorth: '₹11 Cr',
-    guaranteedAmount: '₹9 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Anil Gupta',
-    pan: 'XXXXF56XX',
-    aadhaar: 'XXXX XXXX 3322',
-    netWorth: '₹10 Cr',
-    guaranteedAmount: '₹8 Cr',
-    eSignStatus: 'Approved',
-  },
-  {
-    guarantorType: 'Individual',
-    fullName: 'Deepak Malhotra',
-    pan: 'XXXXG78XX',
-    aadhaar: 'XXXX XXXX 9911',
-    netWorth: '₹14 Cr',
-    guaranteedAmount: '₹11 Cr',
-    eSignStatus: 'Approved',
-  },
-];
 
-export default function GuarantorDetailsPage({ data }) {
+const STATUS_CONFIG = {
+  0: { label: 'Under Review', color: 'warning' },
+  1: { label: 'Approved', color: 'success' },
+};
+
+export default function GuarantorDetailsPage({ onEdit }) {
   // const guarantorsDetails = data?.guarantors || data?.data?.guarantors || [];
   const { guarantors, refreshGuarantors } = useGetGuarantors();
 
@@ -129,26 +42,24 @@ export default function GuarantorDetailsPage({ data }) {
       <Grid container spacing={2} sx={{ maxWidth: 900, mx: 'auto' }}>
         {guarantorsDetails.slice(0, visibleCount).map((item, index) => (
           <Grid item xs={12} md={6} key={index}>
-            <Card sx={{ p: 3,   height: '100%' }}>
+            <Card sx={{ p: 3, height: '100%' }}>
               <Grid container justifyContent="flex-end" alignItems="flex-end" mb={2}>
                 <Box display="flex" flexDirection="row" alignItems="flex-end" gap={0.5}>
                   <Chip
                     size="small"
-                    label="Approved"
+                    label={STATUS_CONFIG[item?.status]?.label || 'Unknown'}
+                    color={STATUS_CONFIG[item?.status]?.color || 'default'}
+                    variant="soft"
                     sx={{
-                      backgroundColor: '#fff',
-                      color: 'success.main',
-                      border: '1px solid',
-                      borderColor: 'success.main',
-                      fontWeight: 600,
-                      height: 22,
+                      height: 24,
                       fontSize: 11,
+                      fontWeight: 600,
                     }}
                   />
-
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={onEdit}>
                     <Iconify icon="solar:pen-bold" width={18} />
                   </IconButton>
+
                 </Box>
               </Grid>
 

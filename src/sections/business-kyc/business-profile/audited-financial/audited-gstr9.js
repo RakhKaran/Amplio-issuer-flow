@@ -98,45 +98,44 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
   // -----------------------------
   // Handlers
   // -----------------------------
-  const handleFileUpload = async (e, id) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+ const handleFileUpload = async (e, id) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
 
-      const res = await axiosInstance.post('/files', formData);
+    const res = await axiosInstance.post('/files', formData);
 
-      const uploadedFile = res?.data?.files?.[0];
+    const uploadedFile = res?.data?.files?.[0];
 
-      if (!uploadedFile?.id) {
-        enqueueSnackbar('File upload failed', { variant: 'error' });
-        return;
-      }
+    if (!uploadedFile?.id) {
+      enqueueSnackbar('File upload failed', { variant: 'error' });
+      return;
+    }
 
-      // ✅ update ONLY the clicked row
-      setDocuments((prev) =>
-        prev.map((doc) =>
-          doc.id === id
-            ? {
+    setDocuments((prev) =>
+      prev.map((doc) =>
+        doc.id === id
+          ? {
               ...doc,
               file: uploadedFile,
               status: 'Uploaded',
               reportDate: new Date(),
             }
-            : doc
-        )
-      );
+          : doc
+      )
+    );
 
-      enqueueSnackbar('File uploaded successfully', { variant: 'success' });
-    } catch (error) {
-      console.error('File upload error:', error);
-      enqueueSnackbar(error?.response?.data?.error?.message || 'File upload failed', {
-        variant: 'error',
-      });
-    }
-  };
+    enqueueSnackbar('File uploaded successfully', { variant: 'success' });
+  } catch (error) {
+    enqueueSnackbar('File upload failed', { variant: 'error' });
+  } finally {
+    e.target.value = null;
+  }
+};
+
 
   const handleDelete = (id) => {
     setDocuments(docs =>

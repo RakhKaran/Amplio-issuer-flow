@@ -120,7 +120,6 @@ export default function AuditedGST3B({
         return;
       }
 
-      // ✅ update ONLY the clicked row
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.id === id
@@ -133,16 +132,15 @@ export default function AuditedGST3B({
             : doc
         )
       );
-      e.target.value = null;
 
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
-      console.error('File upload error:', error);
-      enqueueSnackbar(error?.response?.data?.error?.message || 'File upload failed', {
-        variant: 'error',
-      });
+      enqueueSnackbar('File upload failed', { variant: 'error' });
+    } finally {
+      e.target.value = null;
     }
   };
+
 
   const handleDelete = (id) => {
     setDocuments(docs =>

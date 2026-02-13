@@ -64,6 +64,7 @@ export default function GuarantorExecution() {
         <Typography
           variant="h6"
           align="center"
+          color='primary'
           sx={{ mb: 2, fontWeight: 600 }}
         >
           Guarantor Execution
@@ -139,6 +140,7 @@ export default function GuarantorExecution() {
               <Button
                 variant="contained"
                 size="medium"
+                color='primary'
                 sx={{ px: 4, borderRadius: 2 }}
                 onClick={() =>
                   navigate(`/kyc/invoiceFinancing/esign?token=${params.get('token')}`)

@@ -129,11 +129,8 @@ export default function PlatformAgreement({ document, onNext }) {
             variant="contained"
             size="large"
             disabled={!isValid}
-            sx={{
-              px: 4,
-              borderRadius: 2,
-              backgroundColor: 'primary.main',
-            }}
+             color='primary'
+            sx={{ px: 4, width: '20%', borderRadius: 2}}
           >
             {loading ? 'Processing...' : 'Next'}
           </Button>

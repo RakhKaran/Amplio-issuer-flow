@@ -534,6 +534,7 @@ export default function KYCBasicInfo() {
                   render={({ field, fieldState: { error } }) => (
                     <DatePicker
                       label="Date of Incorporation *"
+                      format='dd/MM/yyyy'
                       value={field.value}
                       onChange={(v) => field.onChange(v)}
                       slotProps={{
@@ -644,6 +645,7 @@ export default function KYCBasicInfo() {
                 type="submit"
                 variant="contained"
                 size="large"
+                color='primary'
                 loading={isSubmitting}
                 sx={{
                   px: 6,

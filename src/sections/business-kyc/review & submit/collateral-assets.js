@@ -5,110 +5,13 @@ import { useGetBusinessKycStepData } from 'src/api/businessKyc';
 import Iconify from 'src/components/iconify';
 import { formatNumberIN } from 'src/utils/change-case';
 
-const collateralAssets = [
-  {
-    collateralType: 'Real Estate',
-    assetDescription: 'Commercial Property at BKC Mumbai',
-    estimatedValue: '₹18 Cr',
-    ownershipType: 'Corporate',
-    trustName: 'Birbal Asset Trust',
-    valuationDate: '01-Oct-2025',
-    status: 'Under Review',
-    color: '#FFAB00',
-  },
-  {
-    collateralType: 'Land',
-    assetDescription: 'Industrial Plot at Pune',
-    estimatedValue: '₹12 Cr',
-    ownershipType: 'Corporate',
-    trustName: 'Birbal Asset Trust',
-    valuationDate: '15-Sep-2025',
-    status: 'Approved',
-    color: '#00AB59',
-  },
-  {
-    collateralType: 'Machinery',
-    assetDescription: 'Heavy Manufacturing Equipment',
-    estimatedValue: '₹6 Cr',
-    ownershipType: 'Owned',
-    trustName: '—',
-    valuationDate: '20-Aug-2025',
-    status: 'Under Review',
-    color: '#FFAB00',
-  },
-  {
-    collateralType: 'Warehouse',
-    assetDescription: 'Logistics Warehouse – NCR',
-    estimatedValue: '₹9 Cr',
-    ownershipType: 'Leased',
-    trustName: 'LogiTrust Pvt Ltd',
-    valuationDate: '05-Jul-2025',
-    status: 'Approved',
-    color: '#00AB59',
-  },
-  {
-    collateralType: 'Office Space',
-    assetDescription: 'IT Park Office – Bengaluru',
-    estimatedValue: '₹14 Cr',
-    ownershipType: 'Corporate',
-    trustName: 'Tech Asset Trust',
-    valuationDate: '22-Jun-2025',
-    status: 'Under Review',
-    color: '#FFAB00',
-  },
-  {
-    collateralType: 'Plant',
-    assetDescription: 'Power Generation Plant',
-    estimatedValue: '₹25 Cr',
-    ownershipType: 'Corporate',
-    trustName: 'Energy Holdings',
-    valuationDate: '10-May-2025',
-    status: 'Approved',
-    color: '#00AB59',
-  },
-  {
-    collateralType: 'Retail Space',
-    assetDescription: 'Mall Unit – Hyderabad',
-    estimatedValue: '₹7 Cr',
-    ownershipType: 'Owned',
-    trustName: '—',
-    valuationDate: '18-Apr-2025',
-    status: 'Under Review',
-    color: '#FFAB00',
-  },
-  {
-    collateralType: 'Land',
-    assetDescription: 'Agricultural Land – Nashik',
-    estimatedValue: '₹4 Cr',
-    ownershipType: 'Individual',
-    trustName: '—',
-    valuationDate: '30-Mar-2025',
-    status: 'Approved',
-    color: '#00AB59',
-  },
-  {
-    collateralType: 'Cold Storage',
-    assetDescription: 'Cold Storage Facility – Indore',
-    estimatedValue: '₹11 Cr',
-    ownershipType: 'Corporate',
-    trustName: 'Agro Infra Trust',
-    valuationDate: '12-Feb-2025',
-    status: 'Under Review',
-    color: '#FFAB00',
-  },
-  {
-    collateralType: 'Factory',
-    assetDescription: 'Textile Manufacturing Unit',
-    estimatedValue: '₹20 Cr',
-    ownershipType: 'Corporate',
-    trustName: 'Textile Asset Trust',
-    valuationDate: '08-Jan-2025',
-    status: 'Approved',
-    color: '#00AB59',
-  },
-];
+const STATUS_CONFIG = {
+  0: { label: 'Under Review', color: 'warning' },
+  1: { label: 'Approved', color: 'success' },
+};
 
-export default function CollateralAssetsPage() {
+
+export default function CollateralAssetsPage({ onEdit }) {
   const { stepData, stepDataLoading } = useGetBusinessKycStepData('collateral_assets');
 
   const clients = stepData?.data || []
@@ -136,25 +39,25 @@ export default function CollateralAssetsPage() {
       <Grid container spacing={2} sx={{ maxWidth: 900, mx: 'auto' }}>
         {clients.slice(0, visibleCount).map((item, index) => (
           <Grid item xs={12} md={6} key={index}>
-            <Card sx={{ p: 3 ,  height: '100%' }}>
+            <Card sx={{ p: 3, height: '100%' }}>
               <Grid container justifyContent="flex-end" alignItems="flex-end" mb={2}>
                 <Box display="flex" flexDirection="row" alignItems="flex-end" gap={0.5}>
                   <Chip
                     size="small"
-                    label="Approved"
-                    variant="outlined"
+                    label={STATUS_CONFIG[item?.status]?.label || 'Unknown'}
+                    color={STATUS_CONFIG[item?.status]?.color || 'default'}
+                    variant="soft"
                     sx={{
                       height: 24,
                       fontSize: 11,
                       fontWeight: 600,
-                      color: '#00AB59',
-                      borderColor: '#00AB59',
                     }}
                   />
 
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={onEdit}>
                     <Iconify icon="solar:pen-bold" width={18} />
                   </IconButton>
+
                 </Box>
               </Grid>
 

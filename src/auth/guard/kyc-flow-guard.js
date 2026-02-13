@@ -3,8 +3,10 @@ import { useRouter } from 'src/routes/hook';
 import axiosInstance from 'src/utils/axios';
 import { paths } from 'src/routes/paths';
 import { LoadingScreen } from 'src/components/loading-screen';
+import { useAuthContext } from '../hooks';
 
 export default function KycFlowGuard({ children }) {
+  const {user} = useAuthContext();
   const router = useRouter();
 
   const [checking, setChecking] = useState(true);
@@ -22,7 +24,7 @@ export default function KycFlowGuard({ children }) {
         }
 
         /* ---------- APPROVED ---------- */
-        if (state.isBusinessKycComplete) {
+        if (state.isBusinessKycComplete || user.isBusinessKycComplete) {
           router.replace(paths.dashboard.root);
           return;
         }

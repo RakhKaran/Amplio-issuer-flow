@@ -57,3 +57,50 @@ export function useGetGuarantors() {
 
   return memoizedValue;
 }
+
+
+export function useGetFinancials() {
+  const URL = endpoints.businessKyc.financials;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
+
+  const getCategoryStatus = (items = []) => {
+    if (!items.length) return 0;
+
+    if (items.some((item) => item.status === 2)) return 2; 
+    if (items.every((item) => item.status === 1)) return 1; 
+
+    return 0; 
+  };
+
+  const financialsDetails = [
+    {
+      label: 'Financial Statements (Last 3 Years)',
+      status: getCategoryStatus(data?.data?.financialStatements),
+    },
+    {
+      label: 'Income Tax Returns (Last 3 Years)',
+      status: getCategoryStatus(data?.data?.incomeTaxReturns),
+    },
+    {
+      label: 'GSTR-9 (Last 3 Years)',
+      status: getCategoryStatus(data?.data?.gstr9),
+    },
+    {
+      label: 'GST-3B (Last 6 Months)',
+      status: getCategoryStatus(data?.data?.gst3b),
+    },
+  ];
+
+  return {
+    financialsDetails,
+    financialsLoading: isLoading,
+    financialsError: error,
+    financialsValidating: isValidating,
+    refreshfinancials: mutate,
+  };
+}
+
+
+
+

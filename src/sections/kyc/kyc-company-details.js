@@ -355,7 +355,7 @@ export default function KYCCompanyDetails({
           </Paper>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+            <LoadingButton type="submit" color='primary' variant="contained" loading={isSubmitting}>
               Next
             </LoadingButton>
           </Box>

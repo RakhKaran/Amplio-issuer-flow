@@ -311,7 +311,7 @@ export default function AddGuarantorForm({
             pt: 2,
           }}
         >
-          <DialogTitle sx={{ p: 0 }}>
+          <DialogTitle color= 'primary.main' sx={{ p: 0 }}>
             {currentGurantor?.id ? 'Edit Guarantor' : 'Add Guarantor'}
           </DialogTitle>
           <Iconify
@@ -403,10 +403,19 @@ export default function AddGuarantorForm({
             </Grid>
 
             {/* Full width uploads */}
-            <Grid item xs={12} md={12}>
-              <Typography variant="h6">Pan card section</Typography>
-            </Grid>
 
+            <Grid item xs={12}>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  color: 'primary.main',
+                  mt: 2,
+                }}
+              >
+                PAN Section
+              </Typography>
+            </Grid>
             <Grid item xs={12}>
               <RHFCustomFileUploadBox
                 name="panCardFile"
@@ -441,9 +450,19 @@ export default function AddGuarantorForm({
               />
             </Grid>
 
-            <Grid item xs={12} md={12}>
-              <Typography variant="h6">Aadhar card section</Typography>
+            <Grid item xs={12}>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  color: 'primary.main',
+                  mt: 2,
+                }}
+              >
+                Aadhar Section
+              </Typography>
             </Grid>
+
             <Grid item xs={12}>
               <RHFCustomFileUploadBox
                 name="adharCardFile"

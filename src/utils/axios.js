@@ -65,6 +65,7 @@ export const endpoints = {
     guarantors: '/business-kyc/guarantor-details',
     agreements: '/business-kyc/agreements',
     roc: '/business-kyc/roc',
+    financials: '/business-kyc/financials-details',
     dpn: '/business-kyc/dpn',
   },
 

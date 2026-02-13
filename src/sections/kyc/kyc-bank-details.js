@@ -443,7 +443,7 @@ export default function KYCBankDetails({
               Back
             </Button> */}
 
-            <Button variant="contained" type="submit">
+            <Button variant="contained" color='primary' type="submit">
               Next
             </Button>
           </Box>

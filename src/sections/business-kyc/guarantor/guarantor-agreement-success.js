@@ -55,8 +55,8 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
 
         <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
-        {/* <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack direction="row" spacing={2}>
+        <Stack direction="row" justifyContent="end" alignItems="center">
+          {/* <Stack direction="row" spacing={2}>
             <Button
               variant="contained"
               color='primary'
@@ -73,7 +73,7 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
             >
               Download PDF
             </Button>
-          </Stack>
+          </Stack> */}
 
           <Button
             variant="text"
@@ -82,7 +82,7 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
           >
             Next
           </Button>
-        </Stack> */}
+        </Stack> 
       </DialogContent>
     </Dialog>
   );

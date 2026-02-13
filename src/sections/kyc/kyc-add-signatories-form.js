@@ -25,6 +25,7 @@ import axios from 'axios';
 import { useAuthContext } from 'src/auth/hooks';
 import { DatePicker } from '@mui/x-date-pickers';
 import axiosInstance from 'src/utils/axios';
+import { Typography } from '@mui/material';
 
 const ROLES = [
   { value: 'DIRECTOR', label: 'Director' },
@@ -293,7 +294,7 @@ export default function KYCAddSignatoriesForm({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle>
+        <DialogTitle color='primary'>
           {isViewMode ? 'View Signatory' : isEditMode ? 'Edit Signatory' : 'Add New Signatory'}
         </DialogTitle>
 
@@ -337,6 +338,8 @@ export default function KYCAddSignatoriesForm({
                 placeholder="Enter custom designation"
               />
             )}
+
+            <Typography variant='subtitle2' color='primary'>PAN Section</Typography>
 
             {isViewMode ? (
               <>
@@ -392,6 +395,9 @@ export default function KYCAddSignatoriesForm({
                     />
                   )}
                 />
+
+                <Typography variant='subtitle2' color='primary'>Board Resolution Section</Typography>
+
                 <RHFCustomFileUploadBox
                   name="boardResolution"
                   label="Board Resolution*"
@@ -419,6 +425,7 @@ export default function KYCAddSignatoriesForm({
               <Button
                 type="submit"
                 variant="contained"
+                color='primary'
                 disabled={isSubmitting}
                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
               >

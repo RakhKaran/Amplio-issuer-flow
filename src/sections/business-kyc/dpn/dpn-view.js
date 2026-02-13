@@ -145,7 +145,7 @@ export default function DPN() {
           />
         </Stack>
         <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-          <Button type="submit" variant="contained" size="large" sx={{ px: 4, borderRadius: 2 }}>
+          <Button type="submit" variant="contained" color='primary' size="large" sx={{ px: 4, borderRadius: 2 }}>
             {sendingOtp ? 'Sending OTP...' : 'Continue to E-Sign'}
           </Button>
         </Stack>

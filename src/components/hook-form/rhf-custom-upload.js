@@ -76,7 +76,7 @@ export default function RHFCustomFileUploadBox({
           <CustomUploadBox
             files={field.value || []}
             multiple
-            uploadProgress={uploadProgress}
+            uploadProgress={field.value && field.value?.length > 0 ? 100 : uploadProgress}
             error={!!error}
             onRemove={() => (onRemove || handleRemoveFile)(name)}
             onRemoveAll={() => (onRemoveAll || handleRemoveAllFiles)(name)}
@@ -88,7 +88,7 @@ export default function RHFCustomFileUploadBox({
         ) : (
           <CustomUploadBox
             file={field.value}
-            uploadProgress={uploadProgress}
+            uploadProgress={field.value ? 100 : uploadProgress}
             error={!!error}
             onRemove={() => (onRemove || handleRemoveFile)(name)}
             onDrop={(acceptedFiles) => {
