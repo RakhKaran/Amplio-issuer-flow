@@ -149,7 +149,7 @@ export default function GuarantorListView({ setActiveStepId, saveStepData, perce
     } else {
       percent(0);
     }
-  }, [percent, tableData]);
+  }, [ tableData]);
 
   return (
     <>

@@ -1,7 +1,10 @@
 import { Dialog, DialogContent, Typography, Box, Stack, Button, Divider } from '@mui/material';
+import { useNavigate } from 'react-router';
 import Iconify from 'src/components/iconify';
 
 export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
+
+  const navigate = useNavigate();
   return (
     <Dialog
       open={open}
@@ -79,6 +82,9 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
             variant="text"
             endIcon={<Iconify icon="mdi:arrow-right" />}
             sx={{ fontWeight: 600 }}
+             onClick={() =>
+                  navigate('/kyc/invoiceFinancing/execution-success')
+                }
           >
             Next
           </Button>

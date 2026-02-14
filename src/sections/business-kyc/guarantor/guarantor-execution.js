@@ -38,17 +38,18 @@ export default function GuarantorExecution() {
         setData(res.data.data ?? null);
       })
       .catch((err) => {
-        setError(
-          err?.data?.error?.message ??
-          'Verification link expired or invalid'
-        );
+        const message =
+          err?.error.message ||
+          'Verification link expired or invalid';
+
+        setError(message);
       })
       .finally(() => {
         setLoading(false);
       });
   }, [params]);
 
-  console.log('data', data)
+
 
   return (
     <Container
@@ -61,14 +62,28 @@ export default function GuarantorExecution() {
       }}
     >
       <Box width="100%" maxWidth={720}>
-        <Typography
-          variant="h6"
-          align="center"
-          color='primary'
-          sx={{ mb: 2, fontWeight: 600 }}
-        >
-          Guarantor Execution
-        </Typography>
+
+        {!loading && error && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              backgroundColor: '#FFF4F4',
+              border: '1px solid #FFD6D6',
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="h6" color="error" fontWeight={700}>
+              Link Expired
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {error}
+            </Typography>
+          </Paper>
+        )}
+
 
         {/* NO DATA */}
         {!loading && !error && !data && (
