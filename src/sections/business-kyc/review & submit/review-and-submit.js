@@ -93,7 +93,7 @@ export default function ReviewAndSubmitPage({ formData, setActiveStepId }) {
 
           <Box
             sx={{
-              maxWidth: 720,
+              maxWidth: 850,
               width: '100%',
             }}
           >

@@ -112,18 +112,37 @@ export default function AddGuarantorForm({
     [currentGurantor]
   );
 
-  const methods = useForm({
-    resolver: yupResolver(NewUserSchema),
-    defaultValues,
-  });
 
-  const {
-    reset,
-    handleSubmit,
-    setValue,
-    control,
-    formState: { isSubmitting, errors },
-  } = methods;
+const methods = useForm({
+  resolver: yupResolver(NewUserSchema),
+  defaultValues,
+});
+
+const {
+  reset,
+  handleSubmit,
+  setValue,
+  control,
+  formState: { isSubmitting, errors },
+} = methods;
+
+
+const netWorth = useWatch({
+  control,
+  name: 'estimetedNetWorth',
+});
+
+  useEffect(() => {
+    if (!netWorth) return;
+
+    const calculatedLimit = Math.floor(Number(netWorth) * 0.4);
+
+    setValue('guarantorAmountLimit', calculatedLimit, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [netWorth, setValue]);
+
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -311,7 +330,7 @@ export default function AddGuarantorForm({
             pt: 2,
           }}
         >
-          <DialogTitle color= 'primary.main' sx={{ p: 0 }}>
+          <DialogTitle color='primary.main' sx={{ p: 0 }}>
             {currentGurantor?.id ? 'Edit Guarantor' : 'Add Guarantor'}
           </DialogTitle>
           <Iconify
@@ -334,7 +353,7 @@ export default function AddGuarantorForm({
               <RHFSelect
                 name="guarantorType"
                 label="Guarantor Type*"
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               >
                 {guarantorType.map((role) => (
                   <MenuItem key={role.value} value={role.value}>
@@ -360,7 +379,7 @@ export default function AddGuarantorForm({
                   name="cin"
                   label="CIN*"
 
-                  // disabled={isViewMode}
+                // disabled={isViewMode}
                 />
               </Grid>
             )}
@@ -370,7 +389,7 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="email"
                 label="Email*"
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -379,28 +398,29 @@ export default function AddGuarantorForm({
                 name="phoneNumber"
                 label="Phone Number*"
                 inputProps={{ maxLength: 10 }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
             {/* Row 3 */}
+            <Grid item xs={12} md={6}>
+              <RHFPriceField
+                name="estimetedNetWorth"
+                label="Estimated Net Worth*"
+                
+              />
+            </Grid>
 
             <Grid item xs={12} md={6}>
               <RHFPriceField
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
-                // disabled={isViewMode}
+              disabled
               />
             </Grid>
 
             {/* Row 4 */}
-            <Grid item xs={12} md={6}>
-              <RHFPriceField
-                name="estimetedNetWorth"
-                label="Estimated Net Worth*"
-                // disabled={isViewMode}
-              />
-            </Grid>
+
 
             {/* Full width uploads */}
 
@@ -426,7 +446,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
               {getErrorMessage('panCardFile')}
             </Grid>
@@ -436,7 +456,7 @@ export default function AddGuarantorForm({
                 name="fullName"
                 label="Full Name* (as per PAN)"
                 inputProps={{ style: { textTransform: 'uppercase' } }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -446,7 +466,7 @@ export default function AddGuarantorForm({
                 name="panNumber"
                 label="PAN Number*"
                 inputProps={{ maxLength: 10 }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -473,7 +493,7 @@ export default function AddGuarantorForm({
                   'image/jpeg': ['.jpg', '.jpeg'],
                 }}
                 fullWidth
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
               {getErrorMessage('adharCardFile')}
             </Grid>
@@ -483,7 +503,7 @@ export default function AddGuarantorForm({
                 name="adharNumber"
                 label="Aadhaar Number*"
                 inputProps={{ maxLength: 12 }}
-                // disabled={isViewMode}
+              // disabled={isViewMode}
               />
             </Grid>
           </Grid>
