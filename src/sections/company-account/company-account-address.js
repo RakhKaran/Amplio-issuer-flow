@@ -327,7 +327,7 @@ export default function AddressNewForm({ onClose }) {
 
           {/* ---------------- Buttons ---------------- */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <LoadingButton type="submit" variant="contained" loading={isUploading} sx={{ ml: 'auto' }}>
+            <LoadingButton type="submit" variant="contained" color='primary' loading={isUploading} sx={{ ml: 'auto' }}>
               Save Changes
             </LoadingButton>
           </Box>

@@ -19,6 +19,8 @@ import CompanyAccountChangePassword from '../company-account-change-password';
 import BankNewForm from '../company-account-bank';
 import DematNewForm from '../company-account-demat';
 import CompanyBankPage from '../company-account-bank';
+import { useSearchParams } from 'react-router-dom';
+import { useRouter } from 'src/routes/hook';
 
 // ----------------------------------------------------------------------
 
@@ -38,7 +40,7 @@ const TABS = [
     label: 'Bank',
     icon: <Iconify icon="fluent:building-bank-16-filled" width={24} />,
   },
-    {
+  {
     value: 'demat',
     label: 'Demat',
     icon: <Iconify icon="fluent:building-bank-16-filled" width={24} />,
@@ -54,11 +56,15 @@ const TABS = [
 
 export default function CompanyAccountView() {
   const settings = useSettingsContext();
+  const [searchParams] = useSearchParams();
+  const router = useRouter();
+  const tabUrl = searchParams.get('tab')|| 'general';
 
-  const [currentTab, setCurrentTab] = useState('general');
+  const [currentTab, setCurrentTab] = useState(tabUrl);
 
   const handleChangeTab = useCallback((event, newValue) => {
     setCurrentTab(newValue);
+    router.push(`?tab=${newValue}`)
   }, []);
 
   return (
@@ -89,7 +95,7 @@ export default function CompanyAccountView() {
       {currentTab === 'general' && <CompanyAccountGeneral />}
       {currentTab === 'address' && <CompanyAccountAddress />}
       {currentTab === 'bank' && <CompanyBankPage />}
-       {currentTab === 'demat' && <DematNewForm />}
+      {currentTab === 'demat' && <DematNewForm />}
 
       {/* {currentTab === 'billing' && (
         <AccountBilling

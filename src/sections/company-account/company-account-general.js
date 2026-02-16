@@ -66,7 +66,6 @@ export default function CompanyAccountGeneral() {
     country: Yup.string().required('Country is required'),
     companyEntityTypeId: Yup.string().required('Entity Type is required'),
     panNumber: Yup.string().required('Pan Number is required'),
-    dateOfBirth: Yup.date().nullable().required('Date of Birth is required'),
     panHoldersName: Yup.string().required('Pan Holders Name is required'),
     companySectorTypeId: Yup.string().required('Sector is required'),
     companyLogo: Yup.object().nullable(),
@@ -87,7 +86,6 @@ export default function CompanyAccountGeneral() {
       companyAbout: '',
       companyEntityTypeId: '',
       panNumber: '',
-      dateOfBirth: null,
       panHoldersName: '',
       companySectorTypeId: '',
       companyLogo: null,
@@ -151,9 +149,6 @@ export default function CompanyAccountGeneral() {
             companySectorTypeId: companyData.companySectorTypeId || '',
 
             panNumber: companyData.companyPanCards?.submittedPanNumber || '',
-            dateOfBirth: companyData.companyPanCards?.submittedDateOfBirth
-              ? dayjs(companyData.companyPanCards.submittedDateOfBirth).toDate()
-              : null,
             panHoldersName: companyData.companyPanCards?.submittedCompanyName || '',
 
             companyAbout: companyData.companyAbout || '',
@@ -318,6 +313,7 @@ export default function CompanyAccountGeneral() {
                       render={({ field, fieldState: { error } }) => (
                         <DatePicker
                           disabled
+                          label="Date Of Incorporation"
                           value={field.value}
                           onChange={(newValue) => field.onChange(newValue)}
                           format="dd-MM-yyyy"
@@ -454,6 +450,7 @@ export default function CompanyAccountGeneral() {
           <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
             <LoadingButton
               type="submit"
+              color='primary'
               variant="contained"
               loading={isSubmitting}
               sx={{ ml: 'auto' }}

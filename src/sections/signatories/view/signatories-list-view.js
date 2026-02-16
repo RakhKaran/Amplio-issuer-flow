@@ -160,6 +160,7 @@ console.log(Signatories);
               component={RouterLink}
               href={paths.dashboard.signatories.new}
               variant="contained"
+              color='primary'
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
               New Signatories
@@ -252,10 +253,10 @@ console.log(Signatories);
                       />
                     ))}
 
-                  <TableEmptyRows
+                  {/* <TableEmptyRows
                     height={denseHeight}
                     emptyRows={emptyRows(table.page, table.rowsPerPage, Signatories.length)}
-                  />
+                  /> */}
 
                   <TableNoData notFound={notFound} />
                 </TableBody>

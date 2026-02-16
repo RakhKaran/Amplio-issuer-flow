@@ -124,7 +124,7 @@ export default function CompanyAccountChangePassword() {
           }}
         />
 
-        <LoadingButton type="submit" variant="contained" loading={isSubmitting} sx={{ ml: 'auto' }}>
+        <LoadingButton type="submit" color='primary' variant="contained" loading={isSubmitting} sx={{ ml: 'auto' }}>
           Save Changes
         </LoadingButton>
       </Stack>

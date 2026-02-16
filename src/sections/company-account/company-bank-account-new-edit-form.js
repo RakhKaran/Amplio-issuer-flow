@@ -93,55 +93,29 @@ export default function BankNewForm({ bankDetails, refreshBankDetail }) {
   const values = watch();
   const documentType = useWatch({ control, name: 'documentType' });
 
-  const handleProofUpload = async (file) => {
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
+  const uploadedFile = useWatch({
+    control,
+    name: 'addressProof',
+  });
 
-      const uploadRes = await axiosInstance.post('/files', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const proofId = uploadRes?.data?.files?.[0]?.id;
-
-      if (!proofId) {
-        enqueueSnackbar('Failed to upload file', { variant: 'error' });
-        return;
-      }
-
-      // Store uploaded file ID in form
-      setValue('bankAccountProofId', proofId);
-
-      enqueueSnackbar('File uploaded successfully!', { variant: 'success' });
-
-    } catch (error) {
-      console.error(error);
-      enqueueSnackbar('Upload failed!', { variant: 'error' });
+  useEffect(() => {
+    if (uploadedFile?.id) {
+      setValue('bankAccountProofId', uploadedFile.id);
     }
-  };
+  }, [uploadedFile, setValue]);
 
 
-  const handleDrop = async (acceptedFiles) => {
-    const file = acceptedFiles[0];
-
-    if (file) {
-      setValue('addressProof', file, { shouldValidate: true });
-
-      // Upload instantly
-      await handleProofUpload(file);
-    }
-  };
 
 
-  const existingProof = bankDetails?.bankAccountProof
-    ? {
-      id: bankDetails.bankAccountProof.id,
-      name: bankDetails.bankAccountProof.fileOriginalName,
-      url: bankDetails.bankAccountProof.fileUrl,
-      status: bankDetails.status === 1 ? 'approved' : 'pending',
-      isServerFile: true,
-    }
-    : null;
+  // const existingProof = bankDetails?.bankAccountProof
+  //   ? {
+  //     id: bankDetails.bankAccountProof.id,
+  //     name: bankDetails.bankAccountProof.fileOriginalName,
+  //     url: bankDetails.bankAccountProof.fileUrl,
+  //     status: bankDetails.status === 1 ? 'approved' : 'pending',
+  //     isServerFile: true,
+  //   }
+  //   : null;
 
 
 
@@ -475,7 +449,7 @@ export default function BankNewForm({ bankDetails, refreshBankDetail }) {
               Cancel
             </Button> */}
             {isEdit &&
-              <LoadingButton type="submit" variant="contained" loading={isSubmitting} sx={{ ml: 'auto' }}>
+              <LoadingButton type="submit" color='primary' variant="contained" loading={isSubmitting} sx={{ ml: 'auto' }}>
                 Save
               </LoadingButton>
             }
