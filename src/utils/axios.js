@@ -89,6 +89,7 @@ export const endpoints = {
     kycProgress: (sessionId) => `/company-profiles/kyc-progress/${sessionId}`,
     getSection: (section, profileId, route = '') =>
       `/company-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
+    addressDetails: 'company-profiles/address-details',
     details: (id) => `/company-profiles/bank-details/${id}`,
     getBankDetails: `/company-profiles/bank-details`,
     getDocuments: `/company-profiles/documents`,

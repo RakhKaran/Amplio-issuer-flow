@@ -121,15 +121,17 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
 
   return (
     <Container>
-      <Typography variant="h5" fontWeight="bold" color="primary">
-        Audited Financial
-      </Typography>
-      <Typography variant="body2" mb={2}>
-        Upload audited financial documents for assessment
-      </Typography>
+
       <FormProvider methods={methods}>
         <Grid container sx={{ p: 4, borderRadius: 2, border: '1px solid #ddd', boxShadow: 2 }}>
+
           <Grid xs={12}>
+            <Typography variant="h5" fontWeight="bold" color="primary">
+              Audited Financial
+            </Typography>
+            <Typography variant="body2" mb={2}>
+              Upload audited financial documents for assessment
+            </Typography>
             <Typography variant="h6" sx={{ mb: 3 }}>
               Base Year (Latest Financial Year)
             </Typography>

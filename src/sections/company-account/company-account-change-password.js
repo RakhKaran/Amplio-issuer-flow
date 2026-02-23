@@ -7,6 +7,7 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
+import Button from '@mui/material/Button';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -14,13 +15,22 @@ import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
+import { useAuthContext } from 'src/auth/hooks';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 
 export default function CompanyAccountChangePassword() {
   const { enqueueSnackbar } = useSnackbar();
+  const { user, refreshUser, logout } = useAuthContext();
+  const router = useRouter();
 
   const password = useBoolean();
+  const isFirstTime =
+    user?.isFirstTime ??
+    user?.mustChangePassword ??
+    false;
 
   const ChangePassWordSchema = Yup.object().shape({
     oldPassword: Yup.string().required('Old Password is required'),
@@ -58,10 +68,17 @@ export default function CompanyAccountChangePassword() {
         oldPassword: data.oldPassword,
         newPassword: data.newPassword,
       };
-      await axiosInstance.post('/setPassword', inputData);
+      await axiosInstance.post('/auth/update-password', inputData);
+      const updatedUser = await refreshUser?.();
       reset();
       enqueueSnackbar('Update success!');
-      console.info('DATA', data);
+      const updatedIsFirstTime =
+        updatedUser?.isFirstTime ??
+        updatedUser?.mustChangePassword ??
+        false;
+      if (!updatedIsFirstTime) {
+        router.replace(paths.dashboard.root);
+      }
     } catch (error) {
       console.error(error);
       enqueueSnackbar(typeof error === 'string' ? error : error.error.message, {
@@ -124,9 +141,16 @@ export default function CompanyAccountChangePassword() {
           }}
         />
 
-        <LoadingButton type="submit" color='primary' variant="contained" loading={isSubmitting} sx={{ ml: 'auto' }}>
-          Save Changes
-        </LoadingButton>
+        <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+          <LoadingButton
+            type="submit"
+            color="primary"
+            variant="contained"
+            loading={isSubmitting}
+          >
+            Save Changes
+          </LoadingButton>
+        </Stack>
       </Stack>
     </FormProvider>
   );

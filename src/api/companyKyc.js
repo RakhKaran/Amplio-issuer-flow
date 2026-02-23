@@ -73,6 +73,41 @@ export function useGetDetails() {
   };
 }
 
+export function useGetKycAddressDetails() {
+  const profileId = sessionStorage.getItem('company_user_id');
+
+  const URL = profileId
+    ? endpoints.companyKyc.getSection('company_address_details', profileId, '')
+    : null;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+    keepPreviousData: true,
+  });
+
+  const rawAddressData = data?.data;
+  const addressRows = Array.isArray(rawAddressData) ? rawAddressData : [];
+
+  const registeredAddress =
+    addressRows.find((item) => item?.addressType === 'registered') ||
+    rawAddressData?.registeredAddress ||
+    data?.registeredAddress ||
+    null;
+  const correspondenceAddress =
+    addressRows.find((item) => item?.addressType === 'correspondence') ||
+    rawAddressData?.correspondenceAddress ||
+    data?.correspondenceAddress ||
+    null;
+
+  return {
+    registeredAddress,
+    correspondenceAddress,
+    addressDetailsLoading: isLoading,
+    addressDetailsError: error,
+    addressDetailsValidating: isValidating,
+    refreshAddressDetails: () => mutate(),
+  };
+}
+
 export function useGetSignatories() {
   const profileId = sessionStorage.getItem('company_user_id');
 

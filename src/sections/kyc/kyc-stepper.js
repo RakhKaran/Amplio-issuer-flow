@@ -9,20 +9,23 @@ import { paths } from 'src/routes/paths';
 import KYCSignatories from './kyc-signatories';
 import KYCCompanyDetails from './kyc-company-details';
 import KYCBankDetails from './kyc-bank-details';
+import KYCAddressDetails from './kyc-address-details';
 import Logo from 'src/components/logo';
 
 export default function Stepper() {
   const router = useRouter();
   const steps = [
     { id: 'kyc_company_documents', number: 1, lines: ['Company', 'Documents'] },
-    { id: 'kyc_bank_details', number: 2, lines: ['Bank', 'Details'] },
-    { id: 'kyc_signatories', number: 3, lines: ['Authorized', 'Signatories'] },
+    { id: 'kyc_address_details', number: 2, lines: ['Address', 'Details'] },
+    { id: 'kyc_bank_details', number: 3, lines: ['Bank', 'Details'] },
+    { id: 'kyc_signatories', number: 4, lines: ['Authorized', 'Signatories'] },
   ];
 
   const [activeStepId, setActiveStepId] = useState('kyc_company_documents');
   const [dataInitializedSteps, setDataInitializedSteps] = useState([]);
   const [stepsProgress, setStepsProgress] = useState({
     kyc_company_documents: { percent: 0 },
+    kyc_address_details: { percent: 0 },
     kyc_bank_details: { percent: 0 },
     kyc_signatories: { percent: 0 },
   });
@@ -51,10 +54,22 @@ export default function Stepper() {
         return (
           <KYCCompanyDetails
             percent={(p) => updateStepPercent('kyc_company_documents', p)}
-            setActiveStepId={() => setActiveStepId('kyc_bank_details')}
+            setActiveStepId={() => setActiveStepId('kyc_address_details')}
             dataInitializedSteps={dataInitializedSteps}
             setDataInitializedSteps={() =>
               setDataInitializedSteps((prev) => [...prev, 'kyc_company_documents'])
+            }
+          />
+        );
+
+      case 'kyc_address_details':
+        return (
+          <KYCAddressDetails
+            percent={(p) => updateStepPercent('kyc_address_details', p)}
+            setActiveStepId={() => setActiveStepId('kyc_bank_details')}
+            dataInitializedSteps={dataInitializedSteps}
+            setDataInitializedSteps={() =>
+              setDataInitializedSteps((prev) => [...prev, 'kyc_address_details'])
             }
           />
         );

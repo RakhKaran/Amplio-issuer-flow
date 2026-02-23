@@ -11,12 +11,14 @@ import ReviewAndSubmitPage from './review & submit/review-and-submit';
 import { useGetBusinessKyc } from 'src/api/businessKyc';
 import { LoadingScreen } from 'src/components/loading-screen';
 import Logo from 'src/components/logo';
+import FinancialDetailsMain from './financial-details/financial-details-main';
 
 export default function Stepper() {
   const { businessKyc, businessKycLoading } = useGetBusinessKyc();
   const [activeStepId, setActiveStepId] = useState(null);
   const [formData, setFormData] = useState({
     business_Profile_Finance: {},
+    financial_details: {},
     collateral_assets_verification: {},
     guarantor_details: {},
     review_and_submit: {},
@@ -24,6 +26,7 @@ export default function Stepper() {
 
   const [stepsProgress, setStepsProgress] = useState({
     business_Profile_Finance: { percent: 0 },
+    financial_details: {percent:0},
     collateral_assets_verification: { percent: 0 },
     guarantor_details: { percent: 0 },
     review_and_submit: { percent: 0 },
@@ -34,6 +37,7 @@ export default function Stepper() {
 
     const STEP_MAP = {
       business_profile: 'business_Profile_Finance',
+      financial_details: 'financial_details',
       audited_financials: 'business_Profile_Finance',
       collateral_assets: 'collateral_assets_verification',
       guarantor_details: 'guarantor_details',
@@ -77,19 +81,26 @@ export default function Stepper() {
       number: 1,
       lines: ['Business Profile', '& Finance'],
     },
+       
+    {
+      id: 'financial_details',
+      number: 2,
+      lines: ['Financial', 'Details'],
+    },
+
     {
       id: 'collateral_assets_verification',
-      number: 2,
+      number: 3,
       lines: ['Collateral & Assets', 'Verification'],
     },
     {
       id: 'guarantor_details',
-      number: 3,
+      number: 4,
       lines: ['Guarantor', 'Details'],
     },
     {
       id: 'review_and_submit',
-      number: 4,
+      number: 5,
       lines: ['Review & Submit'],
     },
   ];
@@ -203,8 +214,15 @@ export default function Stepper() {
         return (
           <BusinessProfileMain
             percent={(p) => updateStepPercent('business_Profile_Finance', p)}
-            setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
+            setActiveStepId={() => setActiveStepId('financial_details')}
             saveStepData={(data) => saveStepData('business_Profile_Finance', data)}
+          />
+        );
+          case 'financial_details':
+        return (
+          <FinancialDetailsMain
+            percent={(p) => updateStepPercent('financial_details', p)}
+            setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
           />
         );
 

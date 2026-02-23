@@ -115,9 +115,7 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Container maxWidth="lg">
-        <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
-          Business Profile
-        </Typography>
+
 
         <Card
           sx={{
@@ -128,6 +126,9 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
             boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
           }}
         >
+          <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
+            Business Profile
+          </Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <RHFTextField name="yearInBusiness" label="Years in Business*" placeholder="e.g. 5" />
