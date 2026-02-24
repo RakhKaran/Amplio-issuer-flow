@@ -106,6 +106,7 @@ export default function JwtRegisterCompanyByEmailView() {
       setOtp(Array(4).fill(''));
       setOtpStarted(false);
       setIsOtpSent(true);
+      setTimer(60);
     } catch (error) {
       const message =
         typeof error === 'string'
@@ -134,7 +135,6 @@ export default function JwtRegisterCompanyByEmailView() {
   const handleResendClick = () => {
     if (timer > 0) return;
     handleSendOtp();
-    setTimer(60);
   };
 
   const onSubmit = handleSubmit(async () => {
@@ -250,24 +250,30 @@ export default function JwtRegisterCompanyByEmailView() {
           {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
           {/* Email Field */}
-          <RHFTextField
-            name="email"
-            label="Email"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <LoadingButton
-                    variant="text"
-                    size="small"
-                    onClick={handleSendOtp}
-                    disabled={isOtpSent}
-                  >
-                    {isOtpSent ? 'OTP Sent' : 'Send OTP'}
-                  </LoadingButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Stack direction="column">
+            <RHFTextField
+              name="email"
+              label="Email"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <LoadingButton
+                      variant="text"
+                      size="small"
+                      onClick={handleSendOtp}
+                      disabled={isOtpSent}
+                    >
+                      {isOtpSent ? 'OTP Sent' : 'Send OTP'}
+                    </LoadingButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+              Official Email ID (domain must match GST/MCA)
+            </Typography>
+          </Stack>
 
           {/* OTP Boxes */}
           {isOtpSent && renderOtpBoxes}

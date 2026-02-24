@@ -80,6 +80,7 @@ export default function JwtRegisterCompanyByMobileView() {
       setOtp(Array(4).fill(''));
       setOtpStarted(false);
       setIsOtpSent(true);
+      setTimer(60);
     } catch (error) {
       const message =
         typeof error === 'string'
@@ -108,7 +109,6 @@ export default function JwtRegisterCompanyByMobileView() {
   const handleResendClick = () => {
     if (timer > 0) return;
     handleSendOtp();
-    setTimer(60);
   };
 
   // ------------------------------------------------------
@@ -209,7 +209,7 @@ export default function JwtRegisterCompanyByMobileView() {
   return (
     <Card sx={{ p: 3 }}>
       <Stack spacing={2} sx={{ mb: 3 }}>
-        <Typography variant="h4">Get started absolutely free</Typography>
+        <Typography variant="h4">Get Started Absolutely Free</Typography>
 
         <Stack direction="row" spacing={0.5}>
           <Typography variant="body2">Already have an account?</Typography>
