@@ -8,8 +8,11 @@ export function useGetKycProgress(sessionId) {
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   useEffect(() => {
-    if (data?.profile?.id) {
+    if (data?.profile?.usersId) {
       sessionStorage.setItem('company_user_id', data.profile.usersId);
+    }
+    if (data?.profile?.id) {
+      sessionStorage.setItem('company_profile_id', data.profile.id);
     }
   }, [data]);
 
@@ -18,6 +21,7 @@ export function useGetKycProgress(sessionId) {
       kycProgress: data || null,
       hasProfile: Boolean(data?.currentProgress?.length),
       profileId: data?.profile?.id || null,
+      usersId: data?.profile?.usersId || null,
       kycProgressLoading: isLoading,
       kycProgressError: error,
       kycProgressValidating: isValidating,
@@ -29,14 +33,25 @@ export function useGetKycProgress(sessionId) {
 }
 
 export function useGetKycSection(section, route = '') {
-  const profileId = sessionStorage.getItem('company_user_id'); // ⬅️ get it directly
+  const usersId =
+    sessionStorage.getItem('company_user_id') || sessionStorage.getItem('company_profile_id');
 
-  const URL =
-    section && profileId ? endpoints.companyKyc.getSection(section, profileId, route) : null;
+  const URL = section && usersId ? endpoints.companyKyc.getSection(section, usersId, route) : null;
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
   });
+
+  useEffect(() => {
+    if (section === 'company_documents' && URL) {
+      console.log('[KYC company_documents] request id debug:', {
+        requestId: usersId,
+        company_user_id: sessionStorage.getItem('company_user_id'),
+        company_profile_id: sessionStorage.getItem('company_profile_id'),
+        url: URL,
+      });
+    }
+  }, [section, URL, usersId]);
 
   return {
     kycSectionData: data || null,
@@ -44,9 +59,9 @@ export function useGetKycSection(section, route = '') {
     kycSectionError: error,
     kycSectionValidating: isValidating,
     kycSectionEmpty: !isLoading && !data,
+    refreshKycSection: () => mutate(),
   };
 }
-
 export function useGetDetails() {
   const profileId = sessionStorage.getItem('company_user_id'); // ⬅️ Directly read
 
@@ -208,3 +223,4 @@ export default function useGetProfileData() {
     validating: isValidating,
   };
 }
+

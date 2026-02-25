@@ -252,7 +252,7 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (fetchedProfileId) {
-      sessionStorage.setItem('company_user_id', fetchedProfileId);
+      sessionStorage.setItem('company_profile_id', fetchedProfileId);
     }
   }, [fetchedProfileId]);
 
