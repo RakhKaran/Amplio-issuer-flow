@@ -40,8 +40,8 @@ export const endpoints = {
   companyProfile: {
     me: '/company-profiles/me',
     bankDetails: '/company-profiles/bank-details',
+    addressDetails: '/company-profiles/address-details',
   },
-  addressDetails: '/company-profiles/address-details',
 
   mail: {
     list: '/api/mail/list',

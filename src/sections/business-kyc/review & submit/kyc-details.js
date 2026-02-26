@@ -1,6 +1,6 @@
 import { Card, Typography, Grid, Box, IconButton, Chip, Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useGetCompanyBankDetails, useGetCompanyProfiles } from 'src/api/companyProfile';
+import { useGetCompanyAddressDetails, useGetCompanyBankDetails, useGetCompanyProfiles } from 'src/api/companyProfile';
 import { AuthContext } from 'src/auth/context/jwt';
 import Iconify from 'src/components/iconify';
 
@@ -44,6 +44,9 @@ export default function KycDetailsPage() {
     }
   }, [BankDetails, BankDetailsLoading]);
 
+
+  const { addressDetails, addressDetailsLoading } = useGetCompanyAddressDetails();
+
   return (
     <>
       <Box mb={2} mt={2} display="flex" justifyContent="center">
@@ -52,9 +55,9 @@ export default function KycDetailsPage() {
         </Typography>
       </Box>
 
-      <Grid container spacing={2} columns={12} sx={{ maxWidth: '900px',  mx: 'auto', mb: 4 }}>
+      <Grid container spacing={2} columns={12} sx={{ maxWidth: '900px', mx: 'auto', mb: 4 }}>
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3,  height: '100%'  }}>
+          <Card sx={{ p: 3, height: '100%' }}>
             <Grid spacing={2} container alignItems="center" justifyContent="space-between">
               <Grid item xs={8} md={10}>
                 <Typography variant="subtitle1" fontWeight={600}>
@@ -167,20 +170,61 @@ export default function KycDetailsPage() {
                 </Tooltip>
               </Grid> */}
 
-              {financialDocuments.map((item, index) => (
+              {addressDetails && (
                 <>
-                  <Grid item xs={6} md={6}>
-                    <Typography variant="body2" fontWeight={600}>
-                      {item.label} :
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} md={6}>
-                    <Typography variant="body2" fontWeight={500}>
-                      {item.value}
-                    </Typography>
-                  </Grid>
+                  {/* Registered Address */}
+                  {addressDetails.registeredAddress && (
+                    <>
+                      <Grid item xs={5}>
+                        <Typography variant="body2" fontWeight={600}>
+                          Registered Address :
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={7}>
+                        <Typography variant="body2">
+                          {[
+                            addressDetails.registeredAddress.addressLineOne,
+                            addressDetails.registeredAddress.addressLineTwo,
+                            addressDetails.registeredAddress.city,
+                            addressDetails.registeredAddress.state,
+                            addressDetails.registeredAddress.pincode &&
+                            `- ${addressDetails.registeredAddress.pincode}`,
+                            addressDetails.registeredAddress.country,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+
+                  {/* Correspondence Address */}
+                  {addressDetails.correspondenceAddress && (
+                    <>
+                      <Grid item xs={5}>
+                        <Typography variant="body2" fontWeight={600}>
+                          Correspondence Address :
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={7}>
+                        <Typography variant="body2">
+                          {[
+                            addressDetails.correspondenceAddress.addressLineOne,
+                            addressDetails.correspondenceAddress.addressLineTwo,
+                            addressDetails.correspondenceAddress.city,
+                            addressDetails.correspondenceAddress.state,
+                            addressDetails.correspondenceAddress.pincode &&
+                            `- ${addressDetails.correspondenceAddress.pincode}`,
+                            addressDetails.correspondenceAddress.country,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
                 </>
-              ))}
+              )}
             </Grid>
           </Card>
         </Grid>
@@ -234,18 +278,18 @@ export default function KycDetailsPage() {
                     </Typography>
                   </Grid>
                 </>
-              ):(
-              <Grid item xs={12}>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  align="center"
-                  sx={{ py: 2 }}
-                >
-                  No records found
-                </Typography>
-              </Grid>
-      )}
+              ) : (
+                <Grid item xs={12}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="center"
+                    sx={{ py: 2 }}
+                  >
+                    No records found
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </Card>
         </Grid>

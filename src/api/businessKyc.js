@@ -24,7 +24,7 @@ export function useGetBusinessKyc() {
 export function useGetBusinessKycStepData(statusValue) {
   const URL = statusValue ? endpoints.businessKyc.dataByStatus(statusValue) : null;
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
@@ -32,8 +32,9 @@ export function useGetBusinessKycStepData(statusValue) {
       stepDataLoading: isLoading,
       stepDataError: error,
       stepDataValidating: isValidating,
+      refreshStepData: mutate,
     }),
-    [data, error, isLoading, isValidating]
+    [data, error, isLoading, isValidating, mutate]
   );
 
   return memoizedValue;

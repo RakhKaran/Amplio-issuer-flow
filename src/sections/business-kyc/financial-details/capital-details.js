@@ -9,13 +9,13 @@ import FormProvider, { RHFPriceField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
-export default function CapitalDetails({ currentCapitalDetails, setPercent, setProgress }) {
+export default function CapitalDetails({ currentCapitalDetails, setPercent, setProgress, onSaved }) {
   const { enqueueSnackbar } = useSnackbar();
 
   const capitalSchema = Yup.object().shape({
     shareCapital: Yup.string().required('Share Capital is required'),
     reserveSurplus: Yup.string().required('Reserve Surplus is required'),
-    netWorth: Yup.string(),
+    netWorth: Yup.string().required('Net Worth is required'),
   });
 
   const defaultValues = useMemo(
@@ -44,23 +44,26 @@ export default function CapitalDetails({ currentCapitalDetails, setPercent, setP
   const reserveSurplus = watch('reserveSurplus');
 
   useEffect(() => {
-    if (currentCapitalDetails) {
-      reset(defaultValues);
-      setProgress?.(true);
-    }
-  }, [currentCapitalDetails, reset, defaultValues, setProgress]);
-
-  useEffect(() => {
     const total = Number(shareCapital || 0) + Number(reserveSurplus || 0);
     setValue('netWorth', total ? String(total) : '', { shouldValidate: false });
   }, [shareCapital, reserveSurplus, setValue]);
 
   useEffect(() => {
     let completed = 0;
-    if (shareCapital) completed++;
-    if (reserveSurplus) completed++;
-    setPercent?.(Math.round((completed / 2) * 100));
-  }, [shareCapital, reserveSurplus, setPercent]);
+    if (shareCapital) completed += 1;
+    if (reserveSurplus) completed += 1;
+
+    const completion = Math.round((completed / 2) * 100);
+    setPercent?.(completion);
+    setProgress?.(completion === 100);
+  }, [shareCapital, reserveSurplus, setPercent, setProgress]);
+
+  useEffect(() => {
+    if (currentCapitalDetails) {
+      reset(defaultValues);
+      setProgress?.(true);
+    }
+  }, [currentCapitalDetails, reset, defaultValues, setProgress]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -74,26 +77,19 @@ export default function CapitalDetails({ currentCapitalDetails, setPercent, setP
 
       await axiosInstance.patch('/business-kyc/financial-section', payload);
       setProgress?.(true);
+      onSaved?.(payload.capitalDetails);
       enqueueSnackbar('Capital details submitted', { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar(
-        error?.error?.message || 'Error while submitting capital details form.',
-        { variant: 'error' }
-      );
+      enqueueSnackbar(error?.error?.message || 'Error while submitting capital details form.', {
+        variant: 'error',
+      });
       console.error('Error while submitting capital details form:', error);
     }
   });
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Box
-        sx={{
-          p: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-        }}
-      >
+      <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <Card
           sx={{
             width: '100%',
@@ -101,8 +97,6 @@ export default function CapitalDetails({ currentCapitalDetails, setPercent, setP
             borderRadius: 2,
             boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
             border: '1px solid #e0e0e0',
-            mb: 0,
-            mt: '0px',
           }}
         >
           <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
@@ -113,53 +107,22 @@ export default function CapitalDetails({ currentCapitalDetails, setPercent, setP
             <Grid item xs={12} md={3}>
               <RHFPriceField name="shareCapital" label="Share Capital" fullWidth />
             </Grid>
-
             <Grid item xs={12} md={1} textAlign="center">
-              <Typography variant="h6" color="text.secondary">
-                +
-              </Typography>
+              <Typography variant="h6" color="text.secondary">+</Typography>
             </Grid>
-
             <Grid item xs={12} md={3}>
               <RHFPriceField name="reserveSurplus" label="Reserve Surplus" fullWidth />
             </Grid>
-
             <Grid item xs={12} md={1} textAlign="center">
-              <Typography variant="h6" color="text.secondary">
-                =
-              </Typography>
+              <Typography variant="h6" color="text.secondary">=</Typography>
             </Grid>
-
             <Grid item xs={12} md={4}>
-              <RHFPriceField
-                name="netWorth"
-                label="Net Worth"
-                fullWidth
-                InputProps={{ readOnly: true }}
-              />
+              <RHFPriceField name="netWorth" label="Net Worth" fullWidth InputProps={{ readOnly: true }} />
             </Grid>
           </Grid>
 
-          <Box
-            sx={{
-              mt: 3,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 2,
-            }}
-          >
-            <LoadingButton
-              type="submit"
-              loading={isSubmitting}
-              variant="contained"
-              sx={{
-                '&:hover': {
-                  backgroundColor: 'primary.main',
-                  boxShadow: 'none',
-                },
-              }}
-              color="primary"
-            >
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <LoadingButton type="submit" loading={isSubmitting} variant="contained" color="primary">
               Save
             </LoadingButton>
           </Box>
@@ -173,4 +136,5 @@ CapitalDetails.propTypes = {
   currentCapitalDetails: PropTypes.object,
   setPercent: PropTypes.func,
   setProgress: PropTypes.func,
+  onSaved: PropTypes.func,
 };

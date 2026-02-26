@@ -3,13 +3,13 @@ import { LoadingButton } from '@mui/lab';
 import { Box, Card, Grid, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import FormProvider, { RHFPriceField, RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
-export default function BorrowingDetails({ currentBorrowingDetails, setPercent, setProgress }) {
+export default function BorrowingDetails({ currentBorrowingDetails, setPercent, setProgress, onSaved }) {
   const { enqueueSnackbar } = useSnackbar();
 
   const borrowingDetailsSchema = Yup.object().shape({
@@ -43,9 +43,8 @@ export default function BorrowingDetails({ currentBorrowingDetails, setPercent, 
     reset,
     setValue,
     handleSubmit,
-    formState: { isSubmitting, isDirty },
+    formState: { isSubmitting },
   } = methods;
-  const hasHydrated = useRef(false);
 
   const values = watch();
 
@@ -63,7 +62,7 @@ export default function BorrowingDetails({ currentBorrowingDetails, setPercent, 
       reset(defaultValues);
       setProgress?.(true);
     }
-  }, [currentBorrowingDetails, defaultValues, reset]);
+  }, [currentBorrowingDetails, defaultValues, reset, setProgress]);
 
   useEffect(() => {
     let completed = 0;
@@ -71,8 +70,10 @@ export default function BorrowingDetails({ currentBorrowingDetails, setPercent, 
     if (values?.unsecured?.fromPromoters) completed++;
     if (values?.unsecured?.fromOthers) completed++;
 
-    setPercent?.(Math.round((completed / 3) * 100));
-  }, [values, setPercent]);
+    const completion = Math.round((completed / 3) * 100);
+    setPercent?.(completion);
+    setProgress?.(completion === 100);
+  }, [values, setPercent, setProgress]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -90,6 +91,7 @@ export default function BorrowingDetails({ currentBorrowingDetails, setPercent, 
       await axiosInstance.patch('/business-kyc/financial-section', payload);
 
       setProgress?.(true);
+      onSaved?.(payload.borrowingDetails);
       enqueueSnackbar('Borrowing details saved', { variant: 'success' });
     } catch (error) {
       enqueueSnackbar(
@@ -191,4 +193,5 @@ BorrowingDetails.propTypes = {
   currentBorrowingDetails: PropTypes.object,
   setPercent: PropTypes.func,
   setProgress: PropTypes.func,
+  onSaved: PropTypes.func,
 };

@@ -26,7 +26,7 @@ export default function Stepper() {
 
   const [stepsProgress, setStepsProgress] = useState({
     business_Profile_Finance: { percent: 0 },
-    financial_details: {percent:0},
+    financial_details: { percent: 0 },
     collateral_assets_verification: { percent: 0 },
     guarantor_details: { percent: 0 },
     review_and_submit: { percent: 0 },
@@ -37,8 +37,8 @@ export default function Stepper() {
 
     const STEP_MAP = {
       business_profile: 'business_Profile_Finance',
-      financial_details: 'financial_details',
       audited_financials: 'business_Profile_Finance',
+      financial_details: 'financial_details',
       collateral_assets: 'collateral_assets_verification',
       guarantor_details: 'guarantor_details',
       review_and_submit: 'review_and_submit',
@@ -81,7 +81,7 @@ export default function Stepper() {
       number: 1,
       lines: ['Business Profile', '& Finance'],
     },
-       
+
     {
       id: 'financial_details',
       number: 2,
@@ -218,7 +218,7 @@ export default function Stepper() {
             saveStepData={(data) => saveStepData('business_Profile_Finance', data)}
           />
         );
-          case 'financial_details':
+      case 'financial_details':
         return (
           <FinancialDetailsMain
             percent={(p) => updateStepPercent('financial_details', p)}

@@ -84,10 +84,10 @@ export default function AuditedGST3B({
     { value: 'dec', label: 'December' },
   ];
 
-  const getLastSixMonthsDesc = () => {
+  const getLastTwelveMonthsDesc = () => {
     const result = [];
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 12; i++) {
       const date = dayjs().subtract(i, 'month');
 
       result.push({
@@ -101,7 +101,7 @@ export default function AuditedGST3B({
     return result; // already DESC order
   };
 
-  const lastSixMonths = getLastSixMonthsDesc();
+  const lastSixMonths = getLastTwelveMonthsDesc();
 
   const handleFileUpload = async (e, id) => {
     const file = e.target.files?.[0];

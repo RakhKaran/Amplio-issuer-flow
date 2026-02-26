@@ -1,169 +1,154 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
-import { Box, Button, Card, Grid, MenuItem, Stack, Typography } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { Box, Card, Grid, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import {
-  useGetChargeTypes,
-  useGetCollateralTypes,
-  useGetOwnershipTypes,
-} from 'src/api/fieldOptions';
-import YupErrorMessage from 'src/components/error-field/yup-error-messages';
-import FormProvider, {
-  RHFCustomFileUploadBox,
-  RHFPriceField,
-  RHFSelect,
-  RHFTextField,
-} from 'src/components/hook-form';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
-export default function FinancialDetails({ percent, fullFinancialSection }) {
+const toNumber = (value) => {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatRatio = (value) => {
+  if (!Number.isFinite(value)) return '';
+  return value.toFixed(2);
+};
+
+export default function FinancialDetails({
+  currentFinancialRatios,
+  currentCapitalDetails,
+  currentProfitabilityDetails,
+  currentFundPosition,
+  currentBorrowingDetails,
+  setPercent,
+  setProgress,
+  onSaved,
+}) {
   const { enqueueSnackbar } = useSnackbar();
-  const isInitialLoad = useRef(true);
 
-  const newCollateralSchema = Yup.object().shape({
-    auditedFinancials: Yup.array()
-      .of(
-        Yup.object().shape({
-          year: Yup.string().required('Year  is required'),
-          amount: Yup.string().required('Amount  is required'),
+  const schema = Yup.object().shape({
+    debtEquityRatio: Yup.string().required('Debt-equity ratio is required'),
+    currentRatio: Yup.string().required('Current ratio is required'),
+    netWorth: Yup.string().required('Net worth is required'),
+    quickRatio: Yup.string().required('Quick ratio is required'),
+    returnOnEquity: Yup.string().required('Return on equity is required'),
+    returnOnAssets: Yup.string().required('Return on assets is required'),
+  });
 
-        })
-      )
-      .min(1, 'At least one finacial is required'),
-  })
+  const calculatedRatios = useMemo(() => {
+    const netWorth = toNumber(currentCapitalDetails?.netWorth);
+
+    const totalDebt = Array.isArray(currentBorrowingDetails)
+      ? currentBorrowingDetails.reduce((sum, item) => sum + toNumber(item?.lenderAmount), 0)
+      : toNumber(currentBorrowingDetails?.totalBorrowings) ||
+        toNumber(currentBorrowingDetails?.secured) +
+          toNumber(currentBorrowingDetails?.unsecured?.fromPromoters) +
+          toNumber(currentBorrowingDetails?.unsecured?.fromOthers);
+
+    const currentAssets = toNumber(currentFundPosition?.currentAssets);
+    const quickAssets =
+      toNumber(currentFundPosition?.quickAssets) ||
+      toNumber(currentFundPosition?.cashBalance) + toNumber(currentFundPosition?.bankBalance);
+    const totalAssets =
+      toNumber(currentFundPosition?.totalAssets) ||
+      toNumber(currentFundPosition?.currentAssets) ||
+      toNumber(currentFundPosition?.cashBalance) + toNumber(currentFundPosition?.bankBalance);
+    const currentLiabilities = toNumber(currentFundPosition?.currentLiabilitiesAmount);
+
+    const netProfit = toNumber(currentProfitabilityDetails?.netProfit);
+
+    return {
+      debtEquityRatio: netWorth > 0 && totalDebt > 0 ? formatRatio(totalDebt / netWorth) : '',
+      currentRatio: currentLiabilities > 0 && currentAssets > 0 ? formatRatio(currentAssets / currentLiabilities) : '',
+      netWorth: netWorth > 0 ? formatRatio(netWorth) : '',
+      quickRatio: currentLiabilities > 0 && quickAssets > 0 ? formatRatio(quickAssets / currentLiabilities) : '',
+      returnOnEquity: netWorth > 0 ? formatRatio((netProfit / netWorth) * 100) : '',
+      returnOnAssets: totalAssets > 0 ? formatRatio((netProfit / totalAssets) * 100) : '',
+    };
+  }, [currentCapitalDetails, currentBorrowingDetails, currentFundPosition, currentProfitabilityDetails]);
 
   const defaultValues = useMemo(
     () => ({
-      auditedFinancials: [
-        {
-          year: '',
-          amount: '',
-        },
-      ],
+      debtEquityRatio: calculatedRatios.debtEquityRatio || currentFinancialRatios?.debtEquityRatio || '',
+      currentRatio: calculatedRatios.currentRatio || currentFinancialRatios?.currentRatio || '',
+      netWorth: calculatedRatios.netWorth || currentFinancialRatios?.netWorth || '',
+      quickRatio: calculatedRatios.quickRatio || currentFinancialRatios?.quickRatio || '',
+      returnOnEquity: calculatedRatios.returnOnEquity || currentFinancialRatios?.returnOnEquity || '',
+      returnOnAssets:
+        calculatedRatios.returnOnAssets ||
+        currentFinancialRatios?.returnOnAssets ||
+        currentFinancialRatios?.returnOnAsset ||
+        '',
     }),
-    []
+    [calculatedRatios, currentFinancialRatios]
   );
 
   const methods = useForm({
-    resolver: yupResolver(newCollateralSchema),
+    resolver: yupResolver(schema),
+    mode: 'onChange',
     defaultValues,
   });
 
   const {
-    control,
     reset,
     watch,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
 
-  const auditedFinancials = watch('auditedFinancials');
+  const values = watch();
 
-  const { fields, append } = useFieldArray({
-    control,
-    name: 'auditedFinancials',
-  });
+  useEffect(() => {
+    let completed = 0;
+    if (values.debtEquityRatio) completed += 1;
+    if (values.currentRatio) completed += 1;
+    if (values.netWorth) completed += 1;
+    if (values.quickRatio) completed += 1;
+    if (values.returnOnEquity) completed += 1;
+    if (values.returnOnAssets) completed += 1;
 
-  const handleAddAsset = () => {
-    append({
-      year: '',
-      amount: ''
-    });
-  };
+    const completion = Math.round((completed / 6) * 100);
+    setPercent?.(completion);
+    setProgress?.(completion === 100);
+  }, [values, setPercent, setProgress]);
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [reset, defaultValues]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       const payload = {
-        auditedFinancials: data.auditedFinancials.map((asset) => ({
-          year: asset.year,
-          amount: asset.amount,
-
-        })),
+        financialRatios: {
+          debtEquityRatio: Number(data.debtEquityRatio || 0),
+          currentRatio: Number(data.currentRatio || 0),
+          netWorth: Number(data.netWorth || 0),
+          quickRatio: Number(data.quickRatio || 0),
+          returnOnEquity: Number(data.returnOnEquity || 0),
+          returnOnAssets: Number(data.returnOnAssets || 0),
+        },
       };
 
       await axiosInstance.patch('/business-kyc/financial-section', payload);
-      enqueueSnackbar('Financial details  submitted', { variant: 'success' });
+      setProgress?.(true);
+      onSaved?.(payload.financialRatios);
+      enqueueSnackbar('Financial ratios saved', { variant: 'success' });
     } catch (error) {
-      console.error('Error while submitting financial details form:', error);
+      enqueueSnackbar(error?.error?.message || 'Error while saving financial ratios.', {
+        variant: 'error',
+      });
+      console.error('Error while saving financial ratios:', error);
     }
   });
 
-  const calculatePercent = (assets = []) => {
-    if (!assets.length) {
-      percent?.(0);
-      return;
-    }
-
-    const asset = assets[0];
-
-    const fields = [
-      asset.year,
-      asset.amount,
-    ];
-
-    const filled = fields.filter(Boolean).length;
-    const total = fields.length;
-
-    percent?.(Math.round((filled / total) * 100));
-  };
-
-  useEffect(() => {
-    // 🚨 Skip first render
-    if (isInitialLoad.current) return;
-    calculatePercent(auditedFinancials);
-  }, [auditedFinancials]);
-
-  // useEffect(() => {
-  //   if (currentCollateralAssets) {
-  //     reset(defaultValues);
-  //   }
-  // }, [currentCollateralAssets, reset, defaultValues]);
-
-
-
-  useEffect(() => {
-    if (!fullFinancialSection) return;
-
-    const apiAssets = fullFinancialSection?.auditedFinancials ?? [];
-
-
-    // ✅ if API empty → keep ONE default form
-    if (apiAssets.length === 0) {
-      reset({
-        auditedFinancials: [
-          {
-            year: '',
-            amount: ''
-          },
-        ],
-      });
-
-      percent?.(0);
-      isInitialLoad.current = false;
-      return;
-    }
-
-    // ✅ if API has data → map & show
-    const mappedAssets = apiAssets.map((asset) => ({
-      year: asset.year ?? '',
-      amount: asset.amount ?? '',
-    }));
-
-    reset({ auditedFinancials: mappedAssets });
-    percent?.(100);
-
-    isInitialLoad.current = false;
-  }, [fullFinancialSection, reset]);
-
-
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Box
+     <Box
         sx={{
           p: 4,
           display: 'flex',
@@ -171,7 +156,6 @@ export default function FinancialDetails({ percent, fullFinancialSection }) {
           gap: 4,
         }}
       >
-
         <Card
           sx={{
             width: '100%',
@@ -183,56 +167,32 @@ export default function FinancialDetails({ percent, fullFinancialSection }) {
             mt: '0px',
           }}
         >
-          <Typography variant="h5" fontWeight="bold" mb={2} color="primary">
-            Financial Details
+          <Typography variant="h5" color="primary" fontWeight="bold" mb={2}>
+            Financial Ratios
           </Typography>
-          <>
-            {fields.map((field, index) => (
-              <Grid container sx={{ mb: 2 }} spacing={3}>
-                <Grid item xs={12} md={5}>
-                  <RHFTextField
-                    name={`auditedFinancials.${index}.year`}
-                    label="Financial Year"
-                    fullWidth
-                  />
-                </Grid>
 
-                <Grid item xs={12} md={5}>
-                  <RHFPriceField
-                    name={`auditedFinancials.${index}.amount`}
-                    label="Amount"
-                    fullWidth
-                  />
-                </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <RHFTextField name="debtEquityRatio" label="Debt-Equity Ratio (DER)" fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RHFTextField name="currentRatio" label="Current Ratio" fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RHFTextField name="netWorth" label="Net Worth" fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RHFTextField name="quickRatio" label="Quick Ratio" fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RHFTextField name="returnOnEquity" label="Return on Equity (ROE)" fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RHFTextField name="returnOnAssets" label="Return on Assets (ROA)" fullWidth InputProps={{ readOnly: true }} />
+            </Grid>
+          </Grid>
 
-
-                <Grid item xs={12} md={2}>
-                  {index === fields.length - 1 && (
-                    <Button
-                      type="button"
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleAddAsset()}
-                      sx={{ color: '#fff' }}
-                    >
-                      + Add More
-                    </Button>
-                  )}
-                </Grid>
-
-
-
-              </Grid>
-            ))}
-          </>
-          <Box
-            sx={{
-              mt: 3,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 2,
-            }}
-          >
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
             <LoadingButton
               type="submit"
               loading={isSubmitting}
@@ -249,28 +209,18 @@ export default function FinancialDetails({ percent, fullFinancialSection }) {
             </LoadingButton>
           </Box>
         </Card>
-
-
-        {/* <Box
-          sx={{
-            mt: 3,
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 2,
-          }}
-        >
-         
-        </Box> */}
-
-
       </Box>
     </FormProvider>
   );
 }
 
 FinancialDetails.propTypes = {
-  currentCollateral: PropTypes.object,
-  percent: PropTypes.func,
-  fullFinancialSection: PropTypes.object,
+  currentFinancialRatios: PropTypes.object,
+  currentCapitalDetails: PropTypes.object,
+  currentProfitabilityDetails: PropTypes.object,
+  currentFundPosition: PropTypes.object,
+  currentBorrowingDetails: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  setPercent: PropTypes.func,
+  setProgress: PropTypes.func,
+  onSaved: PropTypes.func,
 };
-

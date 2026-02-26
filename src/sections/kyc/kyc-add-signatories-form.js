@@ -89,14 +89,19 @@ export default function KYCAddSignatoriesForm({
       if (isEditMode) return true;
       return !!value;
     }),
-    boardResolution: Yup.mixed().test(
-      'fileRequired',
-      'Board Resolution is required',
-      function (value) {
-        if (isEditMode) return true;
-        return !!value;
-      }
-    ),
+    boardResolution: Yup.mixed().when('role', {
+      is: (role) => role && role !== 'DIRECTOR',
+      then: (schema) =>
+        schema.test(
+          'fileRequired',
+          'Board Resolution is required',
+          function (value) {
+            if (isEditMode) return true;
+            return !!value;
+          }
+        ),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   });
 
   const defaultValues = useMemo(
@@ -160,15 +165,10 @@ export default function KYCAddSignatoriesForm({
       }
 
       const panCardFileId = getFileId(data.panCard);
-      const boardResolutionFileId = getFileId(data.boardResolution);
+      const boardResolutionFileId = getFileId(data.boardResolution) || '';
 
       if (!panCardFileId && !isEditMode) {
         enqueueSnackbar('PAN card is required', { variant: 'error' });
-        return;
-      }
-
-      if (!boardResolutionFileId && !isEditMode) {
-        enqueueSnackbar('Board Resolution is required', { variant: 'error' });
         return;
       }
 
@@ -218,8 +218,21 @@ export default function KYCAddSignatoriesForm({
   });
 
   useEffect(() => {
-    reset(defaultValues);
-  }, [currentUser, defaultValues, reset]);
+    if (open) {
+      reset({
+        name: currentUser?.fullName || '',
+        email: currentUser?.email || '',
+        phoneNumber: currentUser?.phone || '',
+        role: currentUser?.designationType || '',
+        panCard: '',
+        customDesignation: '',
+        boardResolution: '',
+        submittedPanFullName: '',
+        submittedPanNumber: '',
+        submittedDateOfBirth: '',
+      });
+    }
+  }, [open, currentUser, reset]);
 
   useEffect(() => {
     if (!panFile?.id) return;
@@ -397,6 +410,7 @@ export default function KYCAddSignatoriesForm({
                 />
 
                 <Typography variant='subtitle2' color='primary'>Board Resolution Section</Typography>
+
 
                 <RHFCustomFileUploadBox
                   name="boardResolution"
