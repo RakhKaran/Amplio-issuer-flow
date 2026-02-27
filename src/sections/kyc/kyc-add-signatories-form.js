@@ -89,19 +89,7 @@ export default function KYCAddSignatoriesForm({
       if (isEditMode) return true;
       return !!value;
     }),
-    boardResolution: Yup.mixed().when('role', {
-      is: (role) => role && role !== 'DIRECTOR',
-      then: (schema) =>
-        schema.test(
-          'fileRequired',
-          'Board Resolution is required',
-          function (value) {
-            if (isEditMode) return true;
-            return !!value;
-          }
-        ),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    boardResolution: Yup.mixed().required('fileRequired', 'Board Resolution is required')
   });
 
   const defaultValues = useMemo(
@@ -169,6 +157,10 @@ export default function KYCAddSignatoriesForm({
 
       if (!panCardFileId && !isEditMode) {
         enqueueSnackbar('PAN card is required', { variant: 'error' });
+        return;
+      }
+        if (!boardResolutionFileId && !isEditMode) {
+        enqueueSnackbar('Board resolution is required', { variant: 'error' });
         return;
       }
 
