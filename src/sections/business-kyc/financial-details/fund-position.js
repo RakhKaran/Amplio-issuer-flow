@@ -31,7 +31,7 @@ export default function FundPosition({ currentFundPosition, setPercent, setProgr
       cashAndBankBalance: currentFundPosition?.cashAndBankBalance ?? '',
       cashAndBankBalanceDate: currentFundPosition?.cashAndBankBalanceDate
         ? new Date(currentFundPosition.cashAndBankBalanceDate)
-        : null,
+        : new Date(),
       inventoryAmount: currentFundPosition?.inventoryAmount ?? '',
       prepaidExpensesAmount: currentFundPosition?.prepaidExpensesAmount ?? '',
       otherCurrentAssetsAmount: currentFundPosition?.otherCurrentAssetsAmount ?? '',
@@ -41,7 +41,7 @@ export default function FundPosition({ currentFundPosition, setPercent, setProgr
       currentLiabilitiesAmount: currentFundPosition?.currentLiabilitiesAmount ?? '',
       currentAssetsAndLiabilitiesDate: currentFundPosition?.currentAssetsAndLiabilitiesDate
         ? new Date(currentFundPosition.currentAssetsAndLiabilitiesDate)
-        : null,
+        : new Date(),
     }),
     [currentFundPosition]
   );
@@ -115,9 +115,8 @@ export default function FundPosition({ currentFundPosition, setPercent, setProgr
   useEffect(() => {
     if (currentFundPosition) {
       reset(defaultValues);
-      setProgress?.(true);
     }
-  }, [currentFundPosition, defaultValues, reset, setProgress]);
+  }, [currentFundPosition, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {

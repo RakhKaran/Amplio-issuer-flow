@@ -18,7 +18,7 @@ export default function Initial() {
       const response = await axiosInstance.post('/business-kyc');
 
       if (response.data.success) {
-        enqueueSnackbar(response.data.message ?? 'Business KYC started successfully', {
+        enqueueSnackbar(response.data.message ?? 'Business KYB started successfully', {
           variant: 'success',
         });
         navigate(paths.kyc.invoiceFinancing.create);

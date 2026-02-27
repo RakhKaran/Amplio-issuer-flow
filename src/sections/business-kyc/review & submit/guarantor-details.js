@@ -43,8 +43,21 @@ export default function GuarantorDetailsPage({ onEdit }) {
         {guarantorsDetails.slice(0, visibleCount).map((item, index) => (
           <Grid item xs={12} md={6} key={index}>
             <Card sx={{ p: 3, height: '100%' }}>
-              <Grid container justifyContent="flex-end" alignItems="flex-end" mb={2}>
-                <Box display="flex" flexDirection="row" alignItems="flex-end" gap={0.5}>
+              <Grid
+                container
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
+              >
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={700}
+                  color="text.secondary"
+                >
+                  #0{index + 1}
+                </Typography>
+
+                <Box display="flex" flexDirection="row" alignItems="center" gap={0.5}>
                   <Chip
                     size="small"
                     label={STATUS_CONFIG[item?.status]?.label || 'Unknown'}
@@ -59,7 +72,6 @@ export default function GuarantorDetailsPage({ onEdit }) {
                   <IconButton size="small" onClick={onEdit}>
                     <Iconify icon="solar:pen-bold" width={18} />
                   </IconButton>
-
                 </Box>
               </Grid>
 

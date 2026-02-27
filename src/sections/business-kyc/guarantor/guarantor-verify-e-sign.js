@@ -3,6 +3,7 @@ import { Container, Grid, Typography, TextField, Stack, Button, Alert, Box } fro
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
 import GuarantorAgreementSuccessDialog from './guarantor-agreement-success';
+import Logo from 'src/components/logo';
 
 export default function GuarantorESignVerify() {
   const { enqueueSnackbar } = useSnackbar();
@@ -147,6 +148,16 @@ return (
       px: 2,
     }}
   >
+    <Box
+            sx={{
+              position: 'fixed',
+              top: 16,
+              left: 16,
+              zIndex: 1300,
+            }}
+          >
+            <Logo />
+          </Box>
     <Container maxWidth="sm">
       <Box
         sx={{
