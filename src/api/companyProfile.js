@@ -43,6 +43,24 @@ export function useGetCompanyBankDetails() {
   return memoizedValue;
 }
 
+export function useGetCompanyAddressDetails() {
+  const URL = endpoints.companyProfile.addressDetails;
+
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
+
+  const memoizedValue = useMemo(
+    () => ({
+      addressDetails: data || [],
+      addressDetailsLoading: isLoading,
+      addressDetailsError: error,
+      addressDetailsValidating: isValidating,
+      addressDetailsEmpty: !isLoading && !data?.length,
+    }),
+    [data, error, isLoading, isValidating]
+  );
+
+  return memoizedValue;
+}
 // ----------------------------------------------------------------------
 
 // export function useGetPost(title) {

@@ -21,11 +21,11 @@ export default function AuthGuard({ children }) {
   const router = useRouter();
 
   const { authenticated, method, user, logout } = useAuthContext();
-  
+
   const [checked, setChecked] = useState(false);
 
   const check = useCallback(() => {
-    if (!authenticated || (authenticated && !user.roles.includes('company'))) {
+    if (!authenticated || !user || !user.roles?.includes('company')) {
       logout?.();
       const searchParams = new URLSearchParams({ returnTo: window.location.pathname }).toString();
 
@@ -34,15 +34,15 @@ export default function AuthGuard({ children }) {
       const href = `${loginPath}?${searchParams}`;
 
       router.replace(href);
-    } else {
-      setChecked(true);
+      return;
     }
-  }, [authenticated, method, router]);
+
+    setChecked(true);
+  }, [authenticated, logout, method, router, user]);
 
   useEffect(() => {
     check();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [check]);
 
   if (!checked) {
     return null;

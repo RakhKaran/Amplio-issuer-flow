@@ -29,6 +29,7 @@ import { enqueueSnackbar } from 'notistack';
 import axiosInstance from 'src/utils/axios';
 import { useGetDetails } from 'src/api/companyKyc';
 import { useEffect, useMemo, useState } from 'react';
+import { Card } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -36,7 +37,7 @@ export default function KYCBankDetails({
   percent,
   setActiveStepId,
   dataInitializedSteps,
-  setDataInitializedSteps
+  setDataInitializedSteps,
 }) {
   const router = useRouter();
   const { Details: bankDetails, Loading: bankLoading } = useGetDetails();
@@ -96,12 +97,12 @@ export default function KYCBankDetails({
 
   const existingProof = bankDetails?.bankAccountProof
     ? {
-        id: bankDetails.bankAccountProof.id,
-        name: bankDetails.bankAccountProof.fileOriginalName,
-        url: bankDetails.bankAccountProof.fileUrl,
-        status: bankDetails.status === 1 ? 'approved' : 'pending',
-        isServerFile: true,
-      }
+      id: bankDetails.bankAccountProof.id,
+      name: bankDetails.bankAccountProof.fileOriginalName,
+      url: bankDetails.bankAccountProof.fileUrl,
+      status: bankDetails.status === 1 ? 'approved' : 'pending',
+      isServerFile: true,
+    }
     : null;
 
   const onSubmit = handleSubmit(async (data) => {
@@ -217,7 +218,10 @@ export default function KYCBankDetails({
         bankShortCode: bankDetails[0]?.bankShortCode || '',
       });
       if (!dataInitializedSteps.includes('kyc_bank_details')) {
-        setDataInitializedSteps();
+        setDataInitializedSteps?.((prev = []) => [
+          ...prev,
+          'kyc_bank_details',
+        ]);
         setActiveStepId();
       }
     }
@@ -225,17 +229,41 @@ export default function KYCBankDetails({
 
   return (
     <Container>
-      <KYCTitle title="Bank Details" subtitle="Add your bank account information" />
+      <Card
+        sx={{
+          p: 4,
+          borderRadius: 3,
+          width: '100%',
+          boxShadow: '0px 8px 25px rgba(0,0,0,0.08)',
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: 600,
+        }}
+      >
+        <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              color: '#206CFE',
+              textAlign: 'left',
+            }}
+          >
+            Bank Details
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 500,
+              color: '#000000',
+              textAlign: 'left',
+            }}
+          >
+            Add your bank account information
+          </Typography>
+        </Stack>
+        <FormProvider methods={methods} onSubmit={onSubmit}>
 
-      <FormProvider methods={methods} onSubmit={onSubmit}>
-        <Paper
-          sx={{
-            p: { xs: 2, md: 4 },
-            borderRadius: 2,
-            border: (theme) => `1px solid ${theme.palette.divider}`,
-            boxShadow: '0px 4px 20px rgba(0,0,0,0.08)',
-          }}
-        >
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 2 }}>
             Select Document Type:
           </Typography>
@@ -245,8 +273,6 @@ export default function KYCBankDetails({
               name="documentType"
               SelectProps={{
                 displayEmpty: true,
-                renderValue: (value) =>
-                  value ? value : <Box sx={{ color: 'text.disabled' }}>Select Type</Box>,
               }}
             >
               <MenuItem value="cheque">Cheque</MenuItem>
@@ -255,16 +281,6 @@ export default function KYCBankDetails({
           </Box>
 
           {/* ---------------- ADDRESS PROOF UPLOAD ---------------- */}
-          {/* <RHFFileUploadBox
-            name="addressProof"
-            label={`Upload ${documentType === 'cheque' ? 'Cheque' : 'Bank Statement'}`}
-            icon="mdi:file-document-outline"
-            color="#1e88e5"
-            acceptedTypes="pdf,xls,docx,jpeg"
-            maxSizeMB={10}
-            existing={existingProof}
-            onDrop={(files) => handleDrop(files)}
-          /> */}
           <RHFCustomFileUploadBox
             name="addressProof"
             label={`Upload ${documentType === 'cheque' ? 'Cheque' : 'Bank Statement'}`}
@@ -419,19 +435,20 @@ export default function KYCBankDetails({
               </Grid>
             </Grid>
           </Box>
-        </Paper>
 
-        {/* ---------------- FOOTER BUTTONS ---------------- */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, mb: 2 }}>
-          <Button component={RouterLink} href={paths.kycCompanyDetails} variant="outlined">
-            Back
-          </Button>
 
-          <Button variant="contained" type="submit">
-            Next
-          </Button>
-        </Box>
-      </FormProvider>
+          {/* ---------------- FOOTER BUTTONS ---------------- */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4, mb: 2 }}>
+            {/* <Button component={RouterLink} href={paths.kycCompanyDetails} variant="outlined">
+              Back
+            </Button> */}
+
+            <Button variant="contained" color='primary' type="submit">
+              Next
+            </Button>
+          </Box>
+        </FormProvider>
+      </Card>
 
       <KYCFooter />
     </Container>

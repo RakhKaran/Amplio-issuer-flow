@@ -1,0 +1,94 @@
+import { useEffect, useState } from 'react';
+import { useRouter } from 'src/routes/hook';
+import axiosInstance from 'src/utils/axios';
+import { paths } from 'src/routes/paths';
+import { LoadingScreen } from 'src/components/loading-screen';
+import { useAuthContext } from '../hooks';
+
+export default function KycFlowGuard({ children }) {
+  const {user} = useAuthContext();
+  const router = useRouter();
+
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const res = await axiosInstance.get('/business-kyc/state');
+        const state = res?.data?.data;
+
+        /* ---------- NO KYC ---------- */
+        if (!state?.businessKycId) {
+          setChecking(false); // allow initialize page
+          return;
+        }
+
+        /* ---------- APPROVED ---------- */
+        if (state.isBusinessKycComplete || user.isBusinessKycComplete) {
+          router.replace(paths.dashboard.root);
+          return;
+        }
+
+        /* ---------- PENDING ---------- */
+        if (state.currentStage === 'PENDING') {
+          setChecking(false);
+          router.replace(paths.kyc.invoiceFinancing.pending);
+          return;
+        }
+
+        /* ---------- AGREEMENTS ---------- */
+        if (state.currentStage === 'AGREEMENTS') {
+          setChecking(false);
+          router.replace(paths.kyc.invoiceFinancing.agreements);
+          return;
+        }
+
+        if (state.currentStage === 'ROC') {
+          const currentPath = window.location.pathname;
+          const rocPath = paths.kyc.invoiceFinancing.roc;
+
+          // ⭐ ALWAYS redirect if not already on ROC
+          if (currentPath !== rocPath) {
+            router.replace(rocPath);
+            return;
+          }
+
+          setChecking(false);
+          return;
+        }
+
+        if (state.currentStage === 'DPN') {
+          setChecking(false);
+          router.replace(paths.kyc.invoiceFinancing.dpn);
+          return;
+        }
+
+        if (state.currentStage === 'BUSINESS_KYC_PENDING') {
+          const currentPath = window.location.pathname;
+          const pendingPath = paths.kyc.invoiceFinancing.pending;
+
+          if (currentPath !== pendingPath) {
+            router.replace(pendingPath);
+            return;
+          }
+
+          setChecking(false);
+          return;
+        }
+
+        /* ---------- DEFAULT → STEPPER ---------- */
+        router.replace(paths.kyc.invoiceFinancing.create);
+        setChecking(false); // ⭐ UNLOCK UI
+      } catch (err) {
+        setChecking(false); // fail open
+      }
+    };
+
+    check();
+  }, [router]);
+
+  // ⭐ NEVER return null in production
+  if (checking) return <LoadingScreen />;
+
+  return children;
+}

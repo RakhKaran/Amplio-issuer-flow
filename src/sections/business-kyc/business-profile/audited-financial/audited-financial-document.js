@@ -3,30 +3,24 @@ import Grid from '@mui/material/Unstable_Grid2';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import FormProvider, { RHFSelect } from 'src/components/hook-form';
-import AuditedFinancialStatement from './audited-fnancial-statement';
 import AuditedIncomeTaxReturn from './audited-income-tax-return';
 import AuditedGSTR9 from './audited-gstr9';
-import AuditedGST3B from './audited-gstr3b';
+// import AuditedGST3B from './audited-gstr3b22';
 import { Container } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect, useState, useRef } from 'react';
 import { useSnackbar } from 'notistack';
-// import { useGetBondApplicationStepData } from 'src/api/bondApplications';
-// import { useParams } from 'src/routes/hook';
+import { useGetBusinessKycStepData } from 'src/api/businessKyc';
+import AuditedFinancialStatement from './audited-financial-statements';
+import AuditedGST3B from './audited-gstr3b';
 
 export default function AuditedFinancialDocument({ onUpdate, savedData }) {
-  // const params = useParams();
-  // const { applicationId } = params;
   const { enqueueSnackbar } = useSnackbar();
-  // Commented out API integration
-  // const { stepData, stepDataLoading } = useGetBondApplicationStepData(
-  //   applicationId,
-  //   'financial_statements'
-  // );
-
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData(
+    'financial_statements'
+  );
   // Track if completion message has been shown
   const completionMessageShown = useRef(false);
-
   // Load saved data (API integration commented out)
   const [currentData, setCurrentData] = useState(() => {
     if (savedData) {
@@ -113,46 +107,31 @@ export default function AuditedFinancialDocument({ onUpdate, savedData }) {
     }
   }, [financialDone, itrDone, gstr9Done, gstr3bDone, isBaseYearDone, enqueueSnackbar]);
 
-  // Commented out API integration
-  // useEffect(() => {
-  //   if (stepData && !stepDataLoading && !savedData) {
-  //     setCurrentData({
-  //       financialStatements: stepData?.financialStatements,
-  //       incomeTaxReturns: stepData?.incomeTaxReturns,
-  //       gstr9: stepData?.gstr9,
-  //       gst3b: stepData?.gst3b,
-  //     });
-  //     // Save API data to parent
-  //     onUpdate?.({
-  //       auditedFinancial: {
-  //         financialStatements: stepData?.financialStatements,
-  //         incomeTaxReturns: stepData?.incomeTaxReturns,
-  //         gstr9: stepData?.gstr9,
-  //         gst3b: stepData?.gst3b,
-  //       },
-  //     });
-  //   } else if (!currentData && !savedData) {
-  //     setCurrentData({
-  //       financialStatements: [],
-  //       incomeTaxReturns: [],
-  //       gstr9: [],
-  //       gst3b: [],
-  //     });
-  //   }
-  // }, [stepData, stepDataLoading, savedData, currentData, onUpdate]);
+  useEffect(() => {
+    if (stepData && !stepDataLoading) {
+      setCurrentData({
+        financialStatements: stepData?.data?.financialStatements ?? [],
+        incomeTaxReturns: stepData?.data?.incomeTaxReturns ?? [],
+        gstr9: stepData?.data?.gstr9 ?? [],
+        gst3b: stepData?.data?.gst3b ?? [],
+      });
+    }
+  }, [stepData, stepDataLoading]);
 
 
   return (
     <Container>
-      <Typography variant="h5" fontWeight="bold" color="primary">
-        Audited Financial
-      </Typography>
-      <Typography variant="body2" mb={2}>
-        Upload audited financial documents for assessment
-      </Typography>
+
       <FormProvider methods={methods}>
         <Grid container sx={{ p: 4, borderRadius: 2, border: '1px solid #ddd', boxShadow: 2 }}>
+
           <Grid xs={12}>
+            <Typography variant="h5" fontWeight="bold" color="primary">
+              Audited Financial
+            </Typography>
+            <Typography variant="body2" mb={2}>
+              Upload audited financial documents for assessment
+            </Typography>
             <Typography variant="h6" sx={{ mb: 3 }}>
               Base Year (Latest Financial Year)
             </Typography>

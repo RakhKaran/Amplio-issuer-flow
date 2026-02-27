@@ -17,6 +17,7 @@ import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, {
   RHFCustomFileUploadBox,
+  RHFPriceField,
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
@@ -26,6 +27,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { DatePicker } from '@mui/x-date-pickers';
 import axiosInstance from 'src/utils/axios';
 import { Checkbox, FormControlLabel, Grid, Typography } from '@mui/material';
+import { status } from 'nprogress';
 
 const guarantorType = [
   { value: 'Individual', label: 'Individual' },
@@ -64,66 +66,76 @@ export default function AddGuarantorForm({
       then: (schema) => schema.required('CIN is required'),
       otherwise: (schema) => schema.notRequired(),
     }),
+    boardResolutionFile: Yup.mixed().when('guarantorType', {
+      is: (val) => val === 'Corporate',
+      then: (schema) => schema.required('fileRequired', 'Board resolution is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     guarantorType: Yup.string().required('Guarantor Type is required'),
     guarantorAmountLimit: Yup.number().required('Amount Limit is required'),
     panCardFile: Yup.mixed().required('fileRequired', 'PAN card is required'),
-    adharCardFile: Yup.mixed().required('fileRequired', 'Aadhar card is required'),
+    adharCardFile: Yup.mixed().when('guarantorType', {
+      is: 'individual',
+      then: (schema) =>
+        schema.test(
+          'fileRequired',
+          'Aadhar card is required',
+          function (value) {
+            if (currentGurantor?.id) return true; // ✅ edit mode
+            return !!value;
+          }
+        ),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     fullName: Yup.string().required("Guarantor's Full Name is required"),
     estimetedNetWorth: Yup.number().required('Estimated Net Worth is required'),
     panNumber: Yup.string()
       .transform((value) => value?.toUpperCase())
       .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format')
       .required('PAN Number is required'),
-    adharNumber: Yup.string()
-      .max(12, 'Invalid Aadhar format')
-      .required('Aadhar Number is required'),
+    adharNumber: Yup.string().when('guarantorType', {
+      is: 'individual',
+      then: (schema) =>
+        schema
+          .required('Aadhar Number is required')
+          .matches(/^\d{12}$/, 'Aadhar must be exactly 12 digits'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    gstCertificateFile: Yup.mixed().nullable(),
+    financialStatementFile: Yup.mixed().nullable(),
+    addressProofFile: Yup.mixed().nullable(),
+    itrFile: Yup.mixed().nullable(),
     consent: Yup.boolean()
       .oneOf([true], 'You must provide consent to proceed')
       .required('Consent is required'),
-
-    // submittedPanFullName: Yup.string()
-    //   .transform((value) => value?.toUpperCase())
-    //   .required("PAN Holder's Name is required")
-    //   .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
-    // submittedPanNumber: Yup.string()
-    //   .transform((value) => value?.toUpperCase())
-    //   .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format')
-    //   .required('PAN Number is required'),
-    // submittedDateOfBirth: Yup.string().required('DOB is required'),
-    // panCard: Yup.mixed().test('fileRequired', 'PAN card is required', function (value) {
-    //   if (isEditMode) return true;
-    //   return !!value;
-    // }),
-    // boardResolution: Yup.mixed().test(
-    //   'fileRequired',
-    //   'Board Resolution is required',
-    //   function (value) {
-    //     if (isEditMode) return true;
-    //     return !!value;
-    //   }
-    // ),
   });
 
   const defaultValues = useMemo(
     () => ({
-      guarantorName: currentGurantor?.guarantorName || '',
+      guarantorName: currentGurantor?.guarantorCompanyName || '',
       email: currentGurantor?.email || '',
       phoneNumber: currentGurantor?.phoneNumber || currentGurantor?.phone || '',
-      cin: currentGurantor?.cin || '',
+      cin: currentGurantor?.CIN || '',
       guarantorAmountLimit:
-        currentGurantor?.guarantorAmountLimit || currentGurantor?.GaurantorAmountLimit || '',
+        currentGurantor?.guaranteedAmountLimit || currentGurantor?.GaurantorAmountLimit || '',
       guarantorType: currentGurantor?.guarantorType || 'Corporate',
       fullName: currentGurantor?.fullName || '',
-      estimetedNetWorth: currentGurantor?.estimetedNetWorth || '',
+      estimetedNetWorth: currentGurantor?.estimatedNetWorth || '',
       panNumber: currentGurantor?.panNumber || '',
       adharNumber: currentGurantor?.adharNumber || '',
-      // Preserve file objects if editing
-      adharCardFile: currentGurantor?.adharCardFile || null,
-      panCardFile: currentGurantor?.panCardFile || null,
+      adharCardFile: currentGurantor?.companyAadhar || null,
+      panCardFile: currentGurantor?.companyPan || null,
+      boardResolutionFile: currentGurantor?.boardResoluton || null,
+      gstCertificateFile: currentGurantor?.gstCertificate || null,
+      financialStatementFile: currentGurantor?.financialStatement || null,
+      addressProofFile: currentGurantor?.addressProof || null,
+      itrFile: currentGurantor?.itr || null,
+
       consent: currentGurantor ? true : false,
     }),
     [currentGurantor]
   );
+
 
   const methods = useForm({
     resolver: yupResolver(NewUserSchema),
@@ -137,6 +149,24 @@ export default function AddGuarantorForm({
     control,
     formState: { isSubmitting, errors },
   } = methods;
+
+
+  const netWorth = useWatch({
+    control,
+    name: 'estimetedNetWorth',
+  });
+
+  useEffect(() => {
+    if (!netWorth) return;
+
+    const calculatedLimit = Math.floor(Number(netWorth) * 0.4);
+
+    setValue('guarantorAmountLimit', calculatedLimit, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [netWorth, setValue]);
+
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -162,109 +192,89 @@ export default function AddGuarantorForm({
 
   // const watchRole = methods.watch('role');
 
-  // const getFileId = (fileValue) => {
-  //   if (!fileValue) return null;
+  const getFileId = (fileValue) => {
+    if (!fileValue) return null;
 
-  //   // Existing file (edit mode)
-  //   if (fileValue.id) return fileValue.id;
+    // Existing file (edit mode)
+    if (fileValue.id) return fileValue.id;
 
-  //   // Newly uploaded file
-  //   if (fileValue.files?.length > 0) {
-  //     return fileValue.files[0]?.id || null;
-  //   }
+    // Newly uploaded file
+    if (fileValue.files?.length > 0) {
+      return fileValue.files[0]?.id || null;
+    }
 
-  //   return null;
-  // };
-
-  // const onSubmit = handleSubmit(async (data) => {
-  //   try {
-  //     const usersId = sessionStorage.getItem('trustee_user_id');
-
-  //     if (!usersId) {
-  //       enqueueSnackbar('User ID missing. Restart KYC.', { variant: 'error' });
-  //       return;
-  //     }
-
-  //     const panCardFileId = getFileId(data.panCard);
-  //     const boardResolutionFileId = getFileId(data.boardResolution);
-
-  //     if (!panCardFileId && !isEditMode) {
-  //       enqueueSnackbar('PAN card is required', { variant: 'error' });
-  //       return;
-  //     }
-
-  //     if (!boardResolutionFileId && !isEditMode) {
-  //       enqueueSnackbar('Board Resolution is required', { variant: 'error' });
-  //       return;
-  //     }
-
-  //     const isCustom = data.role === 'OTHER';
-
-  //     const payload = {
-  //       usersId,
-  //       signatory: {
-  //         fullName: data.name,
-  //         email: data.email,
-  //         phone: data.phoneNumber,
-
-  //         // Extracted PAN details (from OCR)
-  //         extractedPanFullName: extractedPan?.extractedPanFullName || '',
-  //         extractedPanNumber: extractedPan?.extractedPanNumber || '',
-  //         extractedDateOfBirth: extractedPan?.extractedDateOfBirth || '',
-
-  //         // Submitted PAN details (after human check / edit)
-  //         submittedPanFullName: data.submittedPanFullName,
-  //         submittedPanNumber: data.submittedPanNumber,
-  //         submittedDateOfBirth: data.submittedDateOfBirth,
-
-  //         panCardFileId,
-  //         boardResolutionFileId,
-  //         designationType: isCustom ? 'custom' : 'dropdown',
-  //         designationValue: isCustom
-  //           ? data.customDesignation
-  //           : ROLES.find((r) => r.value === data.role)?.label || data.role,
-  //       },
-  //     };
-
-  //     const res = await axiosInstance.post('/trustee-profiles/kyc-authorize-signatory', payload);
-
-  //     if (res?.data?.success) {
-  //       enqueueSnackbar('Signatory added successfully', { variant: 'success' });
-  //       onSuccess?.(payload.signatory);
-  //       onClose();
-  //     } else {
-  //       enqueueSnackbar(res?.data?.message || 'Something went wrong', {
-  //         variant: 'error',
-  //       });
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     enqueueSnackbar('Failed to add signatory', { variant: 'error' });
-  //   }
-  // });
+    return null;
+  };
 
   const onSubmit = handleSubmit(async (data) => {
-    // Store full form data including file objects
-    const payload = {
-      guarantorName: data.guarantorName,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      phone: data.phoneNumber, // Alias for compatibility
-      cin: data.cin || '',
-      guarantorType: data.guarantorType,
-      guarantorAmountLimit: Number(data.guarantorAmountLimit),
-      GaurantorAmountLimit: Number(data.guarantorAmountLimit), // For table display
-      fullName: data.fullName,
-      estimetedNetWorth: Number(data.estimetedNetWorth),
-      panNumber: data.panNumber,
-      adharNumber: data.adharNumber,
-      // Store full file objects
-      panCardFile: data.panCardFile || null,
-      adharCardFile: data.adharCardFile || null,
-    };
+    try {
+      const isCorporate = data.guarantorType === 'Corporate';
 
-    onSubmitSuccess?.(payload);
-    reset(); // Reset form after submission
+      const panCardFileId = getFileId(data.panCardFile);
+      const adharCardFileId = getFileId(data.adharCardFile);
+      const boardResolutionFileId = getFileId(data.boardResolutionFile);
+      const gstCertificateFileId = getFileId(data.gstCertificateFile);
+      const financialStatementFileId = getFileId(data.financialStatementFile);
+      const addressProofFileId = getFileId(data.addressProofFile);
+      const itrFileId = getFileId(data.itrFile);
+
+      // if (!panCardFileId || !adharCardFileId) {
+      //   enqueueSnackbar('PAN & Aadhaar documents are required', { variant: 'error' });
+      //   return;
+      // }
+
+      // ✅ Backend-aligned payload
+      const payload = {
+        guarantorCompanyName: data.guarantorName,
+        CIN: isCorporate ? data.cin : '',
+        phoneNumber: data.phoneNumber,
+        email: data.email,
+        guarantorType: data.guarantorType,
+        guaranteedAmountLimit: Number(data.guarantorAmountLimit),
+        estimatedNetWorth: Number(data.estimetedNetWorth),
+        fullName: data.fullName,
+        panNumber: data.panNumber,
+        adharNumber: isCorporate ? '' : data.adharNumber,
+        companyPanId: panCardFileId,
+        companyAadharId: isCorporate ? null : adharCardFileId,
+        boardResolutonId: isCorporate ? boardResolutionFileId : null,
+        gstCertificateId: isCorporate ? (gstCertificateFileId || null) : null,
+        financialStatementId: isCorporate ? (financialStatementFileId || null) : null,
+        addressProofId: !isCorporate ? (addressProofFileId || null) : null,
+        itrId: !isCorporate ? (itrFileId || null) : null,
+      };
+      let response;
+
+      // 🟢 EDIT → PATCH
+      if (currentGurantor?.id) {
+        response = await axiosInstance.patch(
+          `/business-kyc/guarantor-details/${currentGurantor.id}`,
+          payload
+        );
+      }
+      // 🔵 ADD → POST
+      else {
+        response = await axiosInstance.post('/business-kyc/guarantor-details', payload);
+      }
+
+      if (response?.status === 200 || response?.status === 201) {
+        enqueueSnackbar(
+          currentGurantor?.id ? 'Guarantor updated successfully' : 'Guarantor added successfully',
+          { variant: 'success' }
+        );
+
+        onSubmitSuccess?.(response.data);
+        onClose();
+        reset();
+      } else {
+        enqueueSnackbar('Something went wrong', { variant: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar(error?.response?.data?.message || 'Failed to save guarantor', {
+        variant: 'error',
+      });
+    }
   });
 
   useEffect(() => {
@@ -355,7 +365,7 @@ export default function AddGuarantorForm({
             pt: 2,
           }}
         >
-          <DialogTitle sx={{ p: 0 }}>
+          <DialogTitle color='primary.main' sx={{ p: 0 }}>
             {currentGurantor?.id ? 'Edit Guarantor' : 'Add Guarantor'}
           </DialogTitle>
           <Iconify
@@ -374,13 +384,27 @@ export default function AddGuarantorForm({
           }}
         >
           <Grid container spacing={3} mt={1}>
+            <Grid item xs={12} md={6}>
+              <RHFSelect
+                name="guarantorType"
+                label="Guarantor Type*"
+              // disabled={isViewMode}
+              >
+                {guarantorType.map((role) => (
+                  <MenuItem key={role.value} value={role.value}>
+                    {role.label}
+                  </MenuItem>
+                ))}
+              </RHFSelect>
+            </Grid>
+
             {/* Row 1 */}
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="guarantorName"
-                label="Name*"
-                InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
+                label="Company Name*"
+                // disabled={isViewMode}
+                inputProps={{ style: { textTransform: 'uppercase' } }}
               />
             </Grid>
 
@@ -389,7 +413,7 @@ export default function AddGuarantorForm({
                 <RHFTextField
                   name="cin"
                   label="CIN*"
-                  InputLabelProps={{ shrink: true }}
+
                 // disabled={isViewMode}
                 />
               </Grid>
@@ -400,8 +424,7 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="email"
                 label="Email*"
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
+              // disabled={isViewMode}
               />
             </Grid>
 
@@ -410,51 +433,82 @@ export default function AddGuarantorForm({
                 name="phoneNumber"
                 label="Phone Number*"
                 inputProps={{ maxLength: 10 }}
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
+              // disabled={isViewMode}
               />
             </Grid>
 
             {/* Row 3 */}
             <Grid item xs={12} md={6}>
-              <RHFSelect
-                name="guarantorType"
-                label="Guarantor Type*"
-                // disabled={isViewMode}
-                InputLabelProps={{ shrink: true }}
-              >
-                {guarantorType.map((role) => (
-                  <MenuItem key={role.value} value={role.value}>
-                    {role.label}
-                  </MenuItem>
-                ))}
-              </RHFSelect>
+              <RHFPriceField
+                name="estimetedNetWorth"
+                label="Estimated Net Worth*"
+
+              />
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="guarantorAmountLimit"
                 label="Guaranteed Amount Limit*"
-                InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
+                disabled
               />
             </Grid>
 
             {/* Row 4 */}
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="estimetedNetWorth"
-                label="Estimated Net Worth*"
-                InputLabelProps={{ shrink: true }}
-              // disabled={isViewMode}
-              />
+
+
+            {/* Full width uploads */}
+
+            <Grid item xs={12}>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  color: 'primary.main',
+                  mt: 2,
+                }}
+              >
+                PAN Section
+              </Typography>
             </Grid>
 
+            {selectedGuarantorType === 'Corporate' && (
+              <Grid item xs={12}>
+                <RHFCustomFileUploadBox
+                  name="panCardFile"
+                  label="Upload Corporate PAN Card*"
+                  accept={{
+                    'application/pdf': ['.pdf'],
+                    'image/png': ['.png'],
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                  }}
+                  fullWidth
+                // disabled={isViewMode}
+                />
+                {getErrorMessage('panCardFile')}
+              </Grid>
+            )}
+
+            {selectedGuarantorType === 'Individual' && (
+              <Grid item xs={12}>
+                <RHFCustomFileUploadBox
+                  name="panCardFile"
+                  label="Upload PAN Card*"
+                  accept={{
+                    'application/pdf': ['.pdf'],
+                    'image/png': ['.png'],
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                  }}
+                  fullWidth
+                // disabled={isViewMode}
+                />
+                {getErrorMessage('panCardFile')}
+              </Grid>
+            )}
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="fullName"
                 label="Full Name* (as per PAN)"
-                InputLabelProps={{ shrink: true }}
                 inputProps={{ style: { textTransform: 'uppercase' } }}
               // disabled={isViewMode}
               />
@@ -465,52 +519,127 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="panNumber"
                 label="PAN Number*"
-                InputLabelProps={{ shrink: true }}
                 inputProps={{ maxLength: 10 }}
               // disabled={isViewMode}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="adharNumber"
-                label="Aadhaar Number*"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ maxLength: 12 }}
-              // disabled={isViewMode}
-              />
-            </Grid>
+            {selectedGuarantorType === 'Corporate' && (
+              <>
+                <Grid item xs={12}>
+                  <RHFCustomFileUploadBox
+                    name="boardResolutionFile"
+                    label="Upload Board Resolution*"
+                    accept={{
+                      'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
+                    }}
+                    fullWidth
+                  // disabled={isViewMode}
+                  />
+                  {getErrorMessage('boardResolutionFile')}
+                </Grid>
+                <Grid item xs={12}>
+                  <RHFCustomFileUploadBox
+                    name="gstCertificateFile"
+                    label="Upload GST Certificate (optional)"
+                    accept={{
+                      'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
+                    }}
+                    fullWidth
+                  // disabled={isViewMode}
+                  />
+                  {getErrorMessage('gstCertificateFile')}
+                </Grid>
+                <Grid item xs={12}>
+                  <RHFCustomFileUploadBox
+                    name="financialStatementFile"
+                    label="Upload Financial Statement (optional)"
+                    accept={{
+                      'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
+                    }}
+                    fullWidth
+                  // disabled={isViewMode}
+                  />
+                  {getErrorMessage('financialStatementFile')}
+                </Grid>
+              </>
+            )}
+            {selectedGuarantorType === 'Individual' && (
+              <>
+                <Grid item xs={12}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 600,
+                      color: 'primary.main',
+                      mt: 2,
+                    }}
+                  >
+                    Aadhar Section
+                  </Typography>
+                </Grid>
 
-            {/* Full width uploads */}
-            <Grid item xs={12}>
-              <RHFCustomFileUploadBox
-                name="panCardFile"
-                label="Upload PAN Card*"
-                accept={{
-                  'application/pdf': ['.pdf'],
-                  'image/png': ['.png'],
-                  'image/jpeg': ['.jpg', '.jpeg'],
-                }}
-                fullWidth
-              // disabled={isViewMode}
-              />
-              {getErrorMessage('panCardFile')}
-            </Grid>
+                <Grid item xs={12}>
+                  <RHFCustomFileUploadBox
+                    name="adharCardFile"
+                    label="Upload Aadhaar Card*"
+                    accept={{
+                      'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
+                    }}
+                    fullWidth
+                  // disabled={isViewMode}
+                  />
+                  {getErrorMessage('adharCardFile')}
+                </Grid>
 
-            <Grid item xs={12}>
-              <RHFCustomFileUploadBox
-                name="adharCardFile"
-                label="Upload Aadhaar Card*"
-                accept={{
-                  'application/pdf': ['.pdf'],
-                  'image/png': ['.png'],
-                  'image/jpeg': ['.jpg', '.jpeg'],
-                }}
-                fullWidth
-              // disabled={isViewMode}
-              />
-              {getErrorMessage('adharCardFile')}
-            </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <RHFTextField
+                    name="adharNumber"
+                    label="Aadhaar Number*"
+                    inputProps={{ maxLength: 12 }}
+                  // disabled={isViewMode}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <RHFCustomFileUploadBox
+                    name="addressProofFile"
+                    label="Upload Address Proof (optional)"
+                    accept={{
+                      'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
+                    }}
+                    fullWidth
+                  // disabled={isViewMode}
+                  />
+                  {getErrorMessage('addressProofFile')}
+                </Grid>
+                <Grid item xs={12}>
+                  <RHFCustomFileUploadBox
+                    name="itrFile"
+                    label="Upload ITR (optional)"
+                    accept={{
+                      'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
+                    }}
+                    fullWidth
+                  // disabled={isViewMode}
+                  />
+                  {getErrorMessage('itrFile')}
+                </Grid>
+
+              </>
+            )}
           </Grid>
           <Grid item xs={12}>
             <Box sx={{ width: '100%', px: 2, pt: 2 }}>

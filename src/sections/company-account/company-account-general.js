@@ -33,6 +33,8 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router';
 import { fData } from 'src/utils/format-number';
 import RHFFileUploadBox from 'src/components/custom-file-upload/file-upload';
+import { useGetCompanyEntityTypes } from 'src/api/entityType';
+import { useGetCompanySectorTypes } from 'src/api/sectorType';
 
 // developer-provided uploaded file path (used as initial avatarUrl)
 const UPLOADED_DEV_FILE = '/mnt/data/Untitled document.docx';
@@ -47,6 +49,10 @@ export default function CompanyAccountGeneral() {
 
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [userCompanyId, setUserCompanyId] = useState(null);
+  const [entityOptions, setEntityOptions] = useState([]);
+  const [sectorOptions, setSectorOptions] = useState([]);
+  const { EntityTypes, EntityTypesEmpty } = useGetCompanyEntityTypes();
+  const { SectorTypes, SectorTypesEmpty } = useGetCompanySectorTypes();
 
   // ------------------------------ validation --------------------------------
   const NewUserSchema = Yup.object().shape({
@@ -58,11 +64,10 @@ export default function CompanyAccountGeneral() {
     city: Yup.string().required('City is required'),
     state: Yup.string().required('State is required'),
     country: Yup.string().required('Country is required'),
-    entityType: Yup.string().required('Entity Type is required'),
+    companyEntityTypeId: Yup.string().required('Entity Type is required'),
     panNumber: Yup.string().required('Pan Number is required'),
-    dateOfBirth: Yup.date().nullable().required('Date of Birth is required'),
     panHoldersName: Yup.string().required('Pan Holders Name is required'),
-    sector: Yup.string().required('Sector is required'),
+    companySectorTypeId: Yup.string().required('Sector is required'),
     companyLogo: Yup.object().nullable(),
     companyAbout: Yup.string(),
   });
@@ -79,11 +84,10 @@ export default function CompanyAccountGeneral() {
       state: '',
       country: 'India',
       companyAbout: '',
-      entityType: '',
+      companyEntityTypeId: '',
       panNumber: '',
-      dateOfBirth: null,
       panHoldersName: '',
-      sector: '',
+      companySectorTypeId: '',
       companyLogo: null,
       hasExistingData: hasExistingData,
     }),
@@ -107,6 +111,22 @@ export default function CompanyAccountGeneral() {
 
   // --------------------------- fetch company info --------------------------
   useEffect(() => {
+    if (EntityTypes && !EntityTypesEmpty) {
+      setEntityOptions(EntityTypes);
+    } else {
+      setEntityOptions([]);
+    }
+  }, [EntityTypes, EntityTypesEmpty]);
+
+  useEffect(() => {
+    if (SectorTypes && !SectorTypesEmpty) {
+      setSectorOptions(SectorTypes);
+    } else {
+      setSectorOptions([]);
+    }
+  }, [SectorTypes, SectorTypesEmpty]);
+
+  useEffect(() => {
     const fetchCompanyInfo = async () => {
       try {
         const response = await axiosInstance.get(`/company-profiles/me`);
@@ -125,13 +145,10 @@ export default function CompanyAccountGeneral() {
             state: companyData.stateOfIncorporation || '',
             country: companyData.countryOfIncorporation || 'India',
 
-            entityType: companyData.companyEntityType?.value || '',
-            sector: companyData.companySectorType?.value || '',
+            companyEntityTypeId: companyData.companyEntityTypeId || '',
+            companySectorTypeId: companyData.companySectorTypeId || '',
 
             panNumber: companyData.companyPanCards?.submittedPanNumber || '',
-            dateOfBirth: companyData.companyPanCards?.submittedDateOfBirth
-              ? dayjs(companyData.companyPanCards.submittedDateOfBirth).toDate()
-              : null,
             panHoldersName: companyData.companyPanCards?.submittedCompanyName || '',
 
             companyAbout: companyData.companyAbout || '',
@@ -296,6 +313,7 @@ export default function CompanyAccountGeneral() {
                       render={({ field, fieldState: { error } }) => (
                         <DatePicker
                           disabled
+                          label="Date Of Incorporation"
                           value={field.value}
                           onChange={(newValue) => field.onChange(newValue)}
                           format="dd-MM-yyyy"
@@ -320,44 +338,50 @@ export default function CompanyAccountGeneral() {
                   </Grid>
 
                   <Grid xs={12} md={6}>
-                    <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
-                      <RHFTextField name="city" placeholder="City" disabled sx={{ flex: 1 }} />
-                      <RHFSelect
-                        name="state"
-                        disabled
-                        sx={{ flex: 1 }}
-                        SelectProps={{ displayEmpty: true }}
-                      >
-                        <MenuItem value="Maharashtra">Maharashtra</MenuItem>
-                      </RHFSelect>
-                      <RHFAutocomplete
-                        name="country"
-                        disabled
-                        placeholder="Country"
-                        sx={{ flex: 1 }}
-                        readOnly
-                        options={countries.map((c) => c.label)}
-                        getOptionLabel={(option) => option}
-                        renderOption={(props, option) => {
-                          const found = countries.find((co) => co.label === option) || {};
-                          return (
-                            <li {...props} key={option}>
-                              <Iconify
-                                icon={`circle-flags:${(found.code || '').toLowerCase()}`}
-                                width={28}
-                                sx={{ mr: 1 }}
-                              />
-                              {option}
-                            </li>
-                          );
-                        }}
-                      />
-                    </Stack>
-                  </Grid>
+                    {/* <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}> */}
+                    <RHFTextField name="city" placeholder="City" label="City Of Incorporation" disabled sx={{ flex: 1 }} />
 
+                    {/* </Stack> */}
+                  </Grid>
                   <Grid xs={12} md={6}>
+                    <RHFSelect
+                      name="state"
+                      label="State Of Incorporation"
+                      disabled
+                      sx={{ flex: 1 }}
+                      SelectProps={{ displayEmpty: true }}
+                    >
+                      <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                    </RHFSelect>
+                  </Grid>
+                  <Grid xs={12} md={6}>
+                    <RHFAutocomplete
+                      name="country"
+                      label="Country Of Incorporation"
+                      disabled
+                      placeholder="Country"
+                      sx={{ flex: 1 }}
+                      readOnly
+                      options={countries.map((c) => c.label)}
+                      getOptionLabel={(option) => option}
+                      renderOption={(props, option) => {
+                        const found = countries.find((co) => co.label === option) || {};
+                        return (
+                          <li {...props} key={option}>
+                            <Iconify
+                              icon={`circle-flags:${(found.code || '').toLowerCase()}`}
+                              width={28}
+                              sx={{ mr: 1 }}
+                            />
+                            {option}
+                          </li>
+                        );
+                      }}
+                    />
+                  </Grid>
+                  <Grid xs={12} md={12}>
                     <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
-                      <Box sx={{ flex: 1 }}>
+                      {/* <Box sx={{ flex: 1 }}>
                         <RHFSelect name="entityType" disabled>
                           <MenuItem value="sole_proprietorship">Sole Proprietorship</MenuItem>
                           <MenuItem value="private_limited">Private Limited</MenuItem>
@@ -374,7 +398,24 @@ export default function CompanyAccountGeneral() {
                           <MenuItem value="infrastructure">Infrastructure</MenuItem>
                           <MenuItem value="others">Others</MenuItem>
                         </RHFSelect>
-                      </Box>
+                      </Box> */}
+                      <RHFSelect name="companyEntityTypeId" label="Entity Type *" disabled>
+                        <MenuItem value="">Select Entity Type</MenuItem>
+                        {entityOptions.map((opt) => (
+                          <MenuItem key={opt.id} value={opt.id}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </RHFSelect>
+
+                      <RHFSelect name="companySectorTypeId" label="Sector Type *" disabled>
+                        <MenuItem value="">Select Sector Type</MenuItem>
+                        {sectorOptions.map((opt) => (
+                          <MenuItem key={opt.id} value={opt.id}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </RHFSelect>
                     </Stack>
                   </Grid>
                 </Grid>
@@ -383,7 +424,7 @@ export default function CompanyAccountGeneral() {
           </Grid>
 
           {/* PAN Upload */}
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{ mt: 2 }}>
             <Grid item xs={12} md={6}>
               <RHFTextField
                 name="panNumber"
@@ -393,36 +434,14 @@ export default function CompanyAccountGeneral() {
               />
             </Grid>
 
-            {/* -------------------- DATE OF BIRTH -------------------- */}
             <Grid item xs={12} md={6}>
-              <Controller
-                name="dateOfBirth"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <DatePicker
-                    value={field.value}
-                    disabled
-                    onChange={(newValue) => field.onChange(newValue)}
-                    format="dd-MM-yyyy"
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        placeholder: 'DD-MM-YYYY',
-                        error: !!error,
-                        helperText: error?.message,
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField name="panHoldersName" disabled placeholder="Enter Name as per PAN" />
+              <RHFTextField name="panHoldersName" label="PAN Holders Name*" disabled placeholder="Enter Name as per PAN" />
             </Grid>
             <Grid item xs={12} md={12}>
               <RHFTextField
                 name="companyAbout"
-                placeholder="Enter abount company"
+                label="About Seller"
+                placeholder="Enter about seller"
                 multiline
                 rows={4}
               />
@@ -431,6 +450,7 @@ export default function CompanyAccountGeneral() {
           <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
             <LoadingButton
               type="submit"
+              color='primary'
               variant="contained"
               loading={isSubmitting}
               sx={{ ml: 'auto' }}

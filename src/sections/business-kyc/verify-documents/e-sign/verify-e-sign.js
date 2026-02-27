@@ -3,6 +3,7 @@ import { Container, Grid, Typography, TextField, Stack, Button, Alert, Box } fro
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'src/components/snackbar';
 import AgreementSuccessDialog from '../success/agreement-success';
+import Logo from 'src/components/logo';
 
 export default function ESignVerify() {
   const { enqueueSnackbar } = useSnackbar();
@@ -34,33 +35,6 @@ export default function ESignVerify() {
     }
   };
 
-  // const handleVerify = async () => {
-  //   const enteredOtp = otp.join('');
-
-  //   if (enteredOtp.length !== OTP_LENGTH) {
-  //     setErrorMsg(`Enter all ${OTP_LENGTH} digits`);
-  //     return;
-  //   }
-
-  //   setErrorMsg('');
-  //   setVerifying(true);
-
-  //   try {
-  //     await axiosInstance.post('/auth/verify-esign-otp', {
-  //       otp: enteredOtp,
-  //     });
-
-  //     enqueueSnackbar('OTP verified successfully', { variant: 'success' });
-
-  //     // TODO: Proceed with E-sign flow here
-  //     setOpenSuccessDialog(true);
-  //   } catch (err) {
-  //     enqueueSnackbar(err?.response?.data?.message || 'Invalid OTP', { variant: 'error' });
-  //   } finally {
-  //     setVerifying(false);
-  //   }
-  // };
-
   const handleVerify = async () => {
     const enteredOtp = otp.join('');
 
@@ -70,33 +44,47 @@ export default function ESignVerify() {
     }
 
     setErrorMsg('');
+    setVerifying(true);
 
-    // 🔐 Hardcoded OTP check
-    if (enteredOtp !== '1234') {
-      enqueueSnackbar('Invalid OTP', { variant: 'error' });
-      return;
+    try {
+      await axiosInstance.post('/auth/company-esign/verify-otp', {
+        otp: enteredOtp,
+      });
+
+      sessionStorage.setItem('agreementJustCompleted', 'true');
+
+      enqueueSnackbar('OTP verified successfully', {
+        variant: 'success',
+      });
+
+      setOpenSuccessDialog(true);
+    } catch (error) {
+      enqueueSnackbar(error?.error?.message || 'Invalid OTP', { variant: 'error' });
+    } finally {
+      setVerifying(false);
     }
-
-    // ✅ OTP is correct
-    enqueueSnackbar('OTP verified successfully', { variant: 'success' });
-    setOpenSuccessDialog(true);
   };
 
   const handleResendOtp = async () => {
     try {
-      await axiosInstance.post('/auth/resend-esign-otp');
+      await axiosInstance.post('/auth/company-esign/send-otp');
 
-      enqueueSnackbar('OTP resent successfully', { variant: 'success' });
+      enqueueSnackbar('OTP resent successfully', {
+        variant: 'success',
+      });
 
       setOtp(Array(OTP_LENGTH).fill(''));
       setTimer(RESEND_TIME);
       setCanResend(false);
 
       otpRefs.current[0]?.focus();
-    } catch (err) {
-      enqueueSnackbar(err?.response?.data?.message || 'Failed to resend OTP', { variant: 'error' });
+    } catch (error) {
+      enqueueSnackbar(error?.error?.message || 'Failed to resend OTP', {
+        variant: 'error',
+      });
     }
   };
+
   useEffect(() => {
     if (timer === 0) {
       setCanResend(true);
@@ -146,6 +134,16 @@ export default function ESignVerify() {
         justifyContent: 'center',
       }}
     >
+         <Box
+              sx={{
+                position: 'fixed',
+                top: 16,
+                left: 16,
+                zIndex: 1300,
+              }}
+            >
+              <Logo />
+            </Box>
       <Container maxWidth="sm">
         <Grid container spacing={3}>
           <Grid item xs={12}>

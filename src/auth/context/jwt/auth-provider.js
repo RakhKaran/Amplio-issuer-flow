@@ -38,6 +38,12 @@ const reducer = (state, action) => {
       user: action.payload.user,
     };
   }
+  if (action.type === 'SET_USER') {
+    return {
+      ...state,
+      user: action.payload.user,
+    };
+  }
   if (action.type === 'LOGOUT') {
     return {
       ...state,
@@ -54,6 +60,29 @@ const STORAGE_KEY = 'accessToken';
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  const normalizeUser = useCallback((user = {}) => ({
+    ...user,
+    // Keep frontend stable against backend naming variations.
+    isFirstTime:
+      user.isFirstTime ??
+      user.mustChangePassword ??
+      false,
+  }), []);
+
+  const refreshUser = useCallback(async () => {
+    const response = await axios.get(endpoints.auth.me);
+    const user = normalizeUser(response.data);
+
+    dispatch({
+      type: 'SET_USER',
+      payload: {
+        user,
+      },
+    });
+
+    return user;
+  }, [normalizeUser]);
+
   const initialize = useCallback(async () => {
     try {
       const accessToken = sessionStorage.getItem(STORAGE_KEY);
@@ -64,15 +93,24 @@ export function AuthProvider({ children }) {
 
         const response = await axios.get(endpoints.auth.me);
 
-        const user = response.data;
+        const user = normalizeUser(response.data);
         if (!user.roles.includes('company')) {
-          logout();
+          setSession(null);
+          dispatch({
+            type: 'INITIAL',
+            payload: {
+              user: null,
+            },
+          });
+          return;
         }
 
         dispatch({
           type: 'INITIAL',
           payload: {
-            user,
+            user: {
+              ...user,
+            },
           },
         });
       } else {
@@ -92,7 +130,7 @@ export function AuthProvider({ children }) {
         },
       });
     }
-  }, []);
+  }, [normalizeUser]);
 
   useEffect(() => {
     initialize();
@@ -108,18 +146,19 @@ export function AuthProvider({ children }) {
 
     const response = await axios.post(endpoints.auth.login, data);
 
-    const { accessToken, user } = response.data;
+    const { accessToken, user: loginUser } = response.data;
+    const user = normalizeUser(loginUser);
 
-    if (user?.roles?.includes('company')) {
-      setSession(accessToken);
-      dispatch({
-        type: 'LOGIN',
-        payload: {
-          user,
-        },
-      });
-    } else throw new Error("User Doesn't have permission");
-  }, []);
+    if (!user?.roles?.includes('company')) {
+      throw new Error("User Doesn't have permission");
+    }
+
+    setSession(accessToken);
+
+    // Ensure flags like `isBusinessKycComplete` are present immediately after login.
+    const meUser = await refreshUser();
+    return meUser;
+  }, [normalizeUser, refreshUser]);
 
   // REGISTER
   const register = useCallback(async (email, password, fullName, lastName) => {
@@ -191,8 +230,9 @@ export function AuthProvider({ children }) {
       logout,
       forgotPassword,
       newPassword,
+      refreshUser,
     }),
-    [login, logout, register, forgotPassword, newPassword, state.user, status]
+    [login, logout, register, forgotPassword, newPassword, refreshUser, state.user, status]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;

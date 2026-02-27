@@ -11,3 +11,17 @@ export function snakeCase(str) {
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_]/g, '');
 }
+
+
+export function formatNumberIN(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const number = Number(value);
+  if (Number.isNaN(number)) return '';
+  return new Intl.NumberFormat('en-IN').format(number);
+}
+
+
+export function parseNumberIN(value) {
+  if (!value) return '';
+  return Number(String(value).replace(/,/g, ''));
+}

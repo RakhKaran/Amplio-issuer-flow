@@ -34,6 +34,7 @@ import {
 } from '@mui/material';
 // import { useParams } from 'src/routes/hook';
 import { useSnackbar } from 'notistack';
+import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -83,85 +84,48 @@ export default function AuditedGST3B({
     { value: 'dec', label: 'December' },
   ];
 
-  const monthOrder = months.map((m) => m.value);
+  const getLastTwelveMonthsDesc = () => {
+    const result = [];
 
-  // const handleAddRow = () => {
-  //   setDocuments((prev) => {
-  //     let nextMonth = 'jan';
+    for (let i = 0; i < 12; i++) {
+      const date = dayjs().subtract(i, 'month');
 
-  //     if (prev.length > 0) {
-  //       const lastMonth = prev[prev.length - 1].month;
-  //       const lastIndex = monthOrder.indexOf(lastMonth);
+      result.push({
+        value: date.format('MMM').toLowerCase(), // jan, dec
+        label: date.format('MMMM'), // January
+        monthIndex: date.month(),
+        year: date.year(),
+      });
+    }
 
-  //       if (lastIndex === -1) {
-  //         nextMonth = 'jan';
-  //       } else if (lastIndex === monthOrder.length - 1) {
-  //         enqueueSnackbar('All months are already added', { variant: 'warning' });
-  //         return prev;
-  //       } else {
-  //         nextMonth = monthOrder[lastIndex + 1];
-  //       }
-  //     }
+    return result; // already DESC order
+  };
 
-  //     const newDocument = {
-  //       id: `gst3b-${Date.now()}`,
-  //       month: nextMonth,
-  //       file: null,
-  //       status: 'Pending',
-  //       reportDate: null,
-  //       auditedType: 'audited',
-  //     };
-
-  //     return [...prev, newDocument];
-  //   });
-  // };
-
-
-const getLastSixMonthsDesc = () => {
-  const result = [];
-
-  for (let i = 0; i < 6; i++) {
-    const date = dayjs().subtract(i, 'month');
-
-    result.push({
-      value: date.format('MMM').toLowerCase(), // jan, dec
-      label: date.format('MMMM'),              // January
-      monthIndex: date.month(),
-      year: date.year(),
-    });
-  }
-
-  return result; // already DESC order
-};
-
-
-
-  const lastSixMonths = getLastSixMonthsDesc();
-
-
+  const lastSixMonths = getLastTwelveMonthsDesc();
 
   const handleFileUpload = async (e, id) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-
-
     try {
-      const mockFile = {
-        id: `file-${Date.now()}-${id}`,
-        fileName: file.name,
-        fileOriginalName: file.name,
-        size: file.size,
-        type: file.type,
-        file,
-      };
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await axiosInstance.post('/files', formData);
+
+      const uploadedFile = res?.data?.files?.[0];
+
+      if (!uploadedFile?.id) {
+        enqueueSnackbar('File upload failed', { variant: 'error' });
+        return;
+      }
 
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.id === id
             ? {
               ...doc,
-              file: mockFile,
+              file: uploadedFile,
               status: 'Uploaded',
               reportDate: new Date(),
             }
@@ -172,10 +136,29 @@ const getLastSixMonthsDesc = () => {
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
       enqueueSnackbar('File upload failed', { variant: 'error' });
+    } finally {
+      e.target.value = null;
     }
   };
+
+
   const handleDelete = (id) => {
-    setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
+    setDocuments(docs =>
+      docs.map(d =>
+        d.id === id
+          ? { ...d, file: null, status: 'Pending', reportDate: null }
+          : d
+      )
+    );
+  };
+
+  const handleViewFile = (file) => {
+    if (!file?.fileUrl) {
+      enqueueSnackbar('File URL not available', { variant: 'warning' });
+      return;
+    }
+
+    window.open(file.fileUrl, '_blank', 'noopener,noreferrer');
   };
 
   const getStatusColor = (status) => {
@@ -289,33 +272,29 @@ const getLastSixMonthsDesc = () => {
         auditorName: auditorName.trim(),
         reportDate: doc.reportDate,
         fileId: doc.file.id,
-        file: doc.file,
-        isActive: true,
-        isDeleted: false,
+        // file: doc.file,
+        // isActive: true,
+        // isDeleted: false,
       }));
 
       // Commented out API integration
-      // const payloadData = {
-      //   auditedFinancials: financialsData,
-      // };
-      // const response = await axiosInstance.patch(
-      //   `/bonds-pre-issue/audited-financials/${applicationId}`,
-      //   payloadData
-      // );
+      const payloadData = {
+        auditedFinancials: financialsData,
+      };
+      const response = await axiosInstance.patch(`/business-kyc/audited-financials`, payloadData);
 
-      // Save to parent component (which saves to localStorage)
-      // When form is complete and saved, set percent to 100
-      setPercent(100);
-      setProgress(true);
-      onSave?.(financialsData);
-      enqueueSnackbar('GSTR-3B saved successfully', {
-        variant: 'success',
-      });
+      if (response.status === 200) {
+        enqueueSnackbar('Audited financials saved successfully', { variant: 'success' });
+        setProgress(true);
+      }
     } catch (error) {
-      console.error('Error while saving financials:', error);
-      enqueueSnackbar('Something went wrong while saving audited financials', {
-        variant: 'error',
-      });
+      console.error('Error while uploading financials:', error);
+
+      enqueueSnackbar(
+        error?.response?.data?.error?.message ||
+        'Something went wrong while saving audited financials',
+        { variant: 'error' }
+      );
     }
   };
 
@@ -451,6 +430,7 @@ const getLastSixMonthsDesc = () => {
                     borderColor: 'divider',
                     display: 'flex',
                     alignItems: 'center',
+                    minWidth: 0,
                     '&:last-child': {
                       borderRight: 'none',
                       justifyContent: 'center',
@@ -477,7 +457,6 @@ const getLastSixMonthsDesc = () => {
                       {month.label}
                     </MenuItem>
                   ))}
-
                 </Select>
 
                 <Box>
@@ -511,8 +490,17 @@ const getLastSixMonthsDesc = () => {
                       Not Uploaded
                     </Typography>
                   ) : (
-                    <Typography variant="body2">
-                      {doc.file.fileName || doc.file.fileOriginalName}
+                    <Typography
+                      variant="body2"
+                      title={doc.file.fileOriginalName || doc.file.fileName}
+                      sx={{
+                        maxWidth: '100%',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {doc.file.fileOriginalName || doc.file.fileName}
                     </Typography>
                   )}
                 </Box>
@@ -537,6 +525,7 @@ const getLastSixMonthsDesc = () => {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box
@@ -572,7 +561,7 @@ const getLastSixMonthsDesc = () => {
 
                 <Box sx={{ gap: 1, display: 'flex' }}>
                   {doc.file && (
-                    <IconButton size="small" color="primary">
+                    <IconButton size="small" color="primary" onClick={() => handleViewFile(doc.file)}>
                       <Iconify icon="solar:eye-bold" width={20} />
                     </IconButton>
                   )}
@@ -581,9 +570,9 @@ const getLastSixMonthsDesc = () => {
                       id={`file-upload-${doc.id}`}
                       type="file"
                       accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
                       style={{ display: 'none' }}
                       onChange={(e) => handleFileUpload(e, doc.id)}
-                      key={doc.id}
                     />
                     <IconButton
                       size="small"
@@ -692,6 +681,7 @@ const getLastSixMonthsDesc = () => {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -749,7 +739,7 @@ const getLastSixMonthsDesc = () => {
                     </label>
                   ) : (
                     <Typography variant="body2" sx={{ flexGrow: 1, mr: 1 }}>
-                      {doc.file.fileName || doc.file.fileOriginalName}
+                      {doc.file.fileOriginalName || doc.file.fileName}
                     </Typography>
                   )}
                   <Box sx={{ display: 'flex', gap: 1 }}>

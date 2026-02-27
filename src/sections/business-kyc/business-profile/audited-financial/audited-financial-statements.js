@@ -17,8 +17,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import Iconify from 'src/components/iconify';
 import { RHFTextField } from 'src/components/hook-form';
-// import { useParams } from 'src/routes/hook';
-// import axiosInstance from 'src/utils/axios';
+import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'notistack';
 
 export default function AuditedFinancialStatement({
@@ -26,11 +25,7 @@ export default function AuditedFinancialStatement({
   setPercent,
   setProgress,
   currentData,
-  onSave,
 }) {
-  // Commented out API integration
-  // const params = useParams();
-  // const { applicationId } = params;
   const { enqueueSnackbar } = useSnackbar();
   const [auditorName, setAuditorName] = useState('');
   const [documents, setDocuments] = useState([]);
@@ -58,12 +53,9 @@ export default function AuditedFinancialStatement({
     score += documents.filter((d) => d.file).length * (7 / 3);
     score += documents.filter((d) => d.reportDate).length * (7 / 3);
 
-    const rawScore = Math.min(20, Math.round(score));
-    // When score reaches 20 (all fields complete), set percent to 100
-    // Otherwise use the calculated score as percentage
-    const percent = rawScore === 20 ? 100 : rawScore;
+    const percent = Math.min(20, Math.round(score));
     setPercent(percent);
-    setProgress(percent === 100);
+    setProgress(percent === 20);
   };
 
   // -----------------------------
@@ -114,23 +106,25 @@ export default function AuditedFinancialStatement({
     const file = e.target.files?.[0];
     if (!file) return;
 
-
     try {
-      const mockFile = {
-        id: `file-${Date.now()}-${id}`,
-        fileName: file.name,
-        fileOriginalName: file.name,
-        size: file.size,
-        type: file.type,
-        file,
-      };
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await axiosInstance.post('/files', formData);
+
+      const uploadedFile = res?.data?.files?.[0];
+
+      if (!uploadedFile?.id) {
+        enqueueSnackbar('File upload failed', { variant: 'error' });
+        return;
+      }
 
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.id === id
             ? {
               ...doc,
-              file: mockFile,
+              file: uploadedFile,
               status: 'Uploaded',
               reportDate: new Date(),
             }
@@ -141,15 +135,31 @@ export default function AuditedFinancialStatement({
       enqueueSnackbar('File uploaded successfully', { variant: 'success' });
     } catch (error) {
       enqueueSnackbar('File upload failed', { variant: 'error' });
+    } finally {
+      e.target.value = null;
     }
   };
 
 
   const handleDelete = (id) => {
-    setDocuments((docs) =>
-      docs.map((d) => (d.id === id ? { ...d, file: null, status: 'Pending', reportDate: null } : d))
+    setDocuments(docs =>
+      docs.map(d =>
+        d.id === id
+          ? { ...d, file: null, status: 'Pending', reportDate: null }
+          : d
+      )
     );
   };
+
+  const handleViewFile = (file) => {
+    if (!file?.fileUrl) {
+      enqueueSnackbar('File URL not available', { variant: 'warning' });
+      return;
+    }
+
+    window.open(file.fileUrl, '_blank', 'noopener,noreferrer');
+  };
+
 
   const validateBeforeSubmit = () => {
     if (!auditorName?.trim()) {
@@ -214,45 +224,30 @@ export default function AuditedFinancialStatement({
         auditorName: auditorName.trim(),
         reportDate: doc.reportDate,
         fileId: doc.file.id,
-        file: doc.file,
-        isActive: true,
-        isDeleted: false,
       }));
 
-      // Commented out API integration
-      // const payloadData = {
-      //   auditedFinancials: financialsData,
-      // };
-      // const response = await axiosInstance.patch(
-      //   `/bonds-pre-issue/audited-financials/${applicationId}`,
-      //   payloadData
-      // );
+      const payloadData = {
+        auditedFinancials: financialsData,
+      };
 
-      // Save to parent component (which saves to localStorage)
-      // When form is complete and saved, set percent to 100
-      setProgress(true);
-      setPercent(100);
-      onSave?.(financialsData);
-      enqueueSnackbar('Audited financial statements saved successfully', {
-        variant: 'success',
-      });
+      const response = await axiosInstance.patch(`/business-kyc/audited-financials`, payloadData);
+
+      if (response.status === 200) {
+        enqueueSnackbar('Audited financials saved successfully', { variant: 'success' });
+        setProgress(true);
+      }
     } catch (error) {
-      enqueueSnackbar('Something went wrong while saving audited financials', {
-        variant: 'error',
-      });
-      console.error('Error while saving financials:', error);
+      enqueueSnackbar(
+        error?.error?.message || 'Something went wrong while saving audited financials',
+        { variant: 'error' }
+      );
+      console.error('Error while uploading financials:', error);
     }
   };
 
-  useEffect(() => {
-    if (currentData?.length) {
-      // If saved data exists, the form was already completed
-      // Set percent to 100 to reflect completion
-      setPercent(100);
-      setProgress(true);
-    }
-  }, [currentData, setPercent, setProgress]);
-
+  // -----------------------------
+  // Render
+  // -----------------------------
   return (
     <Container disableGutters>
       <Grid
@@ -342,6 +337,7 @@ export default function AuditedFinancialStatement({
                     borderColor: 'divider',
                     display: 'flex',
                     alignItems: 'center',
+                    minWidth: 0,
                     '&:last-child': {
                       borderRight: 'none',
                       justifyContent: 'center',
@@ -382,7 +378,16 @@ export default function AuditedFinancialStatement({
                       Not Uploaded
                     </Typography>
                   ) : (
-                    <Typography variant="body2">
+                    <Typography
+                      variant="body2"
+                      title={doc.file.fileOriginalName || doc.file.fileName}
+                      sx={{
+                        maxWidth: '100%',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {doc.file.fileOriginalName || doc.file.fileName}
                     </Typography>
                   )}
@@ -408,6 +413,7 @@ export default function AuditedFinancialStatement({
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box
@@ -443,7 +449,7 @@ export default function AuditedFinancialStatement({
 
                 <Box sx={{ gap: 1, display: 'flex' }}>
                   {doc.file && (
-                    <IconButton size="small" color="primary">
+                    <IconButton size="small" color="primary" onClick={() => handleViewFile(doc.file)}>
                       <Iconify icon="solar:eye-bold" width={20} />
                     </IconButton>
                   )}
@@ -451,10 +457,7 @@ export default function AuditedFinancialStatement({
                     <input
                       id={`file-upload-${doc.id}`}
                       type="file"
-
                       accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
-
                       style={{ display: 'none' }}
                       onChange={(e) => handleFileUpload(e, doc.id)}
                       key={doc.id}
@@ -566,6 +569,7 @@ export default function AuditedFinancialStatement({
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       value={toValidDate(doc.reportDate)}
+                      format="dd/MM/yyyy"
                       onChange={(newValue) => handleDateChange(newValue, doc.id)}
                       renderInput={({ inputRef, inputProps, InputProps }) => (
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -616,7 +620,8 @@ export default function AuditedFinancialStatement({
                       <input
                         id={`mobile-file-upload-${doc.id}`}
                         type="file"
-                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
                         style={{ display: 'none' }}
                         onChange={(e) => handleFileUpload(e, doc.id)}
                       />
@@ -684,5 +689,4 @@ AuditedFinancialStatement.propTypes = {
   setPercent: PropTypes.func.isRequired,
   setProgress: PropTypes.func.isRequired,
   currentData: PropTypes.array,
-  onSave: PropTypes.func,
 };

@@ -52,6 +52,7 @@ const router = useRouter();
 
         <Button
           variant="contained"
+          color='primary'
           onClick={() => navigate(paths.dashboard.company.new)}
         >
           + Create Bank Details

@@ -14,7 +14,7 @@ import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
 
 // components
-import FormProvider, { RHFTextField, RHFCustomFileUploadBox } from 'src/components/hook-form';
+import FormProvider, { RHFTextField, RHFCustomFileUploadBox, RHFPriceField } from 'src/components/hook-form';
 import { Grid, IconButton, Stack } from '@mui/material';
 import Iconify from 'src/components/iconify';
 
@@ -148,10 +148,10 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="turnover"
                 label="Turnover (CR)*"
-                type="number"
+                // type="number"
                 placeholder="Enter amount"
               />
             </Grid>
@@ -171,10 +171,9 @@ export default function ClientBusinessProfileForm({ open, onClose, onSubmitSucce
 
             {/* Row 4 */}
             <Grid item xs={12} md={6}>
-              <RHFTextField
+              <RHFPriceField
                 name="avgInvoiceSize"
                 label="Average Invoice Size*"
-                type="number"
                 placeholder="Enter invoice size"
               />
             </Grid>

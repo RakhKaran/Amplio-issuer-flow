@@ -7,23 +7,26 @@ import PropTypes from 'prop-types';
 
 import { Card, Typography, Container, Grid } from '@mui/material';
 
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFPriceField, RHFTextField } from 'src/components/hook-form';
 import { LoadingButton } from '@mui/lab';
 import { useSnackbar } from 'src/components/snackbar';
+import axiosInstance from 'src/utils/axios';
+import { useGetBusinessKycStepData } from 'src/api/businessKyc';
 
 // ----------------------------------------------------------------------
 
 export default function BusinessProfile({ onSave, onProgressChange, savedData }) {
   const { enqueueSnackbar } = useSnackbar();
 
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData('business_profile');
   // ✅ Yup Schema
   const BusinessProfileSchema = Yup.object().shape({
-    yearsInBusiness: Yup.number()
+    yearInBusiness: Yup.number()
       .typeError('Years must be a number')
       .required('Years in business is required')
       .min(0, 'Invalid years'),
 
-    lastYearTurnover: Yup.number()
+    turnover: Yup.number()
       .typeError('Turnover must be a number')
       .required('Last year turnover is required')
       .min(0, 'Invalid amount'),
@@ -32,19 +35,13 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
       .typeError('Projected turnover must be a number')
       .required('Projected turnover is required')
       .min(0, 'Invalid amount'),
-
-    ebitdaMargin: Yup.number()
-      .typeError('EBITDA margin must be a number')
-      .required('EBITDA margin is required')
-      .min(0, 'Invalid value')
-      .max(100, 'EBITDA margin cannot exceed 100%'),
   });
 
   // ✅ Default Values with saved data
   // const defaultValues = useMemo(
   //   () => ({
-  //     yearsInBusiness: savedData?.yearsInBusiness || '',
-  //     lastYearTurnover: savedData?.lastYearTurnover || '',
+  //     yearInBusiness: savedData?.yearInBusiness || '',
+  //     turnover: savedData?.turnover || '',
   //     projectedTurnover: savedData?.projectedTurnover || '',
   //     ebitdaMargin: savedData?.ebitdaMargin || '',
   //   }),
@@ -61,30 +58,31 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
   const values = watch();
 
   useEffect(() => {
-    if (!savedData?.data) return;
+    if (!stepData?.data?.[0]) return;
+    const data = stepData?.data?.[0];
 
     reset({
-      yearsInBusiness: savedData.data.yearsInBusiness ?? '',
-      lastYearTurnover: savedData.data.lastYearTurnover ?? '',
-      projectedTurnover: savedData.data.projectedTurnover ?? '',
-      ebitdaMargin: savedData.data.ebitdaMargin ?? '',
+      yearInBusiness: data?.yearInBusiness ?? '',
+      turnover: data?.turnover ?? '',
+      projectedTurnover: data?.projectedTurnover ?? '',
+      // ebitdaMargin: stepData.data.ebitdaMargin ?? '',
     });
 
-    onProgressChange?.(savedData.percent ?? 0);
-  }, [savedData, reset]);
+    onProgressChange?.(stepData.percent ?? 0);
+  }, [stepData, reset]);
 
   useEffect(() => {
     onProgressChange?.(calculateProgress(values));
-  }, [values]);
+  }, [values.yearInBusiness, values.projectedTurnover, values.turnover]);
 
   const calculateProgress = (vals) => {
     let completed = 0;
-    const totalFields = 4;
+    const totalFields = 3;
 
-    if (vals.yearsInBusiness) completed++;
-    if (vals.lastYearTurnover) completed++;
+    if (vals.yearInBusiness) completed++;
+    if (vals.turnover) completed++;
     if (vals.projectedTurnover) completed++;
-    if (vals.ebitdaMargin) completed++;
+    // if (vals.ebitdaMargin) completed++;
 
     return Math.round((completed / totalFields) * 100);
   };
@@ -94,23 +92,30 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
     try {
       const percent = calculateProgress(data);
 
-      onSave?.({
-        data,
-        percent,
+      const payload = {
+        yearInBusiness: data.yearInBusiness,
+        turnover: data.turnover,
+        projectedTurnover: data.projectedTurnover,
+      };
+      const response = await axiosInstance.patch('/business-kyc/profile-details', payload);
+      enqueueSnackbar('Business profile saved successfully', {
+        variant: 'success',
       });
-
       onProgressChange?.(percent);
     } catch (error) {
-      enqueueSnackbar('Something went wrong', { variant: 'error' });
+      enqueueSnackbar(
+        error?.response?.data?.error?.message || error?.message || 'Something went wrong',
+        { variant: 'error' }
+      );
     }
   };
+
+  console.log('Loop ...');
 
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Container maxWidth="lg">
-        <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
-          Business Profile
-        </Typography>
+
 
         <Card
           sx={{
@@ -121,30 +126,25 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
             boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
           }}
         >
+          <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
+            Business Profile
+          </Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="yearsInBusiness" label="Years in Business*" placeholder="e.g. 5" />
+              <RHFTextField name="yearInBusiness" label="Years in Business*" placeholder="e.g. 5" />
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="lastYearTurnover"
-                label="Last Year Turnover*"
-                placeholder="₹ Amount in Lakhs"
-              />
+              <RHFPriceField name="turnover" label="Last Year Turnover*" />
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="projectedTurnover"
-                label="Projected Turnover*"
-                placeholder="₹ Amount in Lakhs"
-              />
+              <RHFPriceField name="projectedTurnover" label="Projected Turnover*" />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            {/* <Grid item xs={12} md={6}>
               <RHFTextField name="ebitdaMargin" label="EBITDA Margin (%)*" placeholder="e.g. 15%" />
-            </Grid>
+            </Grid> */}
           </Grid>
 
           <Grid container justifyContent="flex-end" sx={{ mt: 4 }}>

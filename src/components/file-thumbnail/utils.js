@@ -137,7 +137,7 @@ export function fileData(file) {
   // File
   return {
     key: file.fileUrl,
-    fileOriginalName: file.fileName,
+    fileOriginalName: file.fileName || file.fileOriginalName,
     size: file.size,
     path: file.path,
     type: file.type,

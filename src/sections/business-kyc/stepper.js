@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Stack } from '@mui/material';
 import ProgressStepper from 'src/components/progress-stepper/ProgressStepper';
 // import { useParams } from 'src/routes/hook';
@@ -8,23 +8,72 @@ import ClientDetailListView from './client-details/view/client-detail-list-view'
 import CollateralAssets from './collatral-assets/collatralAssets';
 import GuarantorListView from './guarantor/view/guarantor-list-view';
 import ReviewAndSubmitPage from './review & submit/review-and-submit';
+import { useGetBusinessKyc } from 'src/api/businessKyc';
+import { LoadingScreen } from 'src/components/loading-screen';
+import Logo from 'src/components/logo';
+import FinancialDetailsMain from './financial-details/financial-details-main';
 
 export default function Stepper() {
-  // const params = useParams();
-  // const { applicationId } = params;
-
-  // const [applicationData, setApplicationData] = useState(null);
-  // const { bondApplication, bondApplicationLoading } = useGetBondApplication(applicationId);
-  // const [dataInitialized, setDataInitialized] = useState(false);
-
-  const [activeStepId, setActiveStepId] = useState('business_Profile_Finance');
+  const { businessKyc, businessKycLoading } = useGetBusinessKyc();
+  const [activeStepId, setActiveStepId] = useState(null);
   const [formData, setFormData] = useState({
     business_Profile_Finance: {},
-    client_details: {},
+    financial_details: {},
     collateral_assets_verification: {},
     guarantor_details: {},
     review_and_submit: {},
   });
+
+  const [stepsProgress, setStepsProgress] = useState({
+    business_Profile_Finance: { percent: 0 },
+    financial_details: { percent: 0 },
+    collateral_assets_verification: { percent: 0 },
+    guarantor_details: { percent: 0 },
+    review_and_submit: { percent: 0 },
+  });
+
+  useEffect(() => {
+    if (!businessKyc) return;
+
+    const STEP_MAP = {
+      business_profile: 'business_Profile_Finance',
+      audited_financials: 'business_Profile_Finance',
+      financial_details: 'financial_details',
+      collateral_assets: 'collateral_assets_verification',
+      guarantor_details: 'guarantor_details',
+      review_and_submit: 'review_and_submit',
+    };
+
+    // ✅ Set Active Step
+    const activeCode = businessKyc?.activeStep?.code;
+
+    if (activeCode && STEP_MAP[activeCode]) {
+      setActiveStepId(STEP_MAP[activeCode]);
+    }
+
+    // ✅ Mark Completed Steps
+    if (Array.isArray(businessKyc.completedSteps)) {
+      setStepsProgress((prev) => {
+        const updated = { ...prev };
+
+        businessKyc.completedSteps.forEach((step) => {
+          const mapped = STEP_MAP[step.code];
+          if (mapped) updated[mapped] = { percent: 100 };
+        });
+
+        return updated;
+      });
+    }
+  }, [businessKyc]);
+
+
+  if (businessKycLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!activeStepId) {
+    return <LoadingScreen />;
+  }
 
   const steps = [
     {
@@ -32,11 +81,13 @@ export default function Stepper() {
       number: 1,
       lines: ['Business Profile', '& Finance'],
     },
+
     {
-      id: 'client_details',
+      id: 'financial_details',
       number: 2,
-      lines: ['Clieant', 'Details'],
+      lines: ['Financial', 'Details'],
     },
+
     {
       id: 'collateral_assets_verification',
       number: 3,
@@ -54,83 +105,6 @@ export default function Stepper() {
     },
   ];
 
-  const [stepsProgress, setStepsProgress] = useState({
-    business_Profile_Finance: { percent: 0 },
-    client_details: { percent: 0 },
-    collateral_assets_verification: { percent: 0 },
-    guarantor_details: { percent: 0 },
-    review_and_submit: { percent: 0 },
-  });
-
-  // CRITICAL FIX: Track if data has been loaded from localStorage
-  // This prevents saving empty/default state before loading is complete
-  const dataLoadedRef = useRef(false);
-
-  // Load data from localStorage after component mounts
-  useEffect(() => {
-    const savedStep = localStorage.getItem('activeStepId');
-    const savedForm = localStorage.getItem('formData');
-    const savedProgress = localStorage.getItem('stepsProgress');
-
-    if (savedStep) setActiveStepId(savedStep);
-
-    // CRITICAL: Only update formData if savedForm exists and has data
-    // This prevents overwriting with empty state
-    if (savedForm) {
-      try {
-        const parsed = JSON.parse(savedForm);
-        // Preserve ALL existing data - ensure all step keys exist with actual saved data
-        const loadedFormData = {
-          business_Profile_Finance: parsed.business_Profile_Finance || {},
-          client_details: parsed.client_details || {},
-          collateral_assets_verification: parsed.collateral_assets_verification || {},
-          guarantor_details: parsed.guarantor_details || {},
-          review_and_submit: parsed.review_and_submit || {},
-        };
-
-        // Only set if we actually have data to preserve
-        setFormData(loadedFormData);
-      } catch (error) {
-        console.error('Error parsing formData from localStorage:', error);
-      }
-    }
-
-    if (savedProgress) {
-      try {
-        const parsed = JSON.parse(savedProgress);
-        setStepsProgress({
-          business_Profile_Finance: parsed.business_Profile_Finance || { percent: 0 },
-          client_details: parsed.client_details || { percent: 0 },
-          collateral_assets_verification: parsed.collateral_assets_verification || { percent: 0 },
-          guarantor_details: parsed.guarantor_details || { percent: 0 },
-          review_and_submit: parsed.review_and_submit || { percent: 0 },
-        });
-      } catch (error) {
-        console.error('Error parsing stepsProgress from localStorage:', error);
-      }
-    }
-
-    // Mark data as loaded IMMEDIATELY after setting state
-    // The state update will be processed in the next render cycle
-    dataLoadedRef.current = true;
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('activeStepId', activeStepId);
-  }, [activeStepId]);
-
-  // CRITICAL FIX: Only save formData to localStorage AFTER initial load is complete
-  // This prevents overwriting localStorage with empty state before data is loaded
-  useEffect(() => {
-    if (dataLoadedRef.current) {
-      localStorage.setItem('formData', JSON.stringify(formData));
-    }
-  }, [formData]);
-
-  useEffect(() => {
-    localStorage.setItem('stepsProgress', JSON.stringify(stepsProgress));
-  }, [stepsProgress]);
-
   const updateStepPercent = (stepId, percent) => {
     setStepsProgress((prev) => ({
       ...prev,
@@ -141,43 +115,14 @@ export default function Stepper() {
     }));
   };
 
-  // const saveStepData = (stepId, data) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [stepId]: {
-  //       ...(prev[stepId] || {}),
-  //       ...data, // merge new fields with old
-  //     },
-  //   }));
-  // };
   const saveStepData = (stepId, data) => {
-    setFormData((prev) => {
-      let localStorageState = prev;
-      try {
-        const saved = localStorage.getItem('formData');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          localStorageState = {
-            business_Profile_Finance: parsed.business_Profile_Finance || prev.business_Profile_Finance || {},
-            client_details: parsed.client_details || prev.client_details || {},
-            collateral_assets_verification: parsed.collateral_assets_verification || prev.collateral_assets_verification || {},
-            guarantor_details: parsed.guarantor_details || prev.guarantor_details || {},
-            review_and_submit: parsed.review_and_submit || prev.review_and_submit || {},
-          };
-        }
-      } catch (error) {
-        console.error('Error reading localStorage in saveStepData:', error);
-      }
-
-      // Now merge the new data into the merged state
-      return {
-        ...localStorageState,
-        [stepId]: {
-          ...(localStorageState[stepId] || {}),
-          ...data, // merge new fields with old - preserves existing fields in this step
-        },
-      };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [stepId]: {
+        ...(prev[stepId] || {}),
+        ...data, // merge new fields with old
+      },
+    }));
   };
 
   const handleStepClick = (stepId) => {
@@ -269,18 +214,15 @@ export default function Stepper() {
         return (
           <BusinessProfileMain
             percent={(p) => updateStepPercent('business_Profile_Finance', p)}
-            setActiveStepId={() => setActiveStepId('client_details')}
+            setActiveStepId={() => setActiveStepId('financial_details')}
             saveStepData={(data) => saveStepData('business_Profile_Finance', data)}
           />
         );
-
-      case 'client_details':
+      case 'financial_details':
         return (
-          <ClientDetailListView
-            percent={(p) => updateStepPercent('client_details', p)}
+          <FinancialDetailsMain
+            percent={(p) => updateStepPercent('financial_details', p)}
             setActiveStepId={() => setActiveStepId('collateral_assets_verification')}
-            saveStepData={(data) => saveStepData('client_details', data)}
-
           />
         );
 
@@ -290,7 +232,6 @@ export default function Stepper() {
             percent={(p) => updateStepPercent('collateral_assets_verification', p)}
             setActiveStepId={() => setActiveStepId('guarantor_details')}
             saveStepData={(data) => saveStepData('collateral_assets_verification', data)}
-
           />
         );
 
@@ -300,7 +241,6 @@ export default function Stepper() {
             percent={(p) => updateStepPercent('guarantor_details', p)}
             setActiveStepId={() => setActiveStepId('review_and_submit')}
             saveStepData={(data) => saveStepData('guarantor_details', data)}
-
           />
         );
 
@@ -314,12 +254,22 @@ export default function Stepper() {
         );
 
       default:
-        return <Box>Done</Box>;
+        return <Box>Unknown step: {activeStepId}</Box>;
     }
   };
 
   return (
     <Box sx={{ p: 3 }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <ProgressStepper
         steps={steps}
         activeStepId={activeStepId}

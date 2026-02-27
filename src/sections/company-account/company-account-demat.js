@@ -181,7 +181,7 @@ export default function DematNewForm({ onClose }) {
             Cancel
           </Button> */}
 
-          <Button variant="contained" type="submit" disabled={isUploading || isSubmitting}>
+          <Button variant="contained" color='primary' type="submit" disabled={isUploading || isSubmitting}>
             {isUploading || isSubmitting ? 'Submitting...' : 'Save'}
           </Button>
 

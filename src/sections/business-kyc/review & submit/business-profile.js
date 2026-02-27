@@ -6,7 +6,9 @@ import {
   IconButton,
   Chip,
 } from "@mui/material";
+import { useGetBusinessKycStepData, useGetFinancials } from "src/api/businessKyc";
 import Iconify from "src/components/iconify";
+import { formatNumberIN } from "src/utils/change-case";
 
 // const businessProfile = [
 //   { label: "Years in business :", value: "7" },
@@ -14,39 +16,40 @@ import Iconify from "src/components/iconify";
 //   { label: "FY25 Projected Turnover :", value: "₹150 Cr" },
 //   { label: "EBITDA Margin :", value: "18%" },
 // ];
+const STATUS_CONFIG = {
+  0: { label: 'Under Review', color: 'warning' },
+  1: { label: 'Approved', color: 'success' },
+  2: { label: 'Rejected', color: 'error' },
+};
 
-const financialDocuments = [
-  {
-    label: "Financial Statements (Last 3 Years) :",
-    status: "Approved",
-    color: "#00AB59",
-  },
-  {
-    label: "FY24 Turnover (Audited) :",
-    status: "Approved",
-    color: "#00AB59",
-  },
-  {
-    label: "FY25 Projected Turnover :",
-    status: "Under Review",
-    color: "#FFAB00",
-  },
-  {
-    label: "EBITDA Margin :",
-    status: "Approved",
-    color: "#00AB59",
-  },
-];
 
-export default function ReviewBusinessProfilePage({ data }) {
-  const profile = data?.data || {};
+export default function ReviewBusinessProfilePage({ onEdit }) {
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData('business_profile');
 
+  const { financialsDetails = [] } = useGetFinancials();
+
+  const profileData = stepData?.data[0];
   const businessProfileRows = [
-    { label: "Years in Business", value: `${profile?.yearsInBusiness} years` },
-    { label: "FY24 Turnover (Audited)", value: profile?.lastYearTurnover },
-    { label: "FY25 Projected Turnover", value: profile?.projectedTurnover },
-    { label: "EBITDA Margin (%)", value: `${profile?.ebitdaMargin} %` },
+    {
+      label: "Years in Business",
+      value: profileData?.yearInBusiness
+        ? `${profileData.yearInBusiness} years`
+        : '—',
+    },
+    {
+      label: "FY24 Turnover (Audited)",
+      value: profileData?.turnover
+        ? `₹${formatNumberIN(profileData.turnover)}`
+        : '—',
+    },
+    {
+      label: "FY25 Projected Turnover",
+      value: profileData?.projectedTurnover
+        ? `₹${formatNumberIN(profileData.projectedTurnover)}`
+        : '—',
+    },
   ];
+
   return (
     <>
       <Box mb={2} mt={2} display="flex" justifyContent="center">
@@ -62,7 +65,7 @@ export default function ReviewBusinessProfilePage({ data }) {
       >
 
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3 }}>
+          <Card sx={{ p: 3, height: '100%' }}>
             <Grid
               spacing={2}
               container
@@ -75,18 +78,19 @@ export default function ReviewBusinessProfilePage({ data }) {
                 </Typography>
               </Grid>
               <Grid sx={{ textAlign: "right" }} item xs={4} md={2}>
-                <IconButton size="small">
-                  <Iconify icon="solar:pen-bold" width={20} />
+                <IconButton size="small" onClick={onEdit}>
+                  <Iconify icon="solar:pen-bold" width={18} />
                 </IconButton>
+
               </Grid>
               {businessProfileRows.map((item, index) => (
                 <>
-                  <Grid item xs={8} md={8}>
+                  <Grid item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={600}>
-                      {item.label}
+                      {item.label} :
                     </Typography>
                   </Grid>
-                  <Grid sx={{ textAlign: 'right' }} item xs={4} md={4}>
+                  <Grid sx={{ textAlign: 'right' }} item xs={6} md={6}>
                     <Typography variant="body2" fontWeight={500}>
                       {item.value}
                     </Typography>
@@ -112,12 +116,13 @@ export default function ReviewBusinessProfilePage({ data }) {
                 </Typography>
               </Grid>
               <Grid sx={{ textAlign: "right" }} item xs={4} md={2}>
-                <IconButton size="small">
-                  <Iconify icon="solar:pen-bold" width={20} />
+                <IconButton size="small" onClick={onEdit}>
+                  <Iconify icon="solar:pen-bold" width={18} />
                 </IconButton>
+
               </Grid>
 
-              {financialDocuments.map((item, index) => (
+              {financialsDetails.map((item, index) => (
                 <>
                   <Grid item xs={8} md={8}>
                     <Typography variant="body2" fontWeight={600}>
@@ -127,16 +132,12 @@ export default function ReviewBusinessProfilePage({ data }) {
                   <Grid sx={{ textAlign: 'right' }} item xs={4} md={4}>
                     <Chip
                       size="small"
-                      label={item.status}
-                      variant="outlined"
-                      sx={{
-                        height: 24,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: item.color,
-                        borderColor: item.color,
-                      }}
+                      label={STATUS_CONFIG[item.status]?.label}
+                      color={STATUS_CONFIG[item.status]?.color}
+                      variant="soft"
+                      sx={{ height: 24, fontSize: 11, fontWeight: 600 }}
                     />
+
                   </Grid>
                 </>
               ))}

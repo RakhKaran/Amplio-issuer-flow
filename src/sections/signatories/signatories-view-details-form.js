@@ -18,7 +18,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useSnackbar } from 'src/components/snackbar';
 import Iconify from 'src/components/iconify';
 import RHFFileUploadBox from 'src/components/custom-file-upload/file-upload';
-import FormProvider, { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFCustomFileUploadBox, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 
 
@@ -33,6 +33,8 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
     const { enqueueSnackbar } = useSnackbar();
     const [extractedPan, setExtractedPan] = useState(null);
     const [isPanUploaded, setIsPanUploaded] = useState(false);
+
+
 
     // ---------------------- VALIDATION ----------------------
     const schema = Yup.object().shape({
@@ -67,8 +69,8 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
             customDesignation:
                 currentUser?.designationType === 'CUSTOM' ? currentUser.designationValue : '',
 
-            panCard: currentUser?.panCardFileId || null,
-            boardResolution: currentUser?.boardResolutionFileId || null,
+            panCard: currentUser?.panCardFile || null,
+            boardResolution: currentUser?.boardResolutionFile || null,
 
             submittedPanFullName: currentUser?.submittedPanFullName || '',
             submittedPanNumber: currentUser?.submittedPanNumber || '',
@@ -77,6 +79,8 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
         }),
         [currentUser]
     );
+
+    console.log('View Defaulr Values', defaultValues)
 
 
     const methods = useForm({
@@ -154,6 +158,12 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
 
     const isDisabled = isViewMode;
 
+    const panFile = currentUser?.panCardFile;
+    const boardFile = currentUser?.boardResolutionFile;
+
+    console.log('file Name', panFile);
+    console.log('Board File name', boardFile)
+
     // ---------------------- UI ----------------------
     return (
         <Card sx={{ p: 4 }}>
@@ -164,15 +174,15 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                        <RHFTextField name="email" label="Email*"  disabled={true} />
+                        <RHFTextField name="email" label="Email*" disabled={true} />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                        <RHFTextField name="phoneNumber" label="Phone*"  disabled={true} inputProps={{ maxLength: 10 }} />
+                        <RHFTextField name="phoneNumber" label="Phone*" disabled={true} inputProps={{ maxLength: 10 }} />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                        <RHFSelect name="role" label="Designation*"  disabled={true}>
+                        <RHFSelect name="role" label="Designation*" disabled={true}>
                             {ROLES.map((r) => (
                                 <MenuItem key={r.value} value={r.value}>
                                     {r.label}
@@ -183,54 +193,26 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
 
                     {roleWatch === 'OTHER' && !isDisabled && (
                         <Grid item xs={12} sm={6}>
-                            <RHFTextField name="customDesignation" label="Custom Designation*"  disabled={true} />
+                            <RHFTextField name="customDesignation" label="Custom Designation*" disabled={true} />
                         </Grid>
                     )}
 
                     {/* PAN Upload */}
                     <Grid item xs={12}>
-                        {/* <RHFFileUploadBox
+                        <RHFCustomFileUploadBox
                             name="panCard"
-                            label="Upload PAN*"
-                            accept="application/pdf,image/*"
-                            onDrop={(files) => handlePanUpload(files[0])}
-                        /> */}
-                        <Box sx={{ mb: 3 }}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    flexWrap: 'wrap',
-                                    mb: 1,
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography sx={{ fontWeight: 600 }}>
-                                      Check  Uploaded PanCard :
-                                    </Typography>
-                                </Box>
-
-                                {currentUser?.panCardFile?.fileUrl ? (
-                                    <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        
-                                        startIcon={<Iconify icon="mdi:eye" />}
-                                        sx={{
-                                            height: 36,
-                                            textTransform: 'none',
-                                            fontWeight: 600,
-                                        }}
-                                        onClick={() => window.open(currentUser.panCardFile.fileUrl, '_blank')}
-                                    >
-                                        Preview Document
-                                    </Button>
-                                ) : (
-                                    <Typography color="text.secondary">No file uploaded.</Typography>
-                                )}
-                            </Box>
-                        </Box>
+                            label="PAN Card"
+                            disabled
+                            value={
+                                panFile
+                                    ? {
+                                        id: panFile.id,
+                                        fileOriginalName: panFile.fileOriginalName,
+                                        fileUrl: panFile.fileUrl,
+                                    }
+                                    : null
+                            }
+                        />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
@@ -259,42 +241,20 @@ export default function SignatoriesDetails({ currentUser, isViewMode, isEditMode
                     </Grid>
 
                     <Grid item xs={12}>
-                        {/* <RHFFileUploadBox name="boardResolution" label="Board Resolution*" accept="application/pdf,image/*" /> */}
-                        <Box sx={{ mb: 3 }}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    flexWrap: 'wrap',
-                                    mb: 1,
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography sx={{ fontWeight: 600 }}>
-                                      Check  Uploaded Resolution :
-                                    </Typography>
-                                </Box>
-
-                                {currentUser?.boardResolutionFile?.fileUrl ? (
-                                    <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        startIcon={<Iconify icon="mdi:eye" />}
-                                        sx={{
-                                            height: 36,
-                                            textTransform: 'none',
-                                            fontWeight: 600,
-                                        }}
-                                        onClick={() => window.open(currentUser.boardResolutionFile.fileUrl, '_blank')}
-                                    >
-                                        Preview Document
-                                    </Button>
-                                ) : (
-                                    <Typography color="text.secondary">No file uploaded.</Typography>
-                                )}
-                            </Box>
-                        </Box>
+                        <RHFCustomFileUploadBox
+                            name="boardResolution"
+                            label="Board Resolution"
+                            disabled
+                            value={
+                                boardFile
+                                    ? {
+                                        id: boardFile.id,
+                                        fileOriginalName: boardFile.fileOriginalName,
+                                        fileUrl: boardFile.fileUrl,
+                                    }
+                                    : null
+                            }
+                        />
                     </Grid>
                 </Grid>
                 {/* 

@@ -37,10 +37,12 @@ export const endpoints = {
     forgotPassword: '/auth/forget-password/send-email-otp',
     newPassword: '/auth/forget-password/verify-email-otp',
   },
-  companyProfile:{
+  companyProfile: {
     me: '/company-profiles/me',
-    bankDetails: '/company-profiles/bank-details'
+    bankDetails: '/company-profiles/bank-details',
+    addressDetails: '/company-profiles/address-details',
   },
+
   mail: {
     list: '/api/mail/list',
     details: '/api/mail/details',
@@ -57,6 +59,17 @@ export const endpoints = {
     details: '/api/product/details',
     search: '/api/product/search',
   },
+  businessKyc: {
+    data: '/business-kyc/state',
+    dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`,
+    guarantors: '/business-kyc/guarantor-details',
+    agreements: '/business-kyc/agreements',
+    roc: '/business-kyc/roc',
+    financials: '/business-kyc/financials-details',
+    dpn: '/business-kyc/dpn',
+  },
+
+
   scheduler: {
     list: '/schedulers',
     filterList: (filter) => `/schedulers?filter=${filter}`,
@@ -76,15 +89,16 @@ export const endpoints = {
     kycProgress: (sessionId) => `/company-profiles/kyc-progress/${sessionId}`,
     getSection: (section, profileId, route = '') =>
       `/company-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
+    addressDetails: 'company-profiles/address-details',
     details: (id) => `/company-profiles/bank-details/${id}`,
     getBankDetails: `/company-profiles/bank-details`,
     getDocuments: `/company-profiles/documents`,
     getProfileData: `/company-profiles/me`,
   },
   companyEntityType: {
-    list: '/trustee-entity-types',
-    filterList: (filter) => `/trustee-entity-types?filter=${filter}`,
-    details: (id) => `/trustee-entity-types/${id}`,
+    list: '/company-entity-types',
+    filterList: (filter) => `/company-entity-types?filter=${filter}`,
+    details: (id) => `/company-entity-types/${id}`,
   },
   companySectorType: {
     list: '/company-sector-types',
@@ -117,12 +131,12 @@ export const endpoints = {
     filterList: (filter) => `/bond-estimations?filter=${filter}`,
     details: (applicationId) => `/bond-estimations/${applicationId}`,
   },
-  bondApplications: {
-    list: '/bond-applications',
-    filterList: (filter) => `/bond-applications?filter=${filter}`,
-    details: (applicationId) => `/bond-applications/${applicationId}`,
-    dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
-  },
+  // bondApplications: {
+  //   list: '/bond-applications',
+  //   filterList: (filter) => `/bond-applications?filter=${filter}`,
+  //   details: (applicationId) => `/bond-applications/${applicationId}`,
+  //   dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
+  // },
   creditRatingAgencies: {
     list: '/credit-rating-agencies',
   },
@@ -139,8 +153,8 @@ export const endpoints = {
     filterList: (filter) => `/investor-categories?filter=${filter}`,
   },
   fieldOptions: {
-    chargeTypes: '',
-    ownershipTypes: '',
-    collateralTypes: '',
+    chargeTypes: '/charge-types',
+    ownershipTypes: '/ownership-types',
+    collateralTypes: '/collateral-types',
   },
 };

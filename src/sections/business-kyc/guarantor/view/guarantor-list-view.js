@@ -46,6 +46,9 @@ import GuarantorTableToolbar from '../guarantor-table-toolbar';
 import { Box, Typography } from '@mui/material';
 import AddGuarantorForm from '../add-guarantor';
 import { enqueueSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
+import { useGetGuarantors } from 'src/api/businessKyc';
+import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -55,6 +58,7 @@ const TABLE_HEAD = [
   { id: 'guarantorName', label: 'Guarantor Name' },
   { id: 'guarantorType', label: 'Guarantor Type' },
   { id: 'GaurantorAmountLimit', label: 'Guarantor Amount Limit' },
+  { id: 'estimatedNetWorth', label: 'Estimated Net Worth' },
   { id: '', label: 'Actions' },
 ];
 
@@ -65,7 +69,7 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function GuarantorListView({ setActiveStepId, percent }) {
+export default function GuarantorListView({ setActiveStepId, saveStepData, percent }) {
   const table = useTable();
 
   const settings = useSettingsContext();
@@ -74,19 +78,8 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
   const [openAddGuarantor, setOpenAddGuarantor] = useState(false);
   const [selectedGuarantor, setSelectedGuarantor] = useState(null);
 
-  // Load guarantors from localStorage
-  const [tableData, setTableData] = useState(() => {
-    try {
-      const saved = localStorage.getItem('formData');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.guarantor_details?.guarantors || [];
-      }
-    } catch (error) {
-      console.error('Error loading guarantors:', error);
-    }
-    return [];
-  });
+  const { guarantors = [], refreshGuarantors } = useGetGuarantors();
+  const tableData = guarantors;
 
   const handleOpenAddGuarantor = () => {
     setSelectedGuarantor(null);
@@ -98,50 +91,10 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
     setSelectedGuarantor(null);
   };
 
-  // Save guarantors to localStorage
-  const saveGuarantors = useCallback((guarantors) => {
-    try {
-      const saved = localStorage.getItem('formData');
-      const formData = saved ? JSON.parse(saved) : {};
-      formData.guarantor_details = { guarantors };
-      localStorage.setItem('formData', JSON.stringify(formData));
-      setTableData(guarantors);
-    } catch (error) {
-      console.error('Error saving guarantors:', error);
-    }
-  }, []);
-
-  // Handle form submit - add or update guarantor
-  const handleFormSubmit = useCallback(
-    (data) => {
-      const guarantors = [...tableData];
-
-      if (selectedGuarantor?.id) {
-        // Update existing guarantor
-        const index = guarantors.findIndex((g) => g.id === selectedGuarantor.id);
-        if (index !== -1) {
-          guarantors[index] = {
-            ...guarantors[index],
-            ...data, // Store full form data
-            id: selectedGuarantor.id,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-      } else {
-        // Add new guarantor
-        const newGuarantor = {
-          ...data, // Store all form fields
-          id: `guarantor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          createdAt: new Date().toISOString(),
-        };
-        guarantors.push(newGuarantor);
-      }
-
-      saveGuarantors(guarantors);
-      handleCloseAddGuarantor();
-    },
-    [tableData, selectedGuarantor, saveGuarantors]
-  );
+  const handleFormSubmit = useCallback(() => {
+    refreshGuarantors();
+    handleCloseAddGuarantor();
+  }, [refreshGuarantors]);
 
   const handleViewGuarantor = (row) => {
     setSelectedGuarantor(row);
@@ -185,36 +138,8 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
     [table]
   );
 
-  const handleDeleteRow = useCallback(
-    (id) => {
-      const updatedGuarantors = tableData.filter((guarantor) => guarantor.id !== id);
-      saveGuarantors(updatedGuarantors);
-      table.onUpdatePageDeleteRow(dataInPage.length);
-    },
-    [tableData, dataInPage.length, table, saveGuarantors]
-  );
-
-  const handleDeleteRows = useCallback(() => {
-    const selectedIds = table.selected;
-    const updatedGuarantors = tableData.filter((guarantor) => !selectedIds.includes(guarantor.id));
-    saveGuarantors(updatedGuarantors);
-    table.onUpdatePageDeleteRows({
-      totalRows: tableData.length,
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-    table.onResetSelected(); // Clear selection after deletion
-  }, [tableData, dataFiltered.length, dataInPage.length, table, saveGuarantors]);
-
-  const handleFilterStatus = useCallback(
-    (event, newValue) => {
-      handleFilters('status', newValue);
-    },
-    [handleFilters]
-  );
-
-  const handleResetFilters = useCallback(() => {
-    setFilters(defaultFilters);
+  const handleDeleteRow = useCallback(() => {
+    enqueueSnackbar('Delete API not implemented yet', { variant: 'warning' });
   }, []);
 
   // Update percent when guarantors are added
@@ -224,33 +149,11 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
     } else {
       percent(0);
     }
-  }, [percent, tableData]);
+  }, [ tableData]);
 
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-        {/* <CustomBreadcrumbs
-          heading="List"
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'tableData', href: paths.dashboard.tableData.list },
-            { name: 'List' },
-          ]}
-          action={
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.tableData.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              New tableData
-            </Button>
-          }
-          sx={{
-            mb: { xs: 3, md: 5 },
-          }}
-        /> */}
-        {/* <Typography variant="h4" > Add Guarantor</Typography> */}
         <Box
           sx={{
             mb: 3,
@@ -283,31 +186,6 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
         </Box>
 
         <Card>
-          {/* <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
-            sx={{
-              px: 2.5,
-              boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
-            }}
-          >
-            {STATUS_OPTIONS.map((tab) => (
-              <Tab key={tab.value} value={tab.value} label={tab.label} />
-            ))}
-          </Tabs> */}
-
-          {/* <GuarantorTableToolbar filters={filters} onFilters={handleFilters} /> */}
-
-          {/* {canReset && (
-            <GuarantorTableFiltersResult
-              filters={filters}
-              onFilters={handleFilters}
-              onResetFilters={handleResetFilters}
-              results={dataFiltered.length}
-              sx={{ p: 2.5, pt: 0 }}
-            />
-          )} */}
-
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <TableSelectedAction
               dense={table.dense}
@@ -397,10 +275,33 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
               },
             }}
             disabled={tableData.length < 1}
-            onClick={() => {
-              enqueueSnackbar('Guarantor saved successfully', { variant: 'success' });
-              percent(100);
-              setActiveStepId();
+            onClick={async () => {
+              try {
+                // 1️⃣ Call backend CONTINUE API
+                const response = await axiosInstance.post(
+                  '/business-kyc/guarantor-details/continue'
+                );
+
+                // 2️⃣ Read next step from backend
+                const nextStepCode = response?.data?.currentStatus?.code;
+
+                if (!nextStepCode) {
+                  enqueueSnackbar('Unable to move to next step', { variant: 'error' });
+                  return;
+                }
+
+                // 3️⃣ Move UI to next step
+                setActiveStepId(nextStepCode);
+
+                // 4️⃣ UI feedback
+                percent(100);
+                enqueueSnackbar('Guarantor step completed', { variant: 'success' });
+              } catch (error) {
+                console.error(error);
+                enqueueSnackbar(error?.response?.data?.message || 'Failed to continue', {
+                  variant: 'error',
+                });
+              }
             }}
           >
             Next
@@ -425,7 +326,6 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
             variant="contained"
             color="error"
             onClick={() => {
-              handleDeleteRows();
               confirm.onFalse();
             }}
           >
@@ -436,6 +336,12 @@ export default function GuarantorListView({ setActiveStepId, percent }) {
     </>
   );
 }
+
+GuarantorListView.propTypes = {
+  percent: PropTypes.func,
+  setActiveStepId: PropTypes.func,
+  saveStepData: PropTypes.func,
+};
 
 // ----------------------------------------------------------------------
 

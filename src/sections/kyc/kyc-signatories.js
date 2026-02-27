@@ -27,6 +27,9 @@ import KYCTitle from './kyc-title';
 import KYCFooter from './kyc-footer';
 import KYCAddSignatoriesForm from './kyc-add-signatories-form';
 import { useGetSignatories } from 'src/api/companyKyc';
+import { Card } from '@mui/material';
+import { TableNoData } from 'src/components/table';
+import Label from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
@@ -75,6 +78,8 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
     )
   );
 
+  const format = 'dd/MM/yyyy';
+
   useEffect(() => {
     if (!loading && signatories && signatories.length >= 1) {
       percent(100);
@@ -85,20 +90,44 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
     refreshSignatories();
   }, []);
 
+  const notFound = !loading && (signatories.length === 0 || filteredRows.length === 0);
+
   return (
     <Container sx={{ position: 'relative', py: { xs: 6, sm: 8, md: 10 } }}>
-      <KYCTitle
-        title="Authorized Signatories"
-        subtitle={'Add director and authorized signatories for your company'}
-      />
-
-      <Box
+      <Card
         sx={{
-          boxShadow: '0px 0px 12px 0px #00000040',
-          p: { xs: 2, sm: 3, md: 4 },
-          borderRadius: '23px',
+          p: 4,
+          borderRadius: 3,
+          width: '100%',
+          boxShadow: '0px 8px 25px rgba(0,0,0,0.08)',
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: 600,
         }}
       >
+        <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              color: '#206CFE',
+              textAlign: 'left',
+            }}
+          >
+            Authorized Signatories
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 500,
+              color: '#000000',
+              textAlign: 'left',
+            }}
+          >
+            Add director and authorized signatories for your company.
+          </Typography>
+        </Stack>
+
         <Box
           sx={{
             mb: 5,
@@ -112,7 +141,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             // borderRadius: '23px',
           }}
         >
-          <Typography variant="h4" sx={{ mb: { xs: 1, sm: 0 } }}>
+          <Typography variant="h4" color='primary' sx={{ mb: { xs: 1, sm: 0 } }}>
             Add Signatories
           </Typography>
           <Box
@@ -138,6 +167,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             />
             <Button
               variant="contained"
+              color='primary'
               startIcon={<Iconify icon="eva:plus-fill" />}
               onClick={handleOpen}
               sx={{
@@ -171,7 +201,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
                 <TableCell align="left">PAN</TableCell>
                 <TableCell align="left">Board Resolution</TableCell>
                 <TableCell align="left">Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                {/* <TableCell align="right">Actions</TableCell> */}
               </TableRow>
             </TableHead>
 
@@ -225,22 +255,31 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
                   </TableCell>
 
                   {/* Status */}
-                  <TableCell>{row.status === 1 ? 'Verified' : 'Pending'}</TableCell>
+                  <TableCell>
+                    <Label
+                      color={row.status === 1 ? 'success' : 'warning'}
+                    >
+                      {row.status === 1 ? 'Verified' : 'Pending'}
+                    </Label>
+                  </TableCell>
 
                   {/* Actions */}
-                  <TableCell align="right">
-                    <IconButton color="error">
-                      <Iconify icon="eva:trash-2-outline" />
-                    </IconButton>
-                  </TableCell>
+                  {/* <TableCell align="right">
+                      <IconButton color="error">
+                        <Iconify icon="eva:trash-2-outline" />
+                      </IconButton>
+                    </TableCell> */}
                 </TableRow>
               ))}
+
+              <TableNoData notFound={notFound} />
             </TableBody>
           </Table>
         </TableContainer>
         <Box sx={{ textAlign: 'right', mt: 3 }}>
           <Button
             variant="contained"
+            color='primary'
             disabled={signatories.length < 1}
             onClick={() => {
               percent(100);
@@ -250,7 +289,8 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             Next
           </Button>
         </Box>
-      </Box>
+
+      </Card>
       <KYCFooter />
     </Container>
   );

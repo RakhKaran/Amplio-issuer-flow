@@ -1,7 +1,10 @@
 import { Dialog, DialogContent, Typography, Box, Stack, Button, Divider } from '@mui/material';
+import { useNavigate } from 'react-router';
 import Iconify from 'src/components/iconify';
 
-export default function AgreementSuccessDialog({ open, onClose }) {
+export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
+
+  const navigate = useNavigate();
   return (
     <Dialog
       open={open}
@@ -55,8 +58,8 @@ export default function AgreementSuccessDialog({ open, onClose }) {
 
         <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack direction="row" spacing={2}>
+        <Stack direction="row" justifyContent="end" alignItems="center">
+          {/* <Stack direction="row" spacing={2}>
             <Button
               variant="contained"
               color='primary'
@@ -73,16 +76,19 @@ export default function AgreementSuccessDialog({ open, onClose }) {
             >
               Download PDF
             </Button>
-          </Stack>
+          </Stack> */}
 
           <Button
             variant="text"
             endIcon={<Iconify icon="mdi:arrow-right" />}
             sx={{ fontWeight: 600 }}
+             onClick={() =>
+                  navigate('/kyc/invoiceFinancing/execution-success')
+                }
           >
             Next
           </Button>
-        </Stack>
+        </Stack> 
       </DialogContent>
     </Dialog>
   );

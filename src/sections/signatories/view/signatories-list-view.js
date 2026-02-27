@@ -54,8 +54,8 @@ const STATUS_OPTIONS = [{ value: 'all', label: 'All' }];
 
 const TABLE_HEAD = [
   { id: 'fullName', label: 'Name' },
-  { id: 'roleValue', label: 'Role' },
   { id: 'email', label: 'Email' },
+  { id: 'roleValue', label: 'Role' },
   { id: 'phone', label: 'Phone' },
   { id: 'time', label: 'Status' },
   { id: '', label: 'Actions' },
@@ -77,8 +77,8 @@ export default function SignatoriesListView() {
 
 
 
-  const {Signatories}= useGetSignatories();
-console.log(Signatories);
+  const { Signatories } = useGetSignatories();
+  console.log(Signatories);
 
   const handleViewRow = useCallback(
     (id) => {
@@ -87,7 +87,7 @@ console.log(Signatories);
     [router]
   );
 
-   const handleEditRow = useCallback(
+  const handleEditRow = useCallback(
     (id) => {
       router.push(paths.dashboard.signatories.edit(id));
     },
@@ -160,6 +160,7 @@ console.log(Signatories);
               component={RouterLink}
               href={paths.dashboard.signatories.new}
               variant="contained"
+              color='primary'
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
               New Signatories
@@ -252,10 +253,10 @@ console.log(Signatories);
                       />
                     ))}
 
-                  <TableEmptyRows
+                  {/* <TableEmptyRows
                     height={denseHeight}
                     emptyRows={emptyRows(table.page, table.rowsPerPage, Signatories.length)}
-                  />
+                  /> */}
 
                   <TableNoData notFound={notFound} />
                 </TableBody>

@@ -23,7 +23,6 @@ import { useAuthContext } from 'src/auth/hooks';
 // components
 import Iconify from 'src/components/iconify';
 import FormProvider, { RHFTextField, RHFCheckbox } from 'src/components/hook-form';
-import { useSnackbar } from 'notistack';
 import { Card } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -32,8 +31,6 @@ export default function JwtLoginView() {
   const { login } = useAuthContext();
 
   const router = useRouter();
-
-  const { enqueueSnackbar } = useSnackbar();
 
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -61,16 +58,20 @@ export default function JwtLoginView() {
   });
 
   const {
-    reset,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await login?.(data.email, data.password, data.rememberMe);
+      const user = await login?.(data.email, data.password, data.rememberMe);
+      const isFirstTime =
+        user?.isFirstTime ??
+        user?.mustChangePassword ??
+        false;
+      const destination = isFirstTime ? paths.dashboard.root : returnTo || PATH_AFTER_LOGIN;
 
-      router.push(returnTo || PATH_AFTER_LOGIN);
+      router.push(destination);
     } catch (error) {
       console.error(error);
 

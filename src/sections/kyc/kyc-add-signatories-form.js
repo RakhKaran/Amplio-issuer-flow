@@ -25,6 +25,7 @@ import axios from 'axios';
 import { useAuthContext } from 'src/auth/hooks';
 import { DatePicker } from '@mui/x-date-pickers';
 import axiosInstance from 'src/utils/axios';
+import { Typography } from '@mui/material';
 
 const ROLES = [
   { value: 'DIRECTOR', label: 'Director' },
@@ -57,7 +58,10 @@ export default function KYCAddSignatoriesForm({
   const [panExtractionStatus, setPanExtractionStatus] = useState('idle');
 
   const NewUserSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
+    name: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .required('Name is required')
+      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     email: Yup.string()
       .required('Email is required')
       .email('Please enter a valid email address')
@@ -85,14 +89,7 @@ export default function KYCAddSignatoriesForm({
       if (isEditMode) return true;
       return !!value;
     }),
-    boardResolution: Yup.mixed().test(
-      'fileRequired',
-      'Board Resolution is required',
-      function (value) {
-        if (isEditMode) return true;
-        return !!value;
-      }
-    ),
+    boardResolution: Yup.mixed().required('fileRequired', 'Board Resolution is required')
   });
 
   const defaultValues = useMemo(
@@ -156,15 +153,14 @@ export default function KYCAddSignatoriesForm({
       }
 
       const panCardFileId = getFileId(data.panCard);
-      const boardResolutionFileId = getFileId(data.boardResolution);
+      const boardResolutionFileId = getFileId(data.boardResolution) || '';
 
       if (!panCardFileId && !isEditMode) {
         enqueueSnackbar('PAN card is required', { variant: 'error' });
         return;
       }
-
-      if (!boardResolutionFileId && !isEditMode) {
-        enqueueSnackbar('Board Resolution is required', { variant: 'error' });
+        if (!boardResolutionFileId && !isEditMode) {
+        enqueueSnackbar('Board resolution is required', { variant: 'error' });
         return;
       }
 
@@ -214,8 +210,21 @@ export default function KYCAddSignatoriesForm({
   });
 
   useEffect(() => {
-    reset(defaultValues);
-  }, [currentUser, defaultValues, reset]);
+    if (open) {
+      reset({
+        name: currentUser?.fullName || '',
+        email: currentUser?.email || '',
+        phoneNumber: currentUser?.phone || '',
+        role: currentUser?.designationType || '',
+        panCard: '',
+        customDesignation: '',
+        boardResolution: '',
+        submittedPanFullName: '',
+        submittedPanNumber: '',
+        submittedDateOfBirth: '',
+      });
+    }
+  }, [open, currentUser, reset]);
 
   useEffect(() => {
     if (!panFile?.id) return;
@@ -290,7 +299,7 @@ export default function KYCAddSignatoriesForm({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle>
+        <DialogTitle color='primary'>
           {isViewMode ? 'View Signatory' : isEditMode ? 'Edit Signatory' : 'Add New Signatory'}
         </DialogTitle>
 
@@ -306,32 +315,20 @@ export default function KYCAddSignatoriesForm({
             <RHFTextField
               name="name"
               label="Name*"
-              InputLabelProps={{ shrink: true }}
               disabled={isViewMode}
+              inputProps={{ style: { textTransform: 'uppercase' } }}
             />
 
-            <RHFTextField
-              name="email"
-              label="Email*"
-              type="email"
-              InputLabelProps={{ shrink: true }}
-              disabled={isViewMode}
-            />
+            <RHFTextField name="email" label="Email*" type="email" disabled={isViewMode} />
 
             <RHFTextField
               name="phoneNumber"
               label="Phone Number*"
               type="tel"
               disabled={isViewMode}
-              InputLabelProps={{ shrink: true }}
               inputProps={{ maxLength: 10 }}
             />
-            <RHFSelect
-              name="role"
-              label="Designation*"
-              InputLabelProps={{ shrink: true }}
-              disabled={isViewMode}
-            >
+            <RHFSelect name="role" label="Designation*" disabled={isViewMode}>
               {ROLES.map((role) => (
                 <MenuItem key={role.value} value={role.value}>
                   {role.label}
@@ -344,24 +341,15 @@ export default function KYCAddSignatoriesForm({
                 name="customDesignation"
                 label="Enter Custom Designation*"
                 placeholder="Enter custom designation"
-                InputLabelProps={{ shrink: true }}
               />
             )}
 
+            <Typography variant='subtitle2' color='primary'>PAN Section</Typography>
+
             {isViewMode ? (
               <>
-                <RHFTextField
-                  name="panNumber"
-                  label="PAN Number*"
-                  InputLabelProps={{ shrink: true }}
-                  disabled
-                />
-                <RHFTextField
-                  name="boardResolution"
-                  label="Board Resolution*"
-                  InputLabelProps={{ shrink: true }}
-                  disabled
-                />
+                <RHFTextField name="panNumber" label="PAN Number*" disabled />
+                <RHFTextField name="boardResolution" label="Board Resolution*" disabled />
               </>
             ) : (
               <>
@@ -380,7 +368,6 @@ export default function KYCAddSignatoriesForm({
                 <RHFTextField
                   name="submittedPanFullName"
                   label="PAN Holder Full Name*"
-                  InputLabelProps={{ shrink: true }}
                   disabled={!isPanUploaded}
                   inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
@@ -388,7 +375,6 @@ export default function KYCAddSignatoriesForm({
                 <RHFTextField
                   name="submittedPanNumber"
                   label="PAN Number*"
-                  InputLabelProps={{ shrink: true }}
                   disabled={!isPanUploaded}
                   inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
@@ -414,6 +400,10 @@ export default function KYCAddSignatoriesForm({
                     />
                   )}
                 />
+
+                <Typography variant='subtitle2' color='primary'>Board Resolution Section</Typography>
+
+
                 <RHFCustomFileUploadBox
                   name="boardResolution"
                   label="Board Resolution*"
@@ -441,6 +431,7 @@ export default function KYCAddSignatoriesForm({
               <Button
                 type="submit"
                 variant="contained"
+                color='primary'
                 disabled={isSubmitting}
                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
               >

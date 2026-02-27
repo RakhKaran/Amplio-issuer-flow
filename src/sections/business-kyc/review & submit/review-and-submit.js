@@ -1,25 +1,24 @@
-import { Grid, Typography, Stack, Box, Button, Checkbox } from "@mui/material";
+import { Grid, Typography, Stack, Box, Button, Checkbox } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import ReviewBusinessProfilePage from "./business-profile";
-import ClientSummary from "./client-summary";
-import KycDetailsPage from "./kyc-details";
-import CollateralAssetsPage from "./collateral-assets";
-import GuarantorDetailsPage from "./guarantor-details";
-import { useRouter } from "src/routes/hook";
-import { paths } from "src/routes/paths";
+import ReviewBusinessProfilePage from './business-profile';
+import ClientSummary from './client-summary';
+import KycDetailsPage from './kyc-details';
+import CollateralAssetsPage from './collateral-assets';
+import GuarantorDetailsPage from './guarantor-details';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
+import { useSnackbar } from 'notistack';
+import axiosInstance from 'src/utils/axios';
 
-
-
-export default function ReviewAndSubmitPage({ formData }) {
-
+export default function ReviewAndSubmitPage({ formData, setActiveStepId }) {
   const router = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
 
   const ReviewSubmitSchema = Yup.object().shape({
-    consent: Yup.boolean()
-      .oneOf([true], 'You must confirm before submitting'),
+    consent: Yup.boolean().oneOf([true], 'You must confirm before submitting'),
   });
 
   const {
@@ -35,15 +34,34 @@ export default function ReviewAndSubmitPage({ formData }) {
 
   const methods = useForm();
 
-  const onSubmit = () => {
-    console.log('Review submitted');
-    router.push(paths.kyc.invoiceFinancing.pending)
+  // const onSubmit = () => {
+  //   console.log('Review submitted');
+  //   router.push(paths.kyc.invoiceFinancing.pending)
+  // };
+  const onSubmit = async () => {
+    try {
+      const res = await axiosInstance.post('/business-kyc/review-submit');
+
+      enqueueSnackbar(res?.data?.message || 'Review submitted successfully', {
+        variant: 'success',
+      });
+
+      // Prevent back navigation
+      router.replace(paths.kyc.invoiceFinancing.pending);
+    } catch (error) {
+      enqueueSnackbar(
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        'Failed to submit review',
+        { variant: 'error' }
+      );
+      console.error('Review submit failed', error);
+    }
   };
 
   return (
-    <Box display="flex" justifyContent="center" >
-      <Box maxWidth="lg" >
-
+    <Box display="flex" justifyContent="center">
+      <Box maxWidth="lg">
         {/* Header */}
         <Stack spacing={1} alignItems="center" mb={4}>
           <Typography variant="h3" color="primary">
@@ -54,31 +72,28 @@ export default function ReviewAndSubmitPage({ formData }) {
           </Typography>
         </Stack>
         <KycDetailsPage />
+
         <ReviewBusinessProfilePage
-          data={formData.business_Profile_Finance?.businessProfile}
+          onEdit={() => setActiveStepId('business_Profile_Finance')}
         />
-        <CollateralAssetsPage data = {formData.collateral_assets_verification} />
-        <GuarantorDetailsPage data={formData.guarantor_details} />
-        <ClientSummary data={formData.client_details} />
 
-        <Box
-          mt={5}
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-        >
-          <Typography
-            variant="subtitle1"
-            fontWeight={600}
-            mb={2}
+        <CollateralAssetsPage
+          onEdit={() => setActiveStepId('collateral_assets_verification')}
+        />
 
-          >
+        <GuarantorDetailsPage
+          onEdit={() => setActiveStepId('guarantor_details')}
+        />
+        {/* <ClientSummary data={formData.client_details} /> */}
+
+        <Box mt={5} display="flex" flexDirection="column" alignItems="center">
+          <Typography variant="subtitle1" fontWeight={600} mb={2}>
             Declaration & Consent
           </Typography>
 
           <Box
             sx={{
-              maxWidth: 720,
+              maxWidth: 850,
               width: '100%',
             }}
           >
@@ -88,24 +103,16 @@ export default function ReviewAndSubmitPage({ formData }) {
               render={({ field }) => (
                 <>
                   <Box display="flex" alignItems="flex-start">
-                    <Checkbox
-                      {...field}
-                      checked={field.value}
-                      sx={{ mt: 0.2 }}
-                    />
+                    <Checkbox {...field} checked={field.value} sx={{ mt: 0.2 }} />
 
                     <Typography variant="body2">
-                      I confirm that all information, documents, and details provided
-                      above are true, complete, and accurate to the best of my knowledge.
+                      I confirm that all information, documents, and details provided above are
+                      true, complete, and accurate to the best of my knowledge.
                     </Typography>
                   </Box>
 
                   {errors.consent && (
-                    <Typography
-                      variant="caption"
-                      color="error"
-                      sx={{ ml: 4.5, mt: 0.5 }}
-                    >
+                    <Typography variant="caption" color="error" sx={{ ml: 4.5, mt: 0.5 }}>
                       {errors.consent.message}
                     </Typography>
                   )}

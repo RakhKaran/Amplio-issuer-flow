@@ -4,82 +4,51 @@ import { Box, Button, Card, Grid, MenuItem, Stack, Typography } from '@mui/mater
 import { DatePicker } from '@mui/x-date-pickers';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-// import {
-//     useGetChargeTypes,
-//     useGetCollateralTypes,
-//     useGetOwnershipTypes,
-// } from 'src/api/fieldOptions';
+import { useGetBusinessKycStepData } from 'src/api/businessKyc';
+import {
+  useGetChargeTypes,
+  useGetCollateralTypes,
+  useGetOwnershipTypes,
+} from 'src/api/fieldOptions';
 import YupErrorMessage from 'src/components/error-field/yup-error-messages';
 import FormProvider, {
   RHFCustomFileUploadBox,
+  RHFPriceField,
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
-// import { useGetBondApplicationStepData } from 'src/api/bondApplications';
-import { useParams, useRouter } from 'src/routes/hook';
-import { paths } from 'src/routes/paths';
 
-// ✅ Dummy dropdown data (TEMP until API is ready)
-const DUMMY_CHARGE_TYPES = [
-  { id: 'ct_1', label: 'First Charge' },
-  { id: 'ct_2', label: 'Second Charge' },
-  { id: 'ct_3', label: 'Pari Passu Charge' },
-];
-
-const DUMMY_COLLATERAL_TYPES = [
-  { id: 'col_1', label: 'Land & Building' },
-  { id: 'col_2', label: 'Plant & Machinery' },
-  { id: 'col_3', label: 'Inventory / Stock' },
-  { id: 'col_4', label: 'Receivables' },
-];
-
-const DUMMY_OWNERSHIP_TYPES = [
-  { id: 'own_1', label: 'Owned' },
-  { id: 'own_2', label: 'Leased' },
-  { id: 'own_3', label: 'Hypothecated' },
-];
-
-export default function CollateralAssets({ percent, setActiveStepId, currentCollateralAssets }) {
-  const params = useParams();
-  const { applicationId } = params;
+export default function CollateralAssets({ percent, setActiveStepId }) {
   const { enqueueSnackbar } = useSnackbar();
-  // const { chargeTypes, chargeTypesLoading } = useGetChargeTypes();
-  // const { collateralTypes, collateralTypesLoading } = useGetCollateralTypes();
-  // const { ownershipTypes, ownershipTypesLoading } = useGetOwnershipTypes();
-  //   const { stepData, stepDataLoading } = useGetBondApplicationStepData(applicationId, 'collateral_assets');
-  //   const [currentCollateralAssets, setCurrentCollateralAssets] = useState([
-  //     {
-  //       collateralType: '',
-  //       chargeType: '',
-  //       description: '',
-  //       estimatedValue: '',
-  //       valuationDate: null,
-  //       ownershipType: '',
-  //       trustName: '',
-  //       securityDocRef: '',
-  //       securityDocument: null,
-  //       assetCoverCertificate: null,
-  //       valuationReport: null,
-  //       remark: '',
-  //     }
-  //   ]);
+  const isInitialLoad = useRef(true);
+  const { stepData, stepDataLoading } = useGetBusinessKycStepData('collateral_assets');
+  const { chargeTypes, chargeTypesLoading } = useGetChargeTypes();
+  const { collateralTypes, collateralTypesLoading } = useGetCollateralTypes();
+  const { ownershipTypes, ownershipTypesLoading } = useGetOwnershipTypes();
+  const [currentCollateralAssets, setCurrentCollateralAssets] = useState([
+    {
+      collateralType: '',
+      chargeType: '',
+      description: '',
+      estimatedValue: '',
+      valuationDate: null,
+      ownershipType: '',
+      trustName: '',
+      securityDocRef: '',
+      securityDocument: null,
+      assetCoverCertificate: null,
+      valuationReport: null,
+      remark: '',
+    },
+  ]);
   const [chargeTypesData, setChargeTypesData] = useState([]);
   const [collateralTypesData, setCollateralTypesData] = useState([]);
   const [ownershipTypesData, setOwnershipTypesData] = useState([]);
   const [approvalScreen, setApprovalScreen] = useState(false);
-
-  const router = useRouter();
-
-  const estimationReport = useCallback(
-    (id) => {
-      router.push(paths.dashboard.issureservices.view(id));
-    },
-    [router]
-  );
 
   const newCollateralSchema = Yup.object().shape({
     collateralAssets: Yup.array()
@@ -98,7 +67,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
           securityDocument: Yup.mixed().required('Security document is required'),
           // assetCoverCertificate: Yup.mixed().required('Asset cover certificate is required'),
           // valuationReport: Yup.mixed().required('Valuation report is required'),
-          remark: Yup.string(),
+          remark: Yup.string().nullable(),
         })
       )
       .min(1, 'At least one collateral asset is required'),
@@ -106,16 +75,24 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
 
   const defaultValues = useMemo(
     () => ({
-      collateralAssets:
-        currentCollateralAssets?.map((asset) => ({
-          ...asset,
-          ownershipType: asset?.ownershipTypesId || '',
-          collateralType: asset?.collateralTypesId || '',
-          chargeType: asset?.chargeTypesId || '',
-          securityDocRef: asset?.securityDocumentRef || '',
-        })) || [],
+      collateralAssets: [
+        {
+          collateralType: '',
+          chargeType: '',
+          ownershipType: '',
+          description: '',
+          estimatedValue: '',
+          valuationDate: null,
+          trustName: '',
+          securityDocRef: '',
+          securityDocument: null,
+          assetCoverCertificate: null,
+          valuationReport: null,
+          remark: '',
+        },
+      ],
     }),
-    [currentCollateralAssets]
+    []
   );
 
   const methods = useForm({
@@ -124,79 +101,19 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
   });
 
   const {
-    setValue,
     control,
     reset,
     watch,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
   } = methods;
 
-  console.log('errors :', errors);
+  const collateralAssets = watch('collateralAssets');
 
-  const values = watch();
-
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append } = useFieldArray({
     control,
     name: 'collateralAssets',
   });
-
-  const COLLATERAL_PROGRESS_FIELDS = [
-    'collateralType',
-    'chargeType',
-    'description',
-    'estimatedValue',
-    'ownershipType',
-    'securityDocRef',
-    'trustName',
-    'valuationDate',
-    'securityDocument',
-  ];
-
-  const calculatePercent = useCallback(() => {
-    const asset = values.collateralAssets?.[0];
-    if (!asset) {
-      percent?.(0);
-      return;
-    }
-
-    const filledCount = COLLATERAL_PROGRESS_FIELDS.reduce((count, field) => {
-      const value = asset[field];
-
-      if (value instanceof Date) return count + 1;
-      if (typeof value === 'number') return count + 1;
-      if (typeof value === 'string' && value.trim() !== '') return count + 1;
-      if (value && typeof value === 'object') return count + 1;
-
-      return count;
-    }, 0);
-
-    const percentValue = Math.round((filledCount / COLLATERAL_PROGRESS_FIELDS.length) * 100);
-
-    percent?.(percentValue);
-  }, [values.collateralAssets, percent]);
-
-  useEffect(() => {
-    calculatePercent();
-  }, [calculatePercent]);
-
-  useEffect(() => {
-    // if no existing collateral and no fields rendered
-    if ((!currentCollateralAssets || currentCollateralAssets.length === 0) && fields.length === 0) {
-      append({
-        collateralType: '',
-        chargeType: '',
-        description: '',
-        estimatedValue: '',
-        valuationDate: null,
-        ownershipType: '',
-        trustName: '',
-        securityDocRef: '',
-        securityDocument: null,
-        remark: '',
-      });
-    }
-  }, [currentCollateralAssets, fields.length, append]);
 
   const handleAddAsset = () => {
     append({
@@ -209,51 +126,16 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
       trustName: '',
       securityDocRef: '',
       securityDocument: null,
-      //   assetCoverCertificate: null,
-      //   valuationReport: null,
+      assetCoverCertificate: null,
+      valuationReport: null,
       remark: '',
     });
   };
 
-  // Load collateral assets from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('formData');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const savedCollateralAssets = parsed.collateral_assets_verification?.collateralAssets || [];
-        if (savedCollateralAssets.length > 0) {
-          reset({
-            collateralAssets: savedCollateralAssets.map((asset) => ({
-              ...asset,
-              ownershipType: asset?.ownershipTypesId || asset?.ownershipType || '',
-              collateralType: asset?.collateralTypesId || asset?.collateralType || '',
-              chargeType: asset?.chargeTypesId || asset?.chargeType || '',
-              securityDocRef: asset?.securityDocumentRef || asset?.securityDocRef || '',
-              valuationDate: asset?.valuationDate
-                ? asset.valuationDate instanceof Date
-                  ? asset.valuationDate
-                  : new Date(asset.valuationDate)
-                : null,
-            })),
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error loading collateral assets:', error);
-    }
-  }, [reset]);
-
   const onSubmit = handleSubmit(async (data) => {
     try {
-      // Store full form data in localStorage
-      const saved = localStorage.getItem('formData');
-      const formData = saved ? JSON.parse(saved) : {};
-
-      // Save full collateral assets data
-      formData.collateral_assets_verification = {
+      const payload = {
         collateralAssets: data.collateralAssets.map((asset) => ({
-          ...asset, // Store all fields
           estimatedValue: asset.estimatedValue,
           securityDocumentRef: asset.securityDocRef,
           trustName: asset.trustName,
@@ -262,96 +144,152 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
           collateralTypesId: asset.collateralType,
           chargeTypesId: asset.chargeType,
           ownershipTypesId: asset.ownershipType,
-          remark: asset.remark,
-          securityDocument: asset.securityDocument, // Store full document object
-          isActive: true,
-          isDeleted: false,
-          // Store document ID if exists
-          securityDocumentId:
-            asset.securityDocument?.id || asset.securityDocument?.files?.[0]?.id || null,
+          securityDocumentId: asset.securityDocument.id,
         })),
       };
 
-      localStorage.setItem('formData', JSON.stringify(formData));
+      // 1️⃣ Save collateral
+      await axiosInstance.patch('/business-kyc/collateral-details', payload);
 
-      // Commented out API call
-      // const payload = data.collateralAssets.map((asset) => ({
-      //   estimatedValue: asset.estimatedValue,
-      //   securityDocumentRef: asset.securityDocRef,
-      //   trustName: asset.trustName,
-      //   valuationDate: asset.valuationDate,
-      //   description: asset.description,
-      //   collateralTypesId: asset.collateralType,
-      //   chargeTypesId: asset.chargeType,
-      //   ownershipTypesId: asset.ownershipType,
-      //   remark: asset.remark,
-      //   isActive: true,
-      //   isDeleted: false,
-      //   securityDocumentId: asset.securityDocument.id,
-      // }));
+      // 2️⃣ Re-fetch KYC state (THIS IS THE KEY)
+      const stateRes = await axiosInstance.get('/business-kyc/state');
 
-      // const response = await axiosInstance.patch(
-      //   `/bond-estimations/collateral-assets/${applicationId}`,
-      //   payload
-      // );
+      const nextStepCode = stateRes?.data?.data?.activeStep?.code;
 
-      // if (response?.data?.success) {
-      enqueueSnackbar('Collateral assets saved successfully', { variant: 'success' });
-      // Update progress to 100%
+      if (!nextStepCode) {
+        console.error('No next step returned from backend');
+        return;
+      }
+
+      // 3️⃣ Move UI to next step
+      setActiveStepId(nextStepCode);
+
+      // 4️⃣ UI feedback
       percent?.(100);
-      setActiveStepId();
-      // }
+      enqueueSnackbar('Collateral assets submitted', { variant: 'success' });
     } catch (error) {
-      console.error('Error while saving collateral assets:', error);
-      enqueueSnackbar('Error saving collateral assets', { variant: 'error' });
+      console.error('Error while submitting collateral assets form:', error);
     }
   });
 
-  useEffect(() => {
-    setChargeTypesData(DUMMY_CHARGE_TYPES);
-    setCollateralTypesData(DUMMY_COLLATERAL_TYPES);
-    setOwnershipTypesData(DUMMY_OWNERSHIP_TYPES);
-  }, []);
+  const calculatePercent = (assets = []) => {
+    if (!assets.length) {
+      percent?.(0);
+      return;
+    }
+
+    const asset = assets[0];
+
+    const fields = [
+      asset.collateralType,
+      asset.chargeType,
+      asset.ownershipType,
+      asset.description,
+      asset.trustName,
+      asset.securityDocRef,
+      asset.valuationDate instanceof Date,
+      asset.securityDocument,
+      typeof asset.estimatedValue === 'number',
+    ];
+
+    const filled = fields.filter(Boolean).length;
+    const total = fields.length;
+
+    percent?.(Math.round((filled / total) * 100));
+  };
 
   useEffect(() => {
-    calculatePercent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values.collateralAssets]);
+    // 🚨 Skip first render
+    if (isInitialLoad.current) return;
+    calculatePercent(collateralAssets);
+  }, [collateralAssets]);
 
-  // Removed - now loading from localStorage in the effect above
   // useEffect(() => {
   //   if (currentCollateralAssets) {
   //     reset(defaultValues);
   //   }
   // }, [currentCollateralAssets, reset, defaultValues]);
 
-  // useEffect(() => {
-  //     if (chargeTypes?.length > 0 && !chargeTypesLoading) {
-  //         setChargeTypesData(chargeTypes);
-  //     }
-  // }, [chargeTypes, chargeTypesLoading]);
+  useEffect(() => {
+    if (chargeTypes?.length > 0 && !chargeTypesLoading) {
+      setChargeTypesData(chargeTypes);
+    }
+  }, [chargeTypes, chargeTypesLoading]);
 
-  // useEffect(() => {
-  //     if (collateralTypes?.length > 0 && !collateralTypesLoading) {
-  //         setCollateralTypesData(collateralTypes);
-  //     }
-  // }, [collateralTypes, collateralTypesLoading]);
+  useEffect(() => {
+    if (collateralTypes?.length > 0 && !collateralTypesLoading) {
+      setCollateralTypesData(collateralTypes);
+    }
+  }, [collateralTypes, collateralTypesLoading]);
 
-  // useEffect(() => {
-  //     if (ownershipTypes?.length > 0 && !ownershipTypesLoading) {
-  //         setOwnershipTypesData(ownershipTypes);
-  //     }
-  // }, [ownershipTypes, ownershipTypesLoading]);
+  useEffect(() => {
+    if (ownershipTypes?.length > 0 && !ownershipTypesLoading) {
+      setOwnershipTypesData(ownershipTypes);
+    }
+  }, [ownershipTypes, ownershipTypesLoading]);
 
-  //   useEffect(() => {
-  //     if (stepData?.length > 0 && !stepDataLoading) {
-  //       setCurrentCollateralAssets(stepData);
-  //     }
-  //   }, [stepData, stepDataLoading]);
+  useEffect(() => {
+    if (!stepData || stepDataLoading) return;
+
+    const apiAssets = stepData?.data ?? [];
+
+    // ✅ if API empty → keep ONE default form
+    if (apiAssets.length === 0) {
+      reset({
+        collateralAssets: [
+          {
+            collateralType: '',
+            chargeType: '',
+            ownershipType: '',
+            description: '',
+            estimatedValue: '',
+            valuationDate: null,
+            trustName: '',
+            securityDocRef: '',
+            securityDocument: null,
+            assetCoverCertificate: null,
+            valuationReport: null,
+            remark: '',
+          },
+        ],
+      });
+
+      percent?.(0);
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // ✅ if API has data → map & show
+    const mappedAssets = apiAssets.map((asset) => ({
+      collateralType: asset.collateralTypesId ?? '',
+      chargeType: asset.chargeTypesId ?? '',
+      ownershipType: asset.ownershipTypesId ?? '',
+      description: asset.description ?? '',
+      estimatedValue: asset.estimatedValue ?? '',
+      valuationDate: asset.valuationDate ? new Date(asset.valuationDate) : null,
+      trustName: asset.trustName ?? '',
+      securityDocRef: asset.securityDocumentRef ?? '',
+      securityDocument: asset.securityDocument
+        ? {
+          id: asset.securityDocument.id,
+          fileOriginalName: asset.securityDocument.fileOriginalName,
+          fileUrl: asset.securityDocument.fileUrl,
+        }
+        : null,
+      assetCoverCertificate: null,
+      valuationReport: null,
+      remark: asset.remark ?? '',
+    }));
+
+    reset({ collateralAssets: mappedAssets });
+    percent?.(100);
+
+    isInitialLoad.current = false;
+  }, [stepData, stepDataLoading]);
+
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      {/* {approvalScreen && <ValuatorApprovalPendingNotice />} */}
       <Box
         sx={{
           minHeight: '100vh',
@@ -363,7 +301,6 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
       >
         {fields.map((field, index) => (
           <Card
-            key={field.id}
             sx={{
               width: '100%',
               p: 5,
@@ -382,12 +319,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFSelect
                   name={`collateralAssets.${index}.collateralType`}
-                  label="Collateral Type*"
+                  label="Collateral Type"
                   defaultValue=""
                 >
                   {collateralTypesData.length > 0 ? (
                     collateralTypesData.map((type) => (
-                      <MenuItem key={type.id} value={type.label}>
+                      <MenuItem key={type.id} value={type.id}>
                         {type.label}
                       </MenuItem>
                     ))
@@ -403,12 +340,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFSelect
                   name={`collateralAssets.${index}.chargeType`}
-                  label="Charge Type*"
+                  label="Charge Type"
                   defaultValue=""
                 >
                   {chargeTypesData.length > 0 ? (
                     chargeTypesData.map((type) => (
-                      <MenuItem key={type.id} value={type.label}>
+                      <MenuItem key={type.id} value={type.id}>
                         {type.label}
                       </MenuItem>
                     ))
@@ -422,12 +359,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFSelect
                   name={`collateralAssets.${index}.ownershipType`}
-                  label="Ownership Type*"
+                  label="Ownership Type"
                   defaultValue=""
                 >
                   {ownershipTypesData.length > 0 ? (
                     ownershipTypesData.map((type) => (
-                      <MenuItem key={type.id} value={type.label}>
+                      <MenuItem key={type.id} value={type.id}>
                         {type.label}
                       </MenuItem>
                     ))
@@ -443,9 +380,9 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
 
               {/* Estimated Value */}
               <Grid item xs={12} md={4}>
-                <RHFTextField
+                <RHFPriceField
                   name={`collateralAssets.${index}.estimatedValue`}
-                  label="Estimated Value*"
+                  label="Estimated Value"
                   fullWidth
                 />
               </Grid>
@@ -465,7 +402,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={4}>
                 <RHFTextField
                   name={`collateralAssets.${index}.trustName`}
-                  label="  Trust Name*"
+                  label="  Trust Name"
                   fullWidth
                 />
               </Grid>
@@ -480,11 +417,12 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={6}>
                 <Controller
                   name={`collateralAssets.${index}.valuationDate`}
-                  label="Valuation Date*"
+                  label="Valuation Date"
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <DatePicker
                       label="Valuation Date"
+                      format="dd/MM/yyyy"
                       value={
                         field.value
                           ? field.value instanceof Date
@@ -509,7 +447,7 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
               <Grid item xs={12} md={12}>
                 <RHFTextField
                   name={`collateralAssets.${index}.description`}
-                  label="Asset Description*"
+                  label="Asset Description"
                   multiline
                   rows={3}
                   fullWidth
@@ -520,34 +458,14 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
                 <Stack spacing={2}>
                   <RHFCustomFileUploadBox
                     name={`collateralAssets.${index}.securityDocument`}
-                    label="Reference doc*"
+                    label="Security Document"
                     accept={{
                       'application/pdf': ['.pdf'],
+                      'image/png': ['.png'],
+                      'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                   />
                   <YupErrorMessage name={`collateralAssets.${index}.securityDocument`} />
-
-                  {/* <RHFCustomFileUploadBox
-                    name={`collateralAssets.${index}.assetCoverCertificate`}
-                    label="Asset Cover Certificate"
-                    accept={{
-                      'application/pdf': ['.pdf'],
-                      'image/png': ['.png'],
-                      'image/jpeg': ['.jpg', '.jpeg'],
-                    }}
-                  />
-                  <YupErrorMessage name={`collateralAssets.${index}.assetCoverCertificate`} />
-
-                  <RHFCustomFileUploadBox
-                    name={`collateralAssets.${index}.valuationReport`}
-                    label="Valuation Report"
-                    accept={{
-                      'application/pdf': ['.pdf'],
-                      'image/png': ['.png'],
-                      'image/jpeg': ['.jpg', '.jpeg'],
-                    }}
-                  />
-                  <YupErrorMessage name={`collateralAssets.${index}.valuationReport`} /> */}
                 </Stack>
               </Grid>
             </Grid>
@@ -565,14 +483,9 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
           <Button
             type="button"
             variant="contained"
-            onClick={() => handleAddAsset()}
             color="primary"
-            sx={{
-              '&:hover': {
-                backgroundColor: 'primary.main',
-                boxShadow: 'none',
-              },
-            }}
+            onClick={() => handleAddAsset()}
+            sx={{ color: '#fff' }}
           >
             + Add Collateral Asset
           </Button>
@@ -589,16 +502,11 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
           <LoadingButton
             loading={isSubmitting}
             type="submit"
-            sx={{
-              '&:hover': {
-                backgroundColor: 'primary.main',
-                boxShadow: 'none',
-              },
-            }}
             variant="contained"
-            color="primary"
+            color='primary'
+            
           >
-            Save & Continue
+            Save
           </LoadingButton>
         </Box>
       </Box>
@@ -609,6 +517,6 @@ export default function CollateralAssets({ percent, setActiveStepId, currentColl
 
 CollateralAssets.propTypes = {
   currentCollateral: PropTypes.object,
-  percent: PropTypes.func,
+  setPercent: PropTypes.func,
   setActiveStepId: PropTypes.func,
 };

@@ -36,6 +36,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
 import { useGetKycProgress } from 'src/api/companyKyc';
 import { useGetCompanySectorTypes } from 'src/api/sectorType';
+import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -82,10 +83,14 @@ export default function KYCBasicInfo() {
 
   const NewUserSchema = Yup.object().shape({
     cin: Yup.string().required('CIN is required'),
-    companyName: Yup.string().required('Company Name is required'),
+    companyName: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .required('Company Name is required')
+      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     gstin: Yup.string().required('GSTIN is required'),
     dateOfIncorporation: Yup.date().required('Date of Incorporation is required'),
-    msmeUdyamRegistrationNo: Yup.string().required('MSME Udyam Registration No is required'),
+    msmeUdyamRegistrationNo: Yup.string(),
+    // .required('MSME Udyam Registration No is required')
     city: Yup.string().required('City is required'),
     state: Yup.string().required('State is required'),
     country: Yup.string().required('Country is required'),
@@ -169,10 +174,7 @@ export default function KYCBasicInfo() {
             extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
             extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
           }
-        : {
-            extractedCompanyName: formData.panHoldersName,
-            extractedPanNumber: formData.panNumber,
-          };
+        : undefined;
 
       // Build submitted PAN object
       const submittedPan = humanEdited
@@ -250,7 +252,7 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (fetchedProfileId) {
-      sessionStorage.setItem('company_user_id', fetchedProfileId);
+      sessionStorage.setItem('company_profile_id', fetchedProfileId);
     }
   }, [fetchedProfileId]);
 
@@ -377,11 +379,22 @@ export default function KYCBasicInfo() {
   }, [panFile?.id]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
       {/* <KYCTitle
       title="Basic Information"
       subtitle="Please provide your company details to proceed"
     /> */}
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
 
       <FormProvider methods={methods} onSubmit={onSubmit}>
         <Card
@@ -398,7 +411,7 @@ export default function KYCBasicInfo() {
           {/* Background Image */}
           <Box
             component="img"
-            src="/assets/images/kyc/kyc-basic-info/kyc-img.svg"
+            src="/assets/images/kyc/kyc-basic-info/kyb-img.svg"
             alt="background"
             sx={{
               position: 'absolute',
@@ -508,6 +521,7 @@ export default function KYCBasicInfo() {
                   name="companyName"
                   label="Legal Entity Name *"
                   placeholder="Company Name"
+                  inputProps={{ style: { textTransform: 'uppercase' } }}
                 />
               </Grid>
 
@@ -521,6 +535,7 @@ export default function KYCBasicInfo() {
                   render={({ field, fieldState: { error } }) => (
                     <DatePicker
                       label="Date of Incorporation *"
+                      format="dd/MM/yyyy"
                       value={field.value}
                       onChange={(v) => field.onChange(v)}
                       slotProps={{
@@ -559,7 +574,7 @@ export default function KYCBasicInfo() {
               <Grid xs={12} md={4}>
                 <RHFTextField
                   name="msmeUdyamRegistrationNo"
-                  label="MSME / Udyam No. *"
+                  label="MSME / Udyam No."
                   placeholder="Enter MSME Number"
                 />
               </Grid>
@@ -631,6 +646,7 @@ export default function KYCBasicInfo() {
                 type="submit"
                 variant="contained"
                 size="large"
+                color="primary"
                 loading={isSubmitting}
                 sx={{
                   px: 6,
