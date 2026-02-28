@@ -35,6 +35,8 @@ import {
 // import { useParams } from 'src/routes/hook';
 import { useSnackbar } from 'notistack';
 import axiosInstance from 'src/utils/axios';
+import { NewAuditedGSTR3BDoc } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import { autoUploadAuditedPdfs } from 'src/forms-autofilled-script/kyb-script/upload-audited-pdfs';
 
 // ----------------------------------------------------------------------
 
@@ -295,6 +297,37 @@ export default function AuditedGST3B({
         'Something went wrong while saving audited financials',
         { variant: 'error' }
       );
+    }
+  };
+
+  const handleAutoFill = async () => {
+    const autoData = NewAuditedGSTR3BDoc();
+    setAuditorName(autoData.auditorName);
+
+    const uploadedFiles = await autoUploadAuditedPdfs({
+      category: 'gst_3b',
+      documents,
+    });
+
+    const uploadedCount = uploadedFiles.filter(Boolean).length;
+
+    setDocuments((prev) =>
+      prev.map((doc, index) => {
+        const autoFile = uploadedFiles[index];
+        const nextFile = autoFile || doc.file || null;
+
+        return {
+          ...doc,
+          auditedType: autoData.auditedType,
+          reportDate: autoData.reportDate,
+          file: nextFile,
+          status: nextFile ? 'Uploaded' : 'Pending',
+        };
+      })
+    );
+
+    if (uploadedCount) {
+      enqueueSnackbar(`Autofill uploaded ${uploadedCount} PDF(s)`, { variant: 'success' });
     }
   };
 
@@ -777,6 +810,9 @@ export default function AuditedGST3B({
             width: '100%',
           }}
         >
+          <Button variant="contained" color="primary" onClick={handleAutoFill}>
+            Autofill
+          </Button>
           {/* <Button
             variant="contained"
             onClick={() => handleAddRow()}
@@ -817,3 +853,4 @@ AuditedGST3B.propTypes = {
   currentData: PropTypes.array,
   onSave: PropTypes.func,
 };
+

@@ -5,13 +5,15 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import PropTypes from 'prop-types';
 
-import { Card, Typography, Container, Grid } from '@mui/material';
+import { Card, Typography, Container, Grid, Box } from '@mui/material';
 
 import FormProvider, { RHFPriceField, RHFTextField } from 'src/components/hook-form';
 import { LoadingButton } from '@mui/lab';
 import { useSnackbar } from 'src/components/snackbar';
 import axiosInstance from 'src/utils/axios';
 import { useGetBusinessKycStepData } from 'src/api/businessKyc';
+import { NewBusinessProfile } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import { AutoFill } from 'src/forms-autofilled-script/autofill';
 
 // ----------------------------------------------------------------------
 
@@ -54,7 +56,7 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
     resolver: yupResolver(BusinessProfileSchema),
   });
 
-  const { handleSubmit, watch, reset } = methods;
+  const { handleSubmit, watch, reset, setValue } = methods;
   const values = watch();
 
   useEffect(() => {
@@ -85,6 +87,11 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
     // if (vals.ebitdaMargin) completed++;
 
     return Math.round((completed / totalFields) * 100);
+  };
+
+  const handleAutoFill = () => {
+    const autoData = NewBusinessProfile();
+    AutoFill({setValue, fields: autoData})
   };
 
   // ✅ Submit Handler
@@ -148,19 +155,42 @@ export default function BusinessProfile({ onSave, onProgressChange, savedData })
           </Grid>
 
           <Grid container justifyContent="flex-end" sx={{ mt: 4 }}>
-            <LoadingButton
-              type="submit"
-              variant="contained"
+            <Box
               sx={{
-                '&:hover': {
-                  backgroundColor: 'primary.main',
-                  boxShadow: 'none',
-                },
+                mt: 3,
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 2,
               }}
-              color="primary"
             >
-              Save
-            </LoadingButton>
+              <LoadingButton
+                type='button'
+                variant="contained"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'primary.main',
+                    boxShadow: 'none',
+                  },
+                }}
+                color="primary"
+                onClick={() => handleAutoFill()}
+              >
+                Autofill
+              </LoadingButton>
+              <LoadingButton
+                type="submit"
+                variant="contained"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'primary.main',
+                    boxShadow: 'none',
+                  },
+                }}
+                color="primary"
+              >
+                Save
+              </LoadingButton>
+            </Box>
           </Grid>
         </Card>
       </Container>

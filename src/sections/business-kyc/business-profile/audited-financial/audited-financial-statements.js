@@ -19,6 +19,8 @@ import Iconify from 'src/components/iconify';
 import { RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'notistack';
+import { NewAuditedFinancialStatementsDoc } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import { autoUploadAuditedPdfs } from 'src/forms-autofilled-script/kyb-script/upload-audited-pdfs';
 
 export default function AuditedFinancialStatement({
   currentBaseYear,
@@ -242,6 +244,37 @@ export default function AuditedFinancialStatement({
         { variant: 'error' }
       );
       console.error('Error while uploading financials:', error);
+    }
+  };
+
+  const handleAutoFill = async () => {
+    const autoData = NewAuditedFinancialStatementsDoc();
+    setAuditorName(autoData.auditorName);
+
+    const uploadedFiles = await autoUploadAuditedPdfs({
+      category: 'financial_statements',
+      documents,
+    });
+
+    const uploadedCount = uploadedFiles.filter(Boolean).length;
+
+    setDocuments((prev) =>
+      prev.map((doc, index) => {
+        const autoFile = uploadedFiles[index];
+        const nextFile = autoFile || doc.file || null;
+
+        return {
+          ...doc,
+          auditedType: autoData.auditedType,
+          reportDate: autoData.reportDate,
+          file: nextFile,
+          status: nextFile ? 'Uploaded' : 'Pending',
+        };
+      })
+    );
+
+    if (uploadedCount) {
+      enqueueSnackbar(`Autofill uploaded ${uploadedCount} PDF(s)`, { variant: 'success' });
     }
   };
 
@@ -665,6 +698,9 @@ export default function AuditedFinancialStatement({
             width: '100%',
           }}
         >
+          <Button variant="contained" color="primary" onClick={handleAutoFill}>
+            Autofill
+          </Button>
           <Button
             variant="contained"
             onClick={() => handleSave()}
@@ -690,3 +726,4 @@ AuditedFinancialStatement.propTypes = {
   setProgress: PropTypes.func.isRequired,
   currentData: PropTypes.array,
 };
+

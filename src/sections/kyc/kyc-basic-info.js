@@ -37,6 +37,7 @@ import { useRouter } from 'src/routes/hook';
 import { useGetKycProgress } from 'src/api/companyKyc';
 import { useGetCompanySectorTypes } from 'src/api/sectorType';
 import Logo from 'src/components/logo';
+import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
 // ----------------------------------------------------------------------
 
@@ -53,6 +54,7 @@ export default function KYCBasicInfo() {
 
   const [panExtractionStatus, setPanExtractionStatus] = useState('idle'); // 'idle' | 'success' | 'failed'
   const [extractedPanDetails, setExtractedPanDetails] = useState(null);
+  const [skipPanExtractionOnce, setSkipPanExtractionOnce] = useState(false);
 
   // State to store mapped API values
   const [entityOptions, setEntityOptions] = useState([]);
@@ -82,14 +84,26 @@ export default function KYCBasicInfo() {
   };
 
   const NewUserSchema = Yup.object().shape({
-    cin: Yup.string().required('CIN is required'),
+    cin: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .matches(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/, 'Invalid CIN format')
+      .required('CIN is required'),
     companyName: Yup.string()
       .transform((value) => value?.toUpperCase())
       .required('Company Name is required')
       .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
-    gstin: Yup.string().required('GSTIN is required'),
+    gstin: Yup.string()
+      .transform((value) => value?.toUpperCase())
+      .matches(
+        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,
+        'Invalid GSTIN format'
+      )
+      .required('GSTIN is required'),
     dateOfIncorporation: Yup.date().required('Date of Incorporation is required'),
-    msmeUdyamRegistrationNo: Yup.string(),
+    msmeUdyamRegistrationNo: Yup.string().matches(
+      /^$|^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/,
+      'Invalid MSME/Udyam format'
+    ),
     // .required('MSME Udyam Registration No is required')
     city: Yup.string().required('City is required'),
     state: Yup.string().required('State is required'),
@@ -326,6 +340,10 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (!panFile?.id) return;
+    if (skipPanExtractionOnce) {
+      setSkipPanExtractionOnce(false);
+      return;
+    }
 
     const extractPanDetails = async () => {
       try {
@@ -376,7 +394,76 @@ export default function KYCBasicInfo() {
     };
 
     extractPanDetails();
-  }, [panFile?.id]);
+  }, [panFile?.id, skipPanExtractionOnce]);
+
+  const handleAutoFill = async () => {
+    const autoData = NewCompanyBasicInfo();
+
+    const applyValue = (name, value) =>
+      setValue(name, value, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+
+    applyValue('cin', autoData.cin);
+    applyValue('companyName', autoData.companyName);
+    applyValue('gstin', autoData.gstin);
+    applyValue('dateOfIncorporation', autoData.dateOfIncorporation);
+    applyValue('msmeUdyamRegistrationNo', autoData.msmeUdyamRegistrationNo);
+    applyValue('city', autoData.city);
+    applyValue('state', autoData.state);
+    applyValue('country', autoData.country);
+    applyValue('panNumber', autoData.panNumber);
+    applyValue('panHoldersName', autoData.companyName);
+
+    if (!getValues('companyEntityTypeId') && entityOptions.length > 0) {
+      applyValue('companyEntityTypeId', entityOptions[0].id);
+    }
+
+    if (!getValues('companySectorTypeId') && sectorOptions.length > 0) {
+      applyValue('companySectorTypeId', sectorOptions[0].id);
+    }
+
+    try {
+      const fileName = 'financial_statement_year_1.pdf';
+      const response = await fetch(`/pdfs/kyb/${fileName}`);
+      if (!response.ok) {
+        enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
+          variant: 'warning',
+        });
+        return;
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadRes = await axiosInstance.post('/files', formData);
+      const uploadedFile = uploadRes?.data?.files?.[0] || null;
+
+      if (!uploadedFile?.id) {
+        enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
+          variant: 'warning',
+        });
+        return;
+      }
+
+      setSkipPanExtractionOnce(true);
+      applyValue('panFile', uploadedFile);
+      setExtractedPanDetails({
+        extractedCompanyName: autoData.companyName,
+        extractedPanNumber: autoData.panNumber,
+      });
+
+      enqueueSnackbar('Autofill completed successfully', { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
+        variant: 'warning',
+      });
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -641,7 +728,22 @@ export default function KYCBasicInfo() {
             </Grid>
 
             {/* SUBMIT BUTTON */}
-            <Box textAlign="center" sx={{ mt: 4 }}>
+            <Box textAlign="center" sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Button
+                type="button"
+                variant="contained"
+                color="primary"
+                size="large"
+                sx={{
+                  px: 6,
+                  py: 1.6,
+                  fontWeight: 600,
+                  borderRadius: 1,
+                }}
+                onClick={handleAutoFill}
+              >
+                Autofill
+              </Button>
               <LoadingButton
                 type="submit"
                 variant="contained"

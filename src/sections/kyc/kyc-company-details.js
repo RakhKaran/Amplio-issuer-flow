@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
@@ -151,9 +151,11 @@ export default function KYCCompanyDetails({
   const {
     reset,
     control,
+    setValue,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
+  const [isAutofilling, setIsAutofilling] = useState(false);
 
   const values = useWatch({ control });
   const moaAoaType = useWatch({ control, name: 'moaAoaType' });
@@ -337,6 +339,76 @@ export default function KYCCompanyDetails({
     }
   });
 
+  const handleAutoFill = async () => {
+    if (!documents.length) {
+      enqueueSnackbar('No document requirements found for autofill', { variant: 'warning' });
+      return;
+    }
+
+    setIsAutofilling(true);
+
+    try {
+      const pdfPool = [
+        'financial_statement_year_1.pdf',
+        'financial_statement_year_2.pdf',
+        'income_tax_return_year_1.pdf',
+        'gstr9_year_1.pdf',
+      ];
+
+      const selectedType = moaAoaType || defaultMoaAoaType || (moaDoc ? 'moa' : aoaDoc ? 'aoa' : '');
+      if (selectedType) {
+        setValue('moaAoaType', selectedType, { shouldValidate: true, shouldDirty: true });
+      }
+
+      const selectedDoc = selectedType === 'aoa' ? aoaDoc : selectedType === 'moa' ? moaDoc : null;
+
+      const uniqueDocs = [
+        certificateDoc,
+        gstDoc,
+        selectedDoc,
+        ...remainingDocuments,
+      ].filter((item, index, arr) => item?.documentId && arr.findIndex((d) => d?.documentId === item.documentId) === index);
+
+      const uploadedFiles = await Promise.all(
+        uniqueDocs.map(async (item, index) => {
+          const fileName = pdfPool[index % pdfPool.length];
+          try {
+            const response = await fetch(`/pdfs/kyb/${fileName}`);
+            if (!response.ok) return { item, file: null };
+
+            const blob = await response.blob();
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const uploadRes = await axiosInstance.post('/files', formData);
+            return { item, file: uploadRes?.data?.files?.[0] || null };
+          } catch (error) {
+            return { item, file: null };
+          }
+        })
+      );
+
+      uploadedFiles.forEach(({ item, file }) => {
+        if (!item?.documentId || !file?.id) return;
+        setValue(`doc_${item.documentId}`, file, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+      });
+
+      const uploadedCount = uploadedFiles.filter((entry) => !!entry.file?.id).length;
+      if (uploadedCount > 0) {
+        enqueueSnackbar(`Autofill uploaded ${uploadedCount} document(s)`, { variant: 'success' });
+      } else {
+        enqueueSnackbar('Autofill could not upload documents', { variant: 'warning' });
+      }
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
+
   const renderDocumentField = (item, mandatory = false) => {
     if (!item?.documentId) return null;
 
@@ -453,7 +525,16 @@ export default function KYCCompanyDetails({
             </Box>
           </Paper>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+            <LoadingButton
+              type="button"
+              color="primary"
+              variant="contained"
+              loading={isAutofilling}
+              onClick={handleAutoFill}
+            >
+              Autofill
+            </LoadingButton>
             <LoadingButton type="submit" color="primary" variant="contained" loading={isSubmitting}>
               Next
             </LoadingButton>

@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import FormProvider, { RHFPriceField, RHFTextField } from 'src/components/hook-form';
+import { AutoFill } from 'src/forms-autofilled-script/autofill';
+import { NewBorrowingDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
@@ -102,6 +104,11 @@ export default function BorrowingDetails({ currentBorrowingDetails, setPercent, 
     }
   });
 
+  const handleAutoFill = () => {
+    const autoData = NewBorrowingDetails();
+    AutoFill({ setValue, fields: autoData });
+  };
+
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Box
@@ -168,6 +175,9 @@ export default function BorrowingDetails({ currentBorrowingDetails, setPercent, 
               gap: 2,
             }}
           >
+            <LoadingButton type="button" variant="contained" color="primary" onClick={handleAutoFill}>
+              Autofill
+            </LoadingButton>
             <LoadingButton
               type="submit"
               loading={isSubmitting}

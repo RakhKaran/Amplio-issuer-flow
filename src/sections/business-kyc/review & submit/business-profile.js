@@ -126,7 +126,7 @@ export default function ReviewBusinessProfilePage({ onEdit }) {
                 <>
                   <Grid item xs={8} md={8}>
                     <Typography variant="body2" fontWeight={600}>
-                      {item.label}
+                      {item.label} :
                     </Typography>
                   </Grid>
                   <Grid sx={{ textAlign: 'right' }} item xs={4} md={4}>

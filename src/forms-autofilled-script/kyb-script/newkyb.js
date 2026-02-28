@@ -32,12 +32,12 @@ export function NewBusinessProfile() {
 export function NewFundPosition() {
     const data = {
         cashAndBankBalance: '25000000',
-        cashAndBankBalanceDate: new Date('2025-01-10'),
+        cashAndBankBalanceDate: new Date(),
         inventoryAmount: '15000000',
         prepaidExpensesAmount: '5000000',
         otherCurrentAssetsAmount: '7000000',
         currentLiabilitiesAmount: '12000000',
-        currentAssetsAndLiabilitiesDate: new Date('2025-01-10'),
+        currentAssetsAndLiabilitiesDate: new Date(),
     };
     return data;
 };
@@ -118,7 +118,7 @@ export function NewGuarantorDetails(options = {}) {
     const data = {
         guarantorType,
         guarantorName: isCorporate ? 'ABC GUARANTEE PRIVATE LIMITED' : 'RAHUL SHARMA',
-        email: isCorporate ? 'compliance@abcguarantee.com' : 'rahul.sharma@example.com',
+        email: isCorporate ? 'kolheabhishek123@gmail.com' : 'kolheabhishek123@gmail.com',
         phoneNumber: '9876543210',
         cin: isCorporate ? 'U12345MH2020PTC123456' : '',
         estimetedNetWorth: '250000000',
@@ -136,7 +136,7 @@ export function NewAuditedFinancialStatementsDoc() {
     return {
         auditorName: 'ABC & CO CHARTERED ACCOUNTANTS',
         auditedType: 'audited',
-        reportDate: new Date('2025-03-31'),
+        reportDate: new Date(),
     };
 }
 
@@ -144,7 +144,7 @@ export function NewAuditedIncomeTaxReturnDoc() {
     return {
         auditorName: 'ABC & CO CHARTERED ACCOUNTANTS',
         auditedType: 'audited',
-        reportDate: new Date('2025-03-31'),
+        reportDate: new Date(),
     };
 }
 
@@ -152,7 +152,7 @@ export function NewAuditedGSTR9Doc() {
     return {
         auditorName: 'ABC & CO CHARTERED ACCOUNTANTS',
         auditedType: 'audited',
-        reportDate: new Date('2025-03-31'),
+        reportDate: new Date(),
     };
 }
 
@@ -160,7 +160,98 @@ export function NewAuditedGSTR3BDoc() {
     return {
         auditorName: 'ABC & CO CHARTERED ACCOUNTANTS',
         auditedType: 'audited',
-        reportDate: new Date('2025-03-31'),
+        reportDate: new Date(),
+    };
+}
+
+const ALPHANUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+const pick = (source) => source[Math.floor(Math.random() * source.length)];
+
+const randomDigits = (length) =>
+    Array.from({ length }, () => String(Math.floor(Math.random() * 10))).join('');
+
+const PAN_COMPANY_SUFFIXES = ['P', 'C', 'H', 'F', 'A', 'T', 'B', 'L', 'J', 'G'];
+
+export function NewCompanyBasicInfo() {
+    const companyBaseNames = ['AERONEX', 'BLUEFIELD', 'NOVASTAR', 'ZENBROOK', 'TRUVANTA'];
+    const currentYear = new Date().getFullYear();
+    const incorporationYear = String(
+        currentYear - Math.floor(Math.random() * 12) - 1
+    );
+    const stateCode = 'MH';
+    const companyName = `${pick(companyBaseNames)} PRIVATE LIMITED`;
+
+    const panCompanyPrefix = companyName.replace(/[^A-Z]/gi, '').toUpperCase().padEnd(5, 'X').slice(0, 5);
+    const panNumber = `${panCompanyPrefix}${randomDigits(4)}${pick(PAN_COMPANY_SUFFIXES)}`;
+
+    const gstin = `${randomDigits(2)}${panNumber}${pick('123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')}Z${pick(ALPHANUM)}`;
+    const cin = `U${randomDigits(5)}${stateCode}${incorporationYear}PTC${randomDigits(6)}`;
+    const msmeUdyamRegistrationNo = `UDYAM-${stateCode}-${randomDigits(2)}-${randomDigits(7)}`;
+
+    return {
+        cin,
+        companyName,
+        gstin,
+        dateOfIncorporation: new Date(`${incorporationYear}-04-01`),
+        msmeUdyamRegistrationNo,
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        country: 'India',
+        panNumber,
+        panHoldersName: companyName,
+        companyEntityTypeId: '',
+        companySectorTypeId: '',
+    };
+}
+
+export function NewKycAddressDetails() {
+    return {
+        documentType: 'electricity_bill',
+        registeredAddressLine1: '12 BUSINESS PARK ROAD',
+        registeredAddressLine2: 'NEAR METRO STATION',
+        registeredCountry: 'India',
+        registeredCity: 'Mumbai',
+        registeredState: 'Maharashtra',
+        registeredPincode: '400001',
+        sameAsRegistered: true,
+        correspondenceAddressLine1: '12 BUSINESS PARK ROAD',
+        correspondenceAddressLine2: 'NEAR METRO STATION',
+        correspondenceCountry: 'India',
+        correspondenceCity: 'Mumbai',
+        correspondenceState: 'Maharashtra',
+        correspondencePincode: '400001',
+    };
+}
+
+export function NewKycBankDetails() {
+    return {
+        documentType: 'cheque',
+        bankName: 'HDFC BANK',
+        branchName: 'FORT BRANCH',
+        accountNumber: randomDigits(12),
+        ifscCode: `HDFC0${randomDigits(6)}`,
+        accountType: 'CURRENT',
+        accountHolderName: 'AERONEX PRIVATE LIMITED',
+        bankAddress: 'DALAL STREET, FORT, MUMBAI',
+        bankShortCode: 'HDFC',
+    };
+}
+
+export function NewKycSignatoryDetails() {
+    const namePool = ['RAHUL SHARMA', 'AMIT VERMA', 'PRIYA DESAI', 'KARAN MEHTA'];
+    const fullName = pick(namePool);
+    const panPrefix = fullName.replace(/[^A-Z]/gi, '').toUpperCase().padEnd(5, 'X').slice(0, 5);
+    const panNumber = `${panPrefix}${randomDigits(4)}${pick(PAN_COMPANY_SUFFIXES)}`;
+
+    return {
+        name: fullName,
+        email: `signatory${randomDigits(4)}@example.com`,
+        phoneNumber: `9${randomDigits(9)}`,
+        role: 'DIRECTOR',
+        submittedPanFullName: fullName,
+        submittedPanNumber: panNumber,
+        submittedDateOfBirth: '1990-01-15',
     };
 }
 

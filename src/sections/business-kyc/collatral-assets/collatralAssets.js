@@ -19,6 +19,7 @@ import FormProvider, {
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
+import { NewCollateralAsset } from 'src/forms-autofilled-script/kyb-script/newkyb';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
@@ -104,6 +105,7 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
     control,
     reset,
     watch,
+    setValue,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
@@ -287,7 +289,62 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
     isInitialLoad.current = false;
   }, [stepData, stepDataLoading]);
 
+  const handleAutoFill = async () => {
+    const autoData = NewCollateralAsset();
+    const pdfPool = [
+      'financial_statement_year_1.pdf',
+      'financial_statement_year_2.pdf',
+      'financial_statement_year_3.pdf',
+      'income_tax_return_year_1.pdf',
+      'gstr9_year_1.pdf',
+    ];
 
+    const uploadedSecurityDocs = await Promise.all(
+      fields.map(async (_, index) => {
+        const fileName = pdfPool[index % pdfPool.length];
+
+        try {
+          const response = await fetch(`/pdfs/kyb/${fileName}`);
+          if (!response.ok) return null;
+
+          const blob = await response.blob();
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const uploadRes = await axiosInstance.post('/files', formData);
+          return uploadRes?.data?.files?.[0] || null;
+        } catch (error) {
+          return null;
+        }
+      })
+    );
+
+    fields.forEach((_, index) => {
+      Object.entries(autoData).forEach(([key, value]) => {
+        setValue(`collateralAssets.${index}.${key}`, value, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      });
+
+      if (uploadedSecurityDocs[index]) {
+        setValue(`collateralAssets.${index}.securityDocument`, uploadedSecurityDocs[index], {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      }
+    });
+
+    const uploadedCount = uploadedSecurityDocs.filter(Boolean).length;
+    if (uploadedCount > 0) {
+      enqueueSnackbar(`Autofill uploaded ${uploadedCount} collateral PDF(s)`, {
+        variant: 'success',
+      });
+    }
+  };
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Box
@@ -499,12 +556,15 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
             gap: 2,
           }}
         >
+          <LoadingButton type="button" variant="contained" color="primary" onClick={handleAutoFill}>
+            Autofill
+          </LoadingButton>
           <LoadingButton
             loading={isSubmitting}
             type="submit"
             variant="contained"
             color='primary'
-            
+
           >
             Save
           </LoadingButton>

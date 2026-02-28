@@ -20,6 +20,8 @@ import { RHFTextField } from 'src/components/hook-form';
 import { useParams } from 'src/routes/hook';
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'notistack';
+import { NewAuditedGSTR9Doc } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import { autoUploadAuditedPdfs } from 'src/forms-autofilled-script/kyb-script/upload-audited-pdfs';
 
 export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress, currentData }) {
   const { enqueueSnackbar } = useSnackbar();
@@ -240,6 +242,37 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
         'Something went wrong while saving audited financials',
         { variant: 'error' }
       );
+    }
+  };
+
+  const handleAutoFill = async () => {
+    const autoData = NewAuditedGSTR9Doc();
+    setAuditorName(autoData.auditorName);
+
+    const uploadedFiles = await autoUploadAuditedPdfs({
+      category: 'gstr_9',
+      documents,
+    });
+
+    const uploadedCount = uploadedFiles.filter(Boolean).length;
+
+    setDocuments((prev) =>
+      prev.map((doc, index) => {
+        const autoFile = uploadedFiles[index];
+        const nextFile = autoFile || doc.file || null;
+
+        return {
+          ...doc,
+          auditedType: autoData.auditedType,
+          reportDate: autoData.reportDate,
+          file: nextFile,
+          status: nextFile ? 'Uploaded' : 'Pending',
+        };
+      })
+    );
+
+    if (uploadedCount) {
+      enqueueSnackbar(`Autofill uploaded ${uploadedCount} PDF(s)`, { variant: 'success' });
     }
   };
 
@@ -663,6 +696,9 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
             width: '100%',
           }}
         >
+          <Button variant="contained" color="primary" onClick={handleAutoFill}>
+            Autofill
+          </Button>
           <Button
             variant="contained"
             onClick={() => handleSave()}
@@ -688,3 +724,4 @@ AuditedGSTR9.propTypes = {
   setProgress: PropTypes.func.isRequired,
   currentData: PropTypes.array,
 };
+

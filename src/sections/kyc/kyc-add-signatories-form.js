@@ -26,6 +26,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { DatePicker } from '@mui/x-date-pickers';
 import axiosInstance from 'src/utils/axios';
 import { Typography } from '@mui/material';
+import { NewKycSignatoryDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
 const ROLES = [
   { value: 'DIRECTOR', label: 'Director' },
@@ -56,6 +57,8 @@ export default function KYCAddSignatoriesForm({
   const { enqueueSnackbar } = useSnackbar();
   const [extractedPan, setExtractedPan] = useState(null);
   const [panExtractionStatus, setPanExtractionStatus] = useState('idle');
+  const [skipPanExtractionOnce, setSkipPanExtractionOnce] = useState(false);
+  const [isAutofilling, setIsAutofilling] = useState(false);
 
   const NewUserSchema = Yup.object().shape({
     name: Yup.string()
@@ -228,6 +231,10 @@ export default function KYCAddSignatoriesForm({
 
   useEffect(() => {
     if (!panFile?.id) return;
+    if (skipPanExtractionOnce) {
+      setSkipPanExtractionOnce(false);
+      return;
+    }
 
     const extractPanDetails = async () => {
       try {
@@ -286,7 +293,64 @@ export default function KYCAddSignatoriesForm({
     };
 
     extractPanDetails();
-  }, [panFile?.id]);
+  }, [panFile?.id, skipPanExtractionOnce]);
+
+  const handleAutoFill = async () => {
+    setIsAutofilling(true);
+    const autoData = NewKycSignatoryDetails();
+
+    const applyValue = (name, value) =>
+      setValue(name, value, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+
+    Object.entries(autoData).forEach(([key, value]) => applyValue(key, value));
+
+    try {
+      const uploadTargets = [
+        { field: 'panCard', fileName: 'financial_statement_year_1.pdf' },
+        { field: 'boardResolution', fileName: 'income_tax_return_year_1.pdf' },
+      ];
+
+      const uploadResults = await Promise.all(
+        uploadTargets.map(async ({ field, fileName }) => {
+          try {
+            const response = await fetch(`/pdfs/kyb/${fileName}`);
+            if (!response.ok) return { field, file: null };
+
+            const blob = await response.blob();
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const uploadRes = await axiosInstance.post('/files', formData);
+            return { field, file: uploadRes?.data?.files?.[0] || null };
+          } catch (error) {
+            return { field, file: null };
+          }
+        })
+      );
+
+      setSkipPanExtractionOnce(true);
+      uploadResults.forEach(({ field, file }) => {
+        if (!file?.id) return;
+        applyValue(field, file);
+      });
+
+      const uploadedCount = uploadResults.filter((entry) => !!entry.file?.id).length;
+      if (uploadedCount > 0) {
+        enqueueSnackbar(`Autofill uploaded ${uploadedCount} signatory document(s)`, {
+          variant: 'success',
+        });
+      } else {
+        enqueueSnackbar('Signatory data autofilled, document upload failed', { variant: 'warning' });
+      }
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
 
   return (
     <Dialog
@@ -426,6 +490,18 @@ export default function KYCAddSignatoriesForm({
             <Button variant="outlined" onClick={onClose}>
               {isViewMode ? 'Close' : 'Cancel'}
             </Button>
+
+            {!isViewMode && (
+              <Button
+                type="button"
+                variant="contained"
+                color='primary'
+                onClick={handleAutoFill}
+                disabled={isAutofilling}
+              >
+                {isAutofilling ? 'Autofilling...' : 'Autofill'}
+              </Button>
+            )}
 
             {!isViewMode && (
               <Button

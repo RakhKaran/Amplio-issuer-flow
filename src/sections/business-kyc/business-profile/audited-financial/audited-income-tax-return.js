@@ -20,6 +20,8 @@ import { RHFTextField } from 'src/components/hook-form';
 import { useParams } from 'src/routes/hook';
 import axiosInstance from 'src/utils/axios';
 import { useSnackbar } from 'notistack';
+import { NewAuditedIncomeTaxReturnDoc } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import { autoUploadAuditedPdfs } from 'src/forms-autofilled-script/kyb-script/upload-audited-pdfs';
 
 export default function AuditedIncomeTaxReturn({
   currentBaseYear,
@@ -245,6 +247,37 @@ export default function AuditedIncomeTaxReturn({
         'Something went wrong while saving audited financials',
         { variant: 'error' }
       );
+    }
+  };
+
+  const handleAutoFill = async () => {
+    const autoData = NewAuditedIncomeTaxReturnDoc();
+    setAuditorName(autoData.auditorName);
+
+    const uploadedFiles = await autoUploadAuditedPdfs({
+      category: 'income_tax_returns',
+      documents,
+    });
+
+    const uploadedCount = uploadedFiles.filter(Boolean).length;
+
+    setDocuments((prev) =>
+      prev.map((doc, index) => {
+        const autoFile = uploadedFiles[index];
+        const nextFile = autoFile || doc.file || null;
+
+        return {
+          ...doc,
+          auditedType: autoData.auditedType,
+          reportDate: autoData.reportDate,
+          file: nextFile,
+          status: nextFile ? 'Uploaded' : 'Pending',
+        };
+      })
+    );
+
+    if (uploadedCount) {
+      enqueueSnackbar(`Autofill uploaded ${uploadedCount} PDF(s)`, { variant: 'success' });
     }
   };
 
@@ -669,6 +702,9 @@ export default function AuditedIncomeTaxReturn({
             width: '100%',
           }}
         >
+          <Button variant="contained" color="primary" onClick={handleAutoFill}>
+            Autofill
+          </Button>
           <Button
             variant="contained"
             onClick={() => handleSave()}
@@ -694,3 +730,4 @@ AuditedIncomeTaxReturn.propTypes = {
   setProgress: PropTypes.func.isRequired,
   currentData: PropTypes.array,
 };
+

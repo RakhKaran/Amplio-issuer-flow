@@ -21,6 +21,8 @@ import FormProvider, {
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
+import { AutoFill } from 'src/forms-autofilled-script/autofill';
+import { NewGuarantorDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 import RHFFileUploadBox from 'src/components/custom-file-upload/file-upload';
 import axios from 'axios';
 import { useAuthContext } from 'src/auth/hooks';
@@ -344,6 +346,64 @@ export default function AddGuarantorForm({
 
   //   extractPanDetails();
   // }, [panFile?.id]);
+
+  const handleAutoFill = async () => {
+    const autoData = NewGuarantorDetails({
+      guarantorType: selectedGuarantorType || 'Corporate',
+    });
+    AutoFill({ setValue, fields: autoData });
+
+    const isCorporate = (selectedGuarantorType || 'Corporate') === 'Corporate';
+
+    const uploadTargets = isCorporate
+      ? [
+        { field: 'panCardFile', fileName: 'financial_statement_year_1.pdf' },
+        { field: 'boardResolutionFile', fileName: 'income_tax_return_year_1.pdf' },
+        { field: 'gstCertificateFile', fileName: 'gstr9_year_1.pdf' },
+        { field: 'financialStatementFile', fileName: 'financial_statement_year_2.pdf' },
+      ]
+      : [
+        { field: 'panCardFile', fileName: 'financial_statement_year_1.pdf' },
+        { field: 'adharCardFile', fileName: 'income_tax_return_year_1.pdf' },
+        { field: 'addressProofFile', fileName: 'gstr9_year_1.pdf' },
+        { field: 'itrFile', fileName: 'income_tax_return_year_2.pdf' },
+      ];
+
+    const uploadResults = await Promise.all(
+      uploadTargets.map(async ({ field, fileName }) => {
+        try {
+          const response = await fetch(`/pdfs/kyb/${fileName}`);
+          if (!response.ok) return { field, file: null };
+
+          const blob = await response.blob();
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const uploadRes = await axiosInstance.post('/files', formData);
+          return { field, file: uploadRes?.data?.files?.[0] || null };
+        } catch (error) {
+          return { field, file: null };
+        }
+      })
+    );
+
+    uploadResults.forEach(({ field, file }) => {
+      if (!file) return;
+      setValue(field, file, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    });
+
+    const uploadedCount = uploadResults.filter((entry) => !!entry.file).length;
+    if (uploadedCount > 0) {
+      enqueueSnackbar(`Autofill uploaded ${uploadedCount} guarantor PDF(s)`, {
+        variant: 'success',
+      });
+    }
+  };
 
   return (
     <Dialog
@@ -674,6 +734,20 @@ export default function AddGuarantorForm({
 
         <DialogActions>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, p: 2 }}>
+           <Button
+                type='button'
+                variant="contained"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'primary.main',
+                    boxShadow: 'none',
+                  },
+                }}
+                color="primary"
+                onClick={() => handleAutoFill()}
+              >
+                Autofill
+              </Button>
             <Button
               type="submit"
               variant="contained"

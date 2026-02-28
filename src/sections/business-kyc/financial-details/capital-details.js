@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import FormProvider, { RHFPriceField } from 'src/components/hook-form';
+import { AutoFill } from 'src/forms-autofilled-script/autofill';
+import { NewCapitalDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
@@ -87,6 +89,11 @@ export default function CapitalDetails({ currentCapitalDetails, setPercent, setP
     }
   });
 
+  const handleAutoFill = () => {
+    const autoData = NewCapitalDetails();
+    AutoFill({ setValue, fields: autoData });
+  };
+
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -122,6 +129,9 @@ export default function CapitalDetails({ currentCapitalDetails, setPercent, setP
           </Grid>
 
           <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <LoadingButton type="button" variant="contained" color="primary" onClick={handleAutoFill}>
+              Autofill
+            </LoadingButton>
             <LoadingButton type="submit" loading={isSubmitting} variant="contained" color="primary">
               Save
             </LoadingButton>

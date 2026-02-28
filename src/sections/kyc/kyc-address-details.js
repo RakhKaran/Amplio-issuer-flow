@@ -20,6 +20,7 @@ import FormProvider, { RHFTextField, RHFSelect, RHFCustomFileUploadBox } from 's
 import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
 import { useGetKycAddressDetails } from 'src/api/companyKyc';
+import { NewKycAddressDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
 export default function KYCAddressDetails({
   percent,
@@ -29,6 +30,7 @@ export default function KYCAddressDetails({
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutofilling, setIsAutofilling] = useState(false);
   const { registeredAddress, correspondenceAddress, addressDetailsLoading } = useGetKycAddressDetails();
   const [registeredAddressData, setRegisteredAddressData] = useState(null);
   const [correspondenceAddressData, setCorrespondenceAddressData] = useState(null);
@@ -205,6 +207,49 @@ export default function KYCAddressDetails({
     }
   };
 
+  const handleAutoFill = async () => {
+    setIsAutofilling(true);
+    const autoData = NewKycAddressDetails();
+
+    const applyValue = (name, value) =>
+      setValue(name, value, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+
+    Object.entries(autoData).forEach(([key, value]) => applyValue(key, value));
+
+    try {
+      const fileName = 'income_tax_return_year_1.pdf';
+      const response = await fetch(`/pdfs/kyb/${fileName}`);
+      if (!response.ok) {
+        enqueueSnackbar('Address data autofilled, proof upload failed', { variant: 'warning' });
+        return;
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadRes = await axiosInstance.post('/files', formData);
+      const uploadedFile = uploadRes?.data?.files?.[0] || null;
+
+      if (!uploadedFile?.id) {
+        enqueueSnackbar('Address data autofilled, proof upload failed', { variant: 'warning' });
+        return;
+      }
+
+      applyValue('addressProof', uploadedFile);
+      enqueueSnackbar('Address autofill completed', { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar('Address data autofilled, proof upload failed', { variant: 'warning' });
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
+
   useEffect(() => {
     if ((registeredAddress || correspondenceAddress) && !addressDetailsLoading) {
       if (registeredAddress) setRegisteredAddressData(registeredAddress);
@@ -337,6 +382,16 @@ export default function KYCAddressDetails({
             </Grid>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <LoadingButton
+                type="button"
+                variant="contained"
+                color="primary"
+                loading={isAutofilling}
+                onClick={handleAutoFill}
+                sx={{ mr: 2 }}
+              >
+                Autofill
+              </LoadingButton>
               <LoadingButton type="submit" variant="contained" color="primary" loading={isSubmitting}>
                 Next
               </LoadingButton>

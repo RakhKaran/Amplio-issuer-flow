@@ -29,7 +29,6 @@ export default function FinancialDetailsMain({ percent, setActiveStepId }) {
   const [profitabilityComplete, setProfitabilityComplete] = useState(false);
   const [auditedFinancialComplete, setAuditedFinancialComplete] = useState(false);
   const [ratiosComplete, setRatiosComplete] = useState(false);
-
   const [isNextLoading, setIsNextLoading] = useState(false);
 
   const { stepData, stepDataLoading } = useGetBusinessKycStepData('financial_details');

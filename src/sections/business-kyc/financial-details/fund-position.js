@@ -7,6 +7,8 @@ import PropTypes from 'prop-types';
 import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import FormProvider, { RHFPriceField } from 'src/components/hook-form';
+import { AutoFill } from 'src/forms-autofilled-script/autofill';
+import { NewFundPosition } from 'src/forms-autofilled-script/kyb-script/newkyb';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
@@ -147,6 +149,11 @@ export default function FundPosition({ currentFundPosition, setPercent, setProgr
     }
   });
 
+  const handleAutoFill = () => {
+    const autoData = NewFundPosition();
+    AutoFill({ setValue, fields: autoData });
+  };
+
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
      <Box
@@ -267,8 +274,16 @@ export default function FundPosition({ currentFundPosition, setPercent, setProgr
           </Grid>
         </Grid>
 
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-         <LoadingButton
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <LoadingButton
+            type="button"
+            variant="contained"
+            color="primary"
+            onClick={handleAutoFill}
+          >
+            Autofill
+          </LoadingButton>
+          <LoadingButton
               type="submit"
               loading={isSubmitting}
               variant="contained"
