@@ -10,6 +10,7 @@ import {
     Paper,
     CircularProgress,
 } from '@mui/material';
+import Logo from 'src/components/logo';
 export default function GuarantorExecutionSuccess() {
 
 
@@ -23,6 +24,16 @@ export default function GuarantorExecutionSuccess() {
                 justifyContent: 'center',
             }}
         >
+            <Box
+                sx={{
+                    position: 'fixed',
+                    top: 16,
+                    left: 16,
+                    zIndex: 1300,
+                }}
+            >
+                <Logo />
+            </Box>
             <Box width="100%" maxWidth={720}>
 
 

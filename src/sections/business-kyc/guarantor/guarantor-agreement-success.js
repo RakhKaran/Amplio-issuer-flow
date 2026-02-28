@@ -6,6 +6,7 @@ export default function GuarantorAgreementSuccessDialog({ open, onClose }) {
 
   const navigate = useNavigate();
   return (
+    
     <Dialog
       open={open}
       onClose={onClose}

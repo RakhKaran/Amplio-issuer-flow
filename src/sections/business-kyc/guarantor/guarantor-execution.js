@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import axiosInstance from 'src/utils/axios';
 import GuarantorESignVerify from './guarantor-verify-e-sign';
+import Logo from 'src/components/logo';
 
 export default function GuarantorExecution() {
   const [params] = useSearchParams();
@@ -61,6 +62,16 @@ export default function GuarantorExecution() {
         justifyContent: 'center',
       }}
     >
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 1300,
+        }}
+      >
+        <Logo />
+      </Box>
       <Box width="100%" maxWidth={720}>
 
         {!loading && error && (
