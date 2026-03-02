@@ -279,6 +279,7 @@ export default function KYCBasicInfo() {
         'public_ltd_company',
         'partnership_firm',
         'sole_proprietorship',
+        'opc'
       ];
 
       const filtered = EntityTypes.filter((item) => allowedTypes.includes(item.value));
