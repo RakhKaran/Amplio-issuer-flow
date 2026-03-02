@@ -94,6 +94,8 @@ const SignatoriesCreatePage = lazy(() => import('src/pages/dashboard/signatories
 const SignatoriesListPage = lazy(() => import('src/pages/dashboard/signatories/list'));
 const SignatoriesEditPage = lazy(() => import('src/pages/dashboard/signatories/edit'));
 const SignatoriesDetailsPage = lazy(() => import('src/pages/dashboard/signatories/details'));
+// Transaction
+const TransactionViewPage = lazy(() => import('src/pages/dashboard/transaction/view'))
 // TOUR
 const TourDetailsPage = lazy(() => import('src/pages/dashboard/tour/details'));
 const TourListPage = lazy(() => import('src/pages/dashboard/tour/list'));
@@ -210,7 +212,13 @@ export const dashboardRoutes = [
           { path: ':id', element: <SignatoriesDetailsPage /> },
         ],
       },
-
+      {
+        path: 'transactions',
+        children: [
+          { element: <TransactionViewPage />, index: true },
+          { path: 'view', element: <TransactionViewPage /> },
+        ]
+      },
       {
         path: 'reactflow',
         children: [

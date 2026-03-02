@@ -242,12 +242,12 @@ export default function AuditedGST3B({
         return false;
       }
 
-      if (!doc.auditedType) {
-        enqueueSnackbar(`Audited/Provisional type required for FY ${yearLabel}`, {
-          variant: 'error',
-        });
-        return false;
-      }
+      // if (!doc.auditedType) {
+      //   enqueueSnackbar(`Audited/Provisional type required for FY ${yearLabel}`, {
+      //     variant: 'error',
+      //   });
+      //   return false;
+      // }
 
       if (!doc.month) {
         enqueueSnackbar(`Invalid month`, {
@@ -270,7 +270,7 @@ export default function AuditedGST3B({
         baseFinancialStartYear: Number(currentBaseYear) - 1,
         baseFinancialEndYear: Number(currentBaseYear),
         month: doc.month,
-        auditedType: doc.auditedType,
+        // auditedType: doc.auditedType,
         auditorName: auditorName.trim(),
         reportDate: doc.reportDate,
         fileId: doc.file.id,
@@ -345,7 +345,7 @@ export default function AuditedGST3B({
           file: doc.file ?? null,
           status: 'Uploaded',
           reportDate: doc.reportDate ? new Date(doc.reportDate) : null,
-          auditedType: doc.auditedType,
+          // auditedType: doc.auditedType,
         }))
       );
       // If saved data exists, the form was already completed
@@ -362,7 +362,7 @@ export default function AuditedGST3B({
         file: null,
         status: 'Pending',
         reportDate: null,
-        auditedType: 'audited',
+        // auditedType: 'audited',
       }));
 
       setDocuments(initialDocs);
@@ -417,8 +417,8 @@ export default function AuditedGST3B({
               sx={{
                 display: { xs: 'none', md: 'grid' },
                 gridTemplateColumns: {
-                  md: '1fr 2fr 2fr 1fr 1.5fr 120px',
-                  lg: '1fr 2fr 1.5fr 1.2fr 1.8fr 120px',
+                  md: '1fr 2.5fr 1fr 1.5fr 140px',
+                  lg: '1fr 3fr 1fr 1.8fr 160px',
                 },
                 border: '1px solid',
                 borderColor: 'divider',
@@ -433,7 +433,7 @@ export default function AuditedGST3B({
               }}
             >
               <Typography variant="subtitle2">Month</Typography>
-              <Typography variant="subtitle2">Type</Typography>
+              {/* <Typography variant="subtitle2">Type</Typography> */}
               <Typography variant="subtitle2">Upload File</Typography>
               <Typography variant="subtitle2">Status</Typography>
               <Typography variant="subtitle2">Report Date</Typography>
@@ -447,8 +447,8 @@ export default function AuditedGST3B({
                 sx={{
                   display: { xs: 'none', md: 'grid' },
                   gridTemplateColumns: {
-                    md: '1fr 2fr 2fr 1fr 1.5fr 120px',
-                    lg: '1fr 2fr 1.5fr 1.2fr 1.8fr 120px',
+                    md: '1fr 2.5fr 1fr 1.5fr 140px',
+                    lg: '1fr 3fr 1fr 1.8fr 160px',
                   },
                   border: '1px solid',
                   borderTop: 'none',
@@ -492,7 +492,7 @@ export default function AuditedGST3B({
                   ))}
                 </Select>
 
-                <Box>
+                {/* <Box>
                   <RadioGroup
                     row
                     value={doc.auditedType}
@@ -516,7 +516,7 @@ export default function AuditedGST3B({
                       sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
                     />
                   </RadioGroup>
-                </Box>
+                </Box> */}
                 <Box>
                   {!doc.file ? (
                     <Typography variant="body2" sx={{ color: 'text.disabled' }}>

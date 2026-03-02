@@ -38,6 +38,7 @@ import { useGetKycProgress } from 'src/api/companyKyc';
 import { useGetCompanySectorTypes } from 'src/api/sectorType';
 import Logo from 'src/components/logo';
 import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import { indianStates } from 'src/_mock/_state';
 
 // ----------------------------------------------------------------------
 
@@ -272,7 +273,17 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (EntityTypes && !EntityTypesEmpty) {
-      setEntityOptions(EntityTypes);
+      const allowedTypes = [
+        'private_limited_company',
+        'llp',
+        'public_ltd_company',
+        'partnership_firm',
+        'sole_proprietorship',
+      ];
+
+      const filtered = EntityTypes.filter((item) => allowedTypes.includes(item.value));
+
+      setEntityOptions(filtered);
     } else {
       setEntityOptions([]);
     }
@@ -613,8 +624,16 @@ export default function KYCBasicInfo() {
               </Grid>
 
               <Grid xs={12} md={4}>
-                <RHFTextField name="gstin" label="GSTIN *" placeholder="Enter GSTIN" />
+                <RHFSelect name="companyEntityTypeId" label="Company Type *">
+                  <MenuItem value="">Select Entity Type</MenuItem>
+                  {entityOptions.map((opt) => (
+                    <MenuItem key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </RHFSelect>
               </Grid>
+
               <Grid xs={12} md={4}>
                 <Controller
                   name="dateOfIncorporation"
@@ -638,12 +657,35 @@ export default function KYCBasicInfo() {
               </Grid>
 
               <Grid xs={12} md={4}>
+                <RHFTextField name="gstin" label="GSTIN *" placeholder="Enter GSTIN" />
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <RHFSelect name="companySectorTypeId" label="Sector Type *">
+                  <MenuItem value="">Select Sector Type</MenuItem>
+                  {sectorOptions.map((opt) => (
+                    <MenuItem key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </RHFSelect>
+              </Grid>
+
+              <Grid xs={12} md={4}>
                 <RHFTextField name="city" label="City of Incorporation*" placeholder="City" />
               </Grid>
 
               <Grid xs={12} md={4}>
                 <RHFSelect name="state" label="State of Incorporation*">
-                  <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                  <MenuItem value="" disabled>
+                    Select State
+                  </MenuItem>
+
+                  {indianStates.map((state) => (
+                    <MenuItem key={state.id} value={state.value}>
+                      {state.label}
+                    </MenuItem>
+                  ))}
                 </RHFSelect>
               </Grid>
 
@@ -664,27 +706,6 @@ export default function KYCBasicInfo() {
                   label="MSME / Udyam No."
                   placeholder="Enter MSME Number"
                 />
-              </Grid>
-
-              <Grid xs={12} md={4}>
-                <RHFSelect name="companyEntityTypeId" label="Entity Type *">
-                  <MenuItem value="">Select Entity Type</MenuItem>
-                  {entityOptions.map((opt) => (
-                    <MenuItem key={opt.id} value={opt.id}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </RHFSelect>
-              </Grid>
-              <Grid xs={12} md={4}>
-                <RHFSelect name="companySectorTypeId" label="Sector Type *">
-                  <MenuItem value="">Select Sector Type</MenuItem>
-                  {sectorOptions.map((opt) => (
-                    <MenuItem key={opt.id} value={opt.id}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </RHFSelect>
               </Grid>
             </Grid>
 

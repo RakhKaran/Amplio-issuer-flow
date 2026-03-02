@@ -52,7 +52,11 @@ export default function AddGuarantorForm({
   const isViewMode = currentGurantor;
 
   const NewUserSchema = Yup.object().shape({
-    guarantorName: Yup.string().required('Name is required'),
+    guarantorName: Yup.string().when('guarantorType', {
+      is: 'Corporate',
+      then: (schema) => schema.required('Company Name is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     email: Yup.string()
       .required('Email is required')
       .email('Please enter a valid email address')
@@ -79,14 +83,10 @@ export default function AddGuarantorForm({
     adharCardFile: Yup.mixed().when('guarantorType', {
       is: 'individual',
       then: (schema) =>
-        schema.test(
-          'fileRequired',
-          'Aadhar card is required',
-          function (value) {
-            if (currentGurantor?.id) return true; // ✅ edit mode
-            return !!value;
-          }
-        ),
+        schema.test('fileRequired', 'Aadhar card is required', function (value) {
+          if (currentGurantor?.id) return true; // ✅ edit mode
+          return !!value;
+        }),
       otherwise: (schema) => schema.notRequired(),
     }),
     fullName: Yup.string().required("Guarantor's Full Name is required"),
@@ -95,8 +95,14 @@ export default function AddGuarantorForm({
       .transform((value) => value?.toUpperCase())
       .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format')
       .required('PAN Number is required'),
+    dateOfBirth: Yup.date().when('guarantorType', {
+      is: 'Individual',
+      then: (schema) =>
+        schema.required('Date of Birth is required').max(new Date(), 'DOB cannot be in future'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     adharNumber: Yup.string().when('guarantorType', {
-      is: 'individual',
+      is: 'Individual',
       then: (schema) =>
         schema
           .required('Aadhar Number is required')
@@ -124,6 +130,7 @@ export default function AddGuarantorForm({
       fullName: currentGurantor?.fullName || '',
       estimetedNetWorth: currentGurantor?.estimatedNetWorth || '',
       panNumber: currentGurantor?.panNumber || '',
+      dateOfBirth: currentGurantor?.dateOfBirth ? new Date(currentGurantor.dateOfBirth) : null,
       adharNumber: currentGurantor?.adharNumber || '',
       adharCardFile: currentGurantor?.companyAadhar || null,
       panCardFile: currentGurantor?.companyPan || null,
@@ -138,7 +145,6 @@ export default function AddGuarantorForm({
     [currentGurantor]
   );
 
-
   const methods = useForm({
     resolver: yupResolver(NewUserSchema),
     defaultValues,
@@ -151,7 +157,6 @@ export default function AddGuarantorForm({
     control,
     formState: { isSubmitting, errors },
   } = methods;
-
 
   const netWorth = useWatch({
     control,
@@ -168,7 +173,6 @@ export default function AddGuarantorForm({
       shouldDirty: true,
     });
   }, [netWorth, setValue]);
-
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -227,8 +231,6 @@ export default function AddGuarantorForm({
 
       // ✅ Backend-aligned payload
       const payload = {
-        guarantorCompanyName: data.guarantorName,
-        CIN: isCorporate ? data.cin : '',
         phoneNumber: data.phoneNumber,
         email: data.email,
         guarantorType: data.guarantorType,
@@ -236,14 +238,27 @@ export default function AddGuarantorForm({
         estimatedNetWorth: Number(data.estimetedNetWorth),
         fullName: data.fullName,
         panNumber: data.panNumber,
-        adharNumber: isCorporate ? '' : data.adharNumber,
+
+        ...(data.guarantorType === 'Corporate' && {
+          guarantorCompanyName: data.guarantorName,
+          CIN: data.cin,
+        }),
+
+        ...(data.guarantorType === 'Individual' && {
+          dateOfBirth: data.dateOfBirth,
+          adharNumber: data.adharNumber,
+        }),
+
         companyPanId: panCardFileId,
-        companyAadharId: isCorporate ? null : adharCardFileId,
-        boardResolutonId: isCorporate ? boardResolutionFileId : null,
-        gstCertificateId: isCorporate ? (gstCertificateFileId || null) : null,
-        financialStatementId: isCorporate ? (financialStatementFileId || null) : null,
-        addressProofId: !isCorporate ? (addressProofFileId || null) : null,
-        itrId: !isCorporate ? (itrFileId || null) : null,
+        companyAadharId: data.guarantorType === 'Individual' ? adharCardFileId : undefined,
+        boardResolutonId: data.guarantorType === 'Corporate' ? boardResolutionFileId : undefined,
+        gstCertificateId:
+          data.guarantorType === 'Corporate' ? gstCertificateFileId || undefined : undefined,
+        financialStatementId:
+          data.guarantorType === 'Corporate' ? financialStatementFileId || undefined : undefined,
+        addressProofId:
+          data.guarantorType === 'Individual' ? addressProofFileId || undefined : undefined,
+        itrId: data.guarantorType === 'Individual' ? itrFileId || undefined : undefined,
       };
       let response;
 
@@ -284,6 +299,15 @@ export default function AddGuarantorForm({
       reset(defaultValues);
     }
   }, [open, currentGurantor, defaultValues, reset]);
+
+  useEffect(() => {
+    if (selectedGuarantorType === 'Corporate') {
+      setValue('dateOfBirth', undefined);
+    } else {
+      setValue('guarantorName', undefined);
+      setValue('cin', undefined);
+    }
+  }, [selectedGuarantorType, setValue]);
 
   // useEffect(() => {
   //   if (!panFile?.id) return;
@@ -425,7 +449,7 @@ export default function AddGuarantorForm({
             pt: 2,
           }}
         >
-          <DialogTitle color='primary.main' sx={{ p: 0 }}>
+          <DialogTitle color="primary.main" sx={{ p: 0 }}>
             {currentGurantor?.id ? 'Edit Guarantor' : 'Add Guarantor'}
           </DialogTitle>
           <Iconify
@@ -448,7 +472,7 @@ export default function AddGuarantorForm({
               <RHFSelect
                 name="guarantorType"
                 label="Guarantor Type*"
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               >
                 {guarantorType.map((role) => (
                   <MenuItem key={role.value} value={role.value}>
@@ -459,14 +483,16 @@ export default function AddGuarantorForm({
             </Grid>
 
             {/* Row 1 */}
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="guarantorName"
-                label="Company Name*"
-                // disabled={isViewMode}
-                inputProps={{ style: { textTransform: 'uppercase' } }}
-              />
-            </Grid>
+            {selectedGuarantorType === 'Corporate' && (
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="guarantorName"
+                  label="Company Name*"
+                  // disabled={isViewMode}
+                  inputProps={{ style: { textTransform: 'uppercase' } }}
+                />
+              </Grid>
+            )}
 
             {selectedGuarantorType === 'Corporate' && (
               <Grid item xs={12} md={6}>
@@ -474,7 +500,7 @@ export default function AddGuarantorForm({
                   name="cin"
                   label="CIN*"
 
-                // disabled={isViewMode}
+                  // disabled={isViewMode}
                 />
               </Grid>
             )}
@@ -484,7 +510,7 @@ export default function AddGuarantorForm({
               <RHFTextField
                 name="email"
                 label="Email*"
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -493,17 +519,13 @@ export default function AddGuarantorForm({
                 name="phoneNumber"
                 label="Phone Number*"
                 inputProps={{ maxLength: 10 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
             {/* Row 3 */}
             <Grid item xs={12} md={6}>
-              <RHFPriceField
-                name="estimetedNetWorth"
-                label="Estimated Net Worth*"
-
-              />
+              <RHFPriceField name="estimetedNetWorth" label="Estimated Net Worth*" />
             </Grid>
 
             <Grid item xs={12} md={6}>
@@ -515,7 +537,6 @@ export default function AddGuarantorForm({
             </Grid>
 
             {/* Row 4 */}
-
 
             {/* Full width uploads */}
 
@@ -543,7 +564,7 @@ export default function AddGuarantorForm({
                     'image/jpeg': ['.jpg', '.jpeg'],
                   }}
                   fullWidth
-                // disabled={isViewMode}
+                  // disabled={isViewMode}
                 />
                 {getErrorMessage('panCardFile')}
               </Grid>
@@ -560,7 +581,7 @@ export default function AddGuarantorForm({
                     'image/jpeg': ['.jpg', '.jpeg'],
                   }}
                   fullWidth
-                // disabled={isViewMode}
+                  // disabled={isViewMode}
                 />
                 {getErrorMessage('panCardFile')}
               </Grid>
@@ -570,7 +591,7 @@ export default function AddGuarantorForm({
                 name="fullName"
                 label="Full Name* (as per PAN)"
                 inputProps={{ style: { textTransform: 'uppercase' } }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
 
@@ -580,9 +601,41 @@ export default function AddGuarantorForm({
                 name="panNumber"
                 label="PAN Number*"
                 inputProps={{ maxLength: 10 }}
-              // disabled={isViewMode}
+                // disabled={isViewMode}
               />
             </Grid>
+
+            {selectedGuarantorType === 'Individual' && (
+              <Grid item xs={12} md={6}>
+                <Controller
+                  name="dateOfBirth"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <DatePicker
+                      label="Date of Birth*"
+                      format="dd/MM/yyyy"
+                      value={
+                        field.value
+                          ? field.value instanceof Date
+                            ? field.value
+                            : new Date(field.value)
+                          : null
+                      }
+                      onChange={(newValue) => {
+                        field.onChange(newValue);
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!error,
+                          helperText: error?.message,
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            )}
 
             {selectedGuarantorType === 'Corporate' && (
               <>
@@ -596,7 +649,7 @@ export default function AddGuarantorForm({
                       'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                     fullWidth
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                   {getErrorMessage('boardResolutionFile')}
                 </Grid>
@@ -610,7 +663,7 @@ export default function AddGuarantorForm({
                       'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                     fullWidth
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                   {getErrorMessage('gstCertificateFile')}
                 </Grid>
@@ -624,7 +677,7 @@ export default function AddGuarantorForm({
                       'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                     fullWidth
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                   {getErrorMessage('financialStatementFile')}
                 </Grid>
@@ -655,18 +708,17 @@ export default function AddGuarantorForm({
                       'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                     fullWidth
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                   {getErrorMessage('adharCardFile')}
                 </Grid>
-
 
                 <Grid item xs={12} md={6}>
                   <RHFTextField
                     name="adharNumber"
                     label="Aadhaar Number*"
                     inputProps={{ maxLength: 12 }}
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -679,7 +731,7 @@ export default function AddGuarantorForm({
                       'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                     fullWidth
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                   {getErrorMessage('addressProofFile')}
                 </Grid>
@@ -693,11 +745,10 @@ export default function AddGuarantorForm({
                       'image/jpeg': ['.jpg', '.jpeg'],
                     }}
                     fullWidth
-                  // disabled={isViewMode}
+                    // disabled={isViewMode}
                   />
                   {getErrorMessage('itrFile')}
                 </Grid>
-
               </>
             )}
           </Grid>

@@ -66,8 +66,14 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
           trustName: Yup.string().required('Trust name is required'),
           securityDocRef: Yup.string().required('Security document ref is required'),
           securityDocument: Yup.mixed().required('Security document is required'),
-          // assetCoverCertificate: Yup.mixed().required('Asset cover certificate is required'),
-          // valuationReport: Yup.mixed().required('Valuation report is required'),
+          forcedSaleValue: Yup.number()
+            .nullable()
+            .transform((value, originalValue) => (originalValue === '' ? null : value))
+            .typeError('Forced Sale Value must be a number'),
+
+          valuerName: Yup.string().nullable(),
+
+          valuerCertificate: Yup.mixed().nullable(),
           remark: Yup.string().nullable(),
         })
       )
@@ -89,6 +95,9 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
           securityDocument: null,
           assetCoverCertificate: null,
           valuationReport: null,
+          forcedSaleValue: '',
+          valuerName: '',
+          valuerCertificate: null,
           remark: '',
         },
       ],
@@ -130,6 +139,11 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
       securityDocument: null,
       assetCoverCertificate: null,
       valuationReport: null,
+
+      forcedSaleValue: '',
+      valuerName: '',
+      valuerCertificate: null,
+
       remark: '',
     });
   };
@@ -137,17 +151,37 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
   const onSubmit = handleSubmit(async (data) => {
     try {
       const payload = {
-        collateralAssets: data.collateralAssets.map((asset) => ({
-          estimatedValue: asset.estimatedValue,
-          securityDocumentRef: asset.securityDocRef,
-          trustName: asset.trustName,
-          valuationDate: asset.valuationDate,
-          description: asset.description,
-          collateralTypesId: asset.collateralType,
-          chargeTypesId: asset.chargeType,
-          ownershipTypesId: asset.ownershipType,
-          securityDocumentId: asset.securityDocument.id,
-        })),
+        collateralAssets: data.collateralAssets.map((asset) => {
+          const obj = {
+            estimatedValue: Number(asset.estimatedValue),
+            securityDocumentRef: asset.securityDocRef,
+            trustName: asset.trustName,
+            valuationDate: asset.valuationDate,
+            description: asset.description,
+            collateralTypesId: asset.collateralType,
+            chargeTypesId: asset.chargeType,
+            ownershipTypesId: asset.ownershipType,
+            securityDocumentId: asset.securityDocument.id,
+            remark: asset.remark || '',
+          };
+
+          // ✅ Only add if valid number
+          if (asset.forcedSaleValue !== '' && asset.forcedSaleValue != null) {
+            obj.forcedSaleValue = Number(asset.forcedSaleValue);
+          }
+
+          // ✅ Only add if non-empty string
+          if (asset.valuerName && asset.valuerName.trim() !== '') {
+            obj.valuerName = asset.valuerName.trim();
+          }
+
+          // ✅ Only add if file exists
+          if (asset.valuerCertificate?.id) {
+            obj.valuerCertificateId = String(asset.valuerCertificate.id);
+          }
+
+          return obj;
+        }),
       };
 
       // 1️⃣ Save collateral
@@ -271,12 +305,21 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
       valuationDate: asset.valuationDate ? new Date(asset.valuationDate) : null,
       trustName: asset.trustName ?? '',
       securityDocRef: asset.securityDocumentRef ?? '',
+      forcedSaleValue: asset.forcedSaleValue ?? '',
+      valuerName: asset.valuerName ?? '',
       securityDocument: asset.securityDocument
         ? {
-          id: asset.securityDocument.id,
-          fileOriginalName: asset.securityDocument.fileOriginalName,
-          fileUrl: asset.securityDocument.fileUrl,
-        }
+            id: asset.securityDocument.id,
+            fileOriginalName: asset.securityDocument.fileOriginalName,
+            fileUrl: asset.securityDocument.fileUrl,
+          }
+        : null,
+      valuerCertificate: asset.valuerCertificate
+        ? {
+            id: asset.valuerCertificate.id,
+            fileOriginalName: asset.valuerCertificate.fileOriginalName,
+            fileUrl: asset.valuerCertificate.fileUrl,
+          }
         : null,
       assetCoverCertificate: null,
       valuationReport: null,
@@ -288,7 +331,6 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
 
     isInitialLoad.current = false;
   }, [stepData, stepDataLoading]);
-
   const handleAutoFill = async () => {
     const autoData = NewCollateralAsset();
     const pdfPool = [
@@ -464,7 +506,23 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
                 />
               </Grid>
 
-              {/* Ownership Type */}
+              {/* Forced Sale Value */}
+              <Grid item xs={12} md={4}>
+                <RHFPriceField
+                  name={`collateralAssets.${index}.forcedSaleValue`}
+                  label="Forced Sale Value (FSV)"
+                  fullWidth
+                />
+              </Grid>
+
+              {/* Valuer Name */}
+              <Grid item xs={12} md={4}>
+                <RHFTextField
+                  name={`collateralAssets.${index}.valuerName`}
+                  label="Valuer Name"
+                  fullWidth
+                />
+              </Grid>
 
               {/* Remarks */}
               <Grid item xs={12} md={6}>
@@ -515,7 +573,7 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
                 <Stack spacing={2}>
                   <RHFCustomFileUploadBox
                     name={`collateralAssets.${index}.securityDocument`}
-                    label="Security Document"
+                    label="Security Document*"
                     accept={{
                       'application/pdf': ['.pdf'],
                       'image/png': ['.png'],
@@ -524,6 +582,19 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
                   />
                   <YupErrorMessage name={`collateralAssets.${index}.securityDocument`} />
                 </Stack>
+              </Grid>
+
+              {/* Valuer Certificate Upload */}
+              <Grid item xs={12} md={12}>
+                <RHFCustomFileUploadBox
+                  name={`collateralAssets.${index}.valuerCertificate`}
+                  label="Valuer Certificate Upload"
+                  accept={{
+                    'application/pdf': ['.pdf'],
+                    'image/png': ['.png'],
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                  }}
+                />
               </Grid>
             </Grid>
           </Card>

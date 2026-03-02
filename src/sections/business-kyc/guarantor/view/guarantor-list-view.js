@@ -244,7 +244,7 @@ export default function GuarantorListView({ setActiveStepId, saveStepData, perce
 
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage)}
                   />
 
                   <TableNoData notFound={notFound} />
