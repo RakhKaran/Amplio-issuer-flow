@@ -94,6 +94,8 @@ export function NewCollateralAsset() {
         valuationDate: new Date('2025-01-15'),
         trustName: 'Sample Trust Name',
         securityDocRef: 'SEC-REF-2025-001',
+        forcedSaleValue: '50000000',
+        valuerName: 'Benz',
         remark: 'Prime collateral for issue coverage',
     };
     return data;
@@ -123,6 +125,7 @@ export function NewGuarantorDetails(options = {}) {
         cin: isCorporate ? 'U12345MH2020PTC123456' : '',
         estimetedNetWorth: '250000000',
         guarantorAmountLimit: '100000000',
+        dateOfBirth: new Date('2/4/2000'),
         fullName: isCorporate ? 'AUTHORIZED SIGNATORY' : 'RAHUL SHARMA',
         panNumber: isCorporate ? 'ABCDE1234F' : 'FGHIJ5678K',
         adharNumber: isCorporate ? '' : '123412341234',

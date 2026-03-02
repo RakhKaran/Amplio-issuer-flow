@@ -309,17 +309,17 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
       valuerName: asset.valuerName ?? '',
       securityDocument: asset.securityDocument
         ? {
-            id: asset.securityDocument.id,
-            fileOriginalName: asset.securityDocument.fileOriginalName,
-            fileUrl: asset.securityDocument.fileUrl,
-          }
+          id: asset.securityDocument.id,
+          fileOriginalName: asset.securityDocument.fileOriginalName,
+          fileUrl: asset.securityDocument.fileUrl,
+        }
         : null,
       valuerCertificate: asset.valuerCertificate
         ? {
-            id: asset.valuerCertificate.id,
-            fileOriginalName: asset.valuerCertificate.fileOriginalName,
-            fileUrl: asset.valuerCertificate.fileUrl,
-          }
+          id: asset.valuerCertificate.id,
+          fileOriginalName: asset.valuerCertificate.fileOriginalName,
+          fileUrl: asset.valuerCertificate.fileUrl,
+        }
         : null,
       assetCoverCertificate: null,
       valuationReport: null,
@@ -378,8 +378,15 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
           shouldValidate: true,
         });
       }
-    });
 
+      if (uploadedSecurityDocs[index]) {
+        setValue(`collateralAssets.${index}.valuerCertificate`, uploadedSecurityDocs[index], {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      }
+    });
     const uploadedCount = uploadedSecurityDocs.filter(Boolean).length;
     if (uploadedCount > 0) {
       enqueueSnackbar(`Autofill uploaded ${uploadedCount} collateral PDF(s)`, {
