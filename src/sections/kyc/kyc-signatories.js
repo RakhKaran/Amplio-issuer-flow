@@ -103,6 +103,8 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
           position: 'relative',
           overflow: 'hidden',
           minHeight: 600,
+          display: 'flex',          // ✅ add
+          flexDirection: 'column',
         }}
       >
         <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
@@ -189,97 +191,99 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             />
           </Box>
         </Box>
-        <TableContainer component={Paper} sx={{ mb: 5 }}>
-          <Table sx={{ minWidth: 650 }} aria-label="signatories table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell align="left">Role</TableCell>
-                <TableCell align="left">Email</TableCell>
-                <TableCell align="left">Phone</TableCell>
-                <TableCell align="left">DOB</TableCell>
-                <TableCell align="left">PAN</TableCell>
-                <TableCell align="left">Board Resolution</TableCell>
-                <TableCell align="left">Status</TableCell>
-                {/* <TableCell align="right">Actions</TableCell> */}
-              </TableRow>
-            </TableHead>
+        <Box sx={{ flexGrow: 1 }}>
+          <TableContainer component={Paper} sx={{ mb: 5 }}>
+            <Table sx={{ minWidth: 650 }} aria-label="signatories table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell align="left">Role</TableCell>
+                  <TableCell align="left">Email</TableCell>
+                  <TableCell align="left">Phone</TableCell>
+                  <TableCell align="left">DOB</TableCell>
+                  <TableCell align="left">PAN</TableCell>
+                  <TableCell align="left">Board Resolution</TableCell>
+                  <TableCell align="left">Status</TableCell>
+                  {/* <TableCell align="right">Actions</TableCell> */}
+                </TableRow>
+              </TableHead>
 
-            <TableBody>
-              {filteredRows.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>{row.fullName}</TableCell>
+              <TableBody>
+                {filteredRows.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{row.fullName}</TableCell>
 
-                  <TableCell>{row.designationValue}</TableCell>
+                    <TableCell>{row.designationValue}</TableCell>
 
-                  <TableCell>{row.email}</TableCell>
+                    <TableCell>{row.email}</TableCell>
 
-                  <TableCell>{row.phone}</TableCell>
+                    <TableCell>{row.phone}</TableCell>
 
-                  <TableCell>
-                    {row.submittedDateOfBirth
-                      ? new Date(row.submittedDateOfBirth).toLocaleDateString()
-                      : '-'}
-                  </TableCell>
+                    <TableCell>
+                      {row.submittedDateOfBirth
+                        ? new Date(row.submittedDateOfBirth).toLocaleDateString()
+                        : '-'}
+                    </TableCell>
 
-                  {/* PAN */}
-                  <TableCell>
-                    {row.panCardFile?.fileUrl ? (
-                      <a
-                        href={row.panCardFile.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#1976d2', textDecoration: 'underline' }}
+                    {/* PAN */}
+                    <TableCell>
+                      {row.panCardFile?.fileUrl ? (
+                        <a
+                          href={row.panCardFile.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#1976d2', textDecoration: 'underline' }}
+                        >
+                          View
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+
+                    {/* Board Resolution */}
+                    <TableCell>
+                      {row.boardResolutionFile?.fileUrl ? (
+                        <a
+                          href={row.boardResolutionFile.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#1976d2', textDecoration: 'underline' }}
+                        >
+                          View
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell>
+                      <Label
+                        color={row.status === 1 ? 'success' : 'warning'}
                       >
-                        View
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
+                        {row.status === 1 ? 'Verified' : 'Pending'}
+                      </Label>
+                    </TableCell>
 
-                  {/* Board Resolution */}
-                  <TableCell>
-                    {row.boardResolutionFile?.fileUrl ? (
-                      <a
-                        href={row.boardResolutionFile.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#1976d2', textDecoration: 'underline' }}
-                      >
-                        View
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-
-                  {/* Status */}
-                  <TableCell>
-                    <Label
-                      color={row.status === 1 ? 'success' : 'warning'}
-                    >
-                      {row.status === 1 ? 'Verified' : 'Pending'}
-                    </Label>
-                  </TableCell>
-
-                  {/* Actions */}
-                  {/* <TableCell align="right">
+                    {/* Actions */}
+                    {/* <TableCell align="right">
                       <IconButton color="error">
                         <Iconify icon="eva:trash-2-outline" />
                       </IconButton>
                     </TableCell> */}
-                </TableRow>
-              ))}
+                  </TableRow>
+                ))}
 
-              <TableNoData notFound={notFound} />
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Box sx={{ textAlign: 'right', mt: 3 }}>
+                <TableNoData notFound={notFound} />
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+        <Box sx={{ textAlign: 'right', mt: 'auto', pt: 3 }}>
           <Button
             variant="contained"
-            color='primary'
+            color="primary"
             disabled={signatories.length < 1}
             onClick={() => {
               percent(100);
