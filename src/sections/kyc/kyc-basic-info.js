@@ -186,21 +186,21 @@ export default function KYCBasicInfo() {
       // Build extracted PAN object
       const extractedPan = extractedPanDetails
         ? {
-            extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
-            extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
-          }
+          extractedCompanyName: extractedPanDetails.extractedCompanyName || '',
+          extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
+        }
         : undefined;
 
       // Build submitted PAN object
       const submittedPan = humanEdited
         ? {
-            submittedCompanyName: formData.panHoldersName,
-            submittedPanNumber: formData.panNumber,
-          }
+          submittedCompanyName: formData.panHoldersName,
+          submittedPanNumber: formData.panNumber,
+        }
         : {
-            submittedCompanyName: formData.panHoldersName,
-            submittedPanNumber: formData.panNumber,
-          };
+          submittedCompanyName: formData.panHoldersName,
+          submittedPanNumber: formData.panNumber,
+        };
 
       // FINAL API PAYLOAD — 100% MATCHES THE API FORMAT YOU GAVE
       const payload = {
@@ -423,7 +423,11 @@ export default function KYCBasicInfo() {
     applyValue('dateOfIncorporation', autoData.dateOfIncorporation);
     applyValue('msmeUdyamRegistrationNo', autoData.msmeUdyamRegistrationNo);
     applyValue('city', autoData.city);
-    applyValue('state', autoData.state);
+    
+    const stateObj = indianStates.find(
+      (s) => s.label === autoData.state
+    );
+    applyValue('state', stateObj ? stateObj.value : '');
     applyValue('country', autoData.country);
     applyValue('panNumber', autoData.panNumber);
     applyValue('panHoldersName', autoData.companyName);
