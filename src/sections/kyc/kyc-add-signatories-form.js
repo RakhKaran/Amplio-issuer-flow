@@ -297,7 +297,18 @@ export default function KYCAddSignatoriesForm({
         shouldTouch: true,
       });
 
-    Object.entries(autoData).forEach(([key, value]) => applyValue(key, value));
+    // First map everything except role
+    Object.entries(autoData).forEach(([key, value]) => {
+      if (key !== 'role') {
+        applyValue(key, value);
+      }
+    });
+
+    const matchedRole = ROLES.find(
+      (r) => r.label.toLowerCase() === autoData.role?.toLowerCase()
+    );
+
+    applyValue('role', matchedRole ? matchedRole.value : '');
 
     try {
       const uploadTargets = [

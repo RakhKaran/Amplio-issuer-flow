@@ -201,9 +201,9 @@ export default function FinancialDetails({
           </Grid>
 
           <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <LoadingButton type="button" variant="contained" color="primary" onClick={handleAutoFill}>
+            {/* <LoadingButton type="button" variant="contained" color="primary" onClick={handleAutoFill}>
               Autofill
-            </LoadingButton>
+            </LoadingButton> */}
             <LoadingButton
               type="submit"
               loading={isSubmitting}
