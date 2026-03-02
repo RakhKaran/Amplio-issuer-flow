@@ -72,7 +72,7 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
           file: doc.file ?? null,
           status: 'Uploaded',
           reportDate: doc.reportDate ? new Date(doc.reportDate) : null,
-          auditedType: doc.auditedType, // audited | provisional
+          // auditedType: doc.auditedType, // audited | provisional
         }))
       );
       return;
@@ -89,7 +89,7 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
           file: null,
           status: 'Pending',
           reportDate: null,
-          auditedType: 'audited',
+          // auditedType: 'audited',
         }))
       );
     }
@@ -98,43 +98,43 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
   // -----------------------------
   // Handlers
   // -----------------------------
- const handleFileUpload = async (e, id) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const handleFileUpload = async (e, id) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const res = await axiosInstance.post('/files', formData);
+      const res = await axiosInstance.post('/files', formData);
 
-    const uploadedFile = res?.data?.files?.[0];
+      const uploadedFile = res?.data?.files?.[0];
 
-    if (!uploadedFile?.id) {
-      enqueueSnackbar('File upload failed', { variant: 'error' });
-      return;
-    }
+      if (!uploadedFile?.id) {
+        enqueueSnackbar('File upload failed', { variant: 'error' });
+        return;
+      }
 
-    setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.id === id
-          ? {
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          doc.id === id
+            ? {
               ...doc,
               file: uploadedFile,
               status: 'Uploaded',
               reportDate: new Date(),
             }
-          : doc
-      )
-    );
+            : doc
+        )
+      );
 
-    enqueueSnackbar('File uploaded successfully', { variant: 'success' });
-  } catch (error) {
-    enqueueSnackbar('File upload failed', { variant: 'error' });
-  } finally {
-    e.target.value = null;
-  }
-};
+      enqueueSnackbar('File uploaded successfully', { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar('File upload failed', { variant: 'error' });
+    } finally {
+      e.target.value = null;
+    }
+  };
 
 
   const handleDelete = (id) => {
@@ -187,12 +187,12 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
         return false;
       }
 
-      if (!doc.auditedType) {
-        enqueueSnackbar(`Audited/Provisional type required for FY ${yearLabel}`, {
-          variant: 'error',
-        });
-        return false;
-      }
+      // if (!doc.auditedType) {
+      //   enqueueSnackbar(`Audited/Provisional type required for FY ${yearLabel}`, {
+      //     variant: 'error',
+      //   });
+      //   return false;
+      // }
 
       if (!doc.periodStartYear || !doc.periodEndYear) {
         enqueueSnackbar(`Invalid financial year for FY ${yearLabel}`, {
@@ -216,7 +216,7 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
         baseFinancialEndYear: Number(currentBaseYear),
         periodStartYear: doc.periodStartYear,
         periodEndYear: doc.periodEndYear,
-        auditedType: doc.auditedType,
+        // auditedType: doc.auditedType,
         auditorName: auditorName.trim(),
         reportDate: doc.reportDate,
         fileId: doc.file.id,
@@ -284,8 +284,8 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
               sx={{
                 display: { xs: 'none', md: 'grid' },
                 gridTemplateColumns: {
-                  md: '1fr 2fr 2fr 1fr 1.5fr 120px',
-                  lg: '1fr 2fr 1.5fr 1.2fr 1.8fr 120px',
+                  md: '1fr 2.5fr 1fr 1.5fr 140px',
+                  lg: '1fr 3fr 1fr 1.8fr 160px',
                 },
                 border: '1px solid',
                 borderColor: 'divider',
@@ -303,7 +303,7 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
               }}
             >
               <Typography variant="subtitle2">Year</Typography>
-              <Typography variant="subtitle2">Type</Typography>
+              {/* <Typography variant="subtitle2">Type</Typography> */}
               <Typography variant="subtitle2">Upload File</Typography>
               <Typography variant="subtitle2">Status</Typography>
               <Typography variant="subtitle2">Report Date</Typography>
@@ -319,8 +319,8 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
                 sx={{
                   display: { xs: 'none', md: 'grid' },
                   gridTemplateColumns: {
-                    md: '1fr 2fr 2fr 1fr 1.5fr 120px',
-                    lg: '1fr 2fr 1.5fr 1.2fr 1.8fr 120px',
+                    md: '1fr 2.5fr 1fr 1.5fr 140px',
+                    lg: '1fr 3fr 1fr 1.8fr 160px',
                   },
                   border: '1px solid',
                   borderTop: 'none',
@@ -345,7 +345,7 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
               >
                 <Typography variant="body2">{`${doc.periodStartYear}-${doc.periodEndYear}`}</Typography>
 
-                <Box>
+                {/* <Box>
                   <RadioGroup
                     row
                     value={doc.auditedType}
@@ -369,7 +369,7 @@ export default function AuditedGSTR9({ currentBaseYear, setPercent, setProgress,
                       sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
                     />
                   </RadioGroup>
-                </Box>
+                </Box> */}
                 <Box>
                   {!doc.file ? (
                     <Typography variant="body2" sx={{ color: 'text.disabled' }}>
