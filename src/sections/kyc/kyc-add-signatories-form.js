@@ -28,20 +28,13 @@ import axiosInstance from 'src/utils/axios';
 import { Typography } from '@mui/material';
 
 const ROLES = [
-  { value: 'DIRECTOR', label: 'Director' },
-  { value: 'MANAGING_DIRECTOR', label: 'Managing Director (MD)' },
-  { value: 'WHOLETIME_DIRECTOR', label: 'Whole-Time Director' },
-  { value: 'CFO', label: 'Chief Financial Officer (CFO)' },
-  { value: 'CEO', label: 'Chief Executive Officer (CEO)' },
-  { value: 'AUTHORISED_SIGNATORY', label: 'Authorised Signatory' },
-  { value: 'PARTNER', label: 'Partner' },
-  { value: 'COMPANY', label: 'Company' },
-  { value: 'PROPRIETOR', label: 'Proprietor' },
-  { value: 'COMPANY_SECRETARY', label: 'Company Secretary (CS)' },
-  { value: 'MANAGER', label: 'Manager' },
-  { value: 'AUTHORIZED_REPRESENTATIVE', label: 'Authorized Representative' },
-  { value: 'NOMINEE', label: 'Nominee' },
-  { value: 'OTHER', label: 'Other' },
+  { value: 'director', label: 'Director' },
+  { value: 'authorized_signatory', label: 'Authorized Signatory' },
+  { value: 'cfo', label: 'CFO' },
+  { value: 'ceo', label: 'CEO' },
+  { value: 'proprietor', label: 'Proprietor (if sole prop)' },
+  { value: 'partner', label: 'Partner (if LLP/Partnership)' },
+  { value: 'other', label: 'Other' },
 ];
 
 export default function KYCAddSignatoriesForm({
@@ -74,7 +67,7 @@ export default function KYCAddSignatoriesForm({
       .matches(/^[0-9]{10}$/, 'Please enter a valid 10-digit phone number'),
     role: Yup.string().required('Role is required'),
     customDesignation: Yup.string().when('role', (role, schema) =>
-      role === 'OTHER' ? schema.required('Please enter designation') : schema.notRequired()
+      role === 'other' ? schema.required('Please enter designation') : schema.notRequired()
     ),
     submittedPanFullName: Yup.string()
       .transform((value) => value?.toUpperCase())
@@ -89,7 +82,7 @@ export default function KYCAddSignatoriesForm({
       if (isEditMode) return true;
       return !!value;
     }),
-    boardResolution: Yup.mixed().required('fileRequired', 'Board Resolution is required')
+    boardResolution: Yup.mixed().required('fileRequired', 'Board Resolution is required'),
   });
 
   const defaultValues = useMemo(
@@ -159,7 +152,7 @@ export default function KYCAddSignatoriesForm({
         enqueueSnackbar('PAN card is required', { variant: 'error' });
         return;
       }
-        if (!boardResolutionFileId && !isEditMode) {
+      if (!boardResolutionFileId && !isEditMode) {
         enqueueSnackbar('Board resolution is required', { variant: 'error' });
         return;
       }
@@ -185,10 +178,8 @@ export default function KYCAddSignatoriesForm({
 
           panCardFileId,
           boardResolutionFileId,
-          designationType: isCustom ? 'custom' : 'dropdown',
-          designationValue: isCustom
-            ? data.customDesignation
-            : ROLES.find((r) => r.value === data.role)?.label || data.role,
+          designationType: data.role === 'other' ? 'custom' : 'dropdown',
+          designationValue: data.role === 'other' ? data.customDesignation : data.role,
         },
       };
 
@@ -299,7 +290,7 @@ export default function KYCAddSignatoriesForm({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle color='primary'>
+        <DialogTitle color="primary">
           {isViewMode ? 'View Signatory' : isEditMode ? 'Edit Signatory' : 'Add New Signatory'}
         </DialogTitle>
 
@@ -329,6 +320,9 @@ export default function KYCAddSignatoriesForm({
               inputProps={{ maxLength: 10 }}
             />
             <RHFSelect name="role" label="Designation*" disabled={isViewMode}>
+              <MenuItem value="" disabled>
+                Select Designation
+              </MenuItem>
               {ROLES.map((role) => (
                 <MenuItem key={role.value} value={role.value}>
                   {role.label}
@@ -336,7 +330,7 @@ export default function KYCAddSignatoriesForm({
               ))}
             </RHFSelect>
 
-            {watchRole === 'OTHER' && !isViewMode && (
+            {watchRole === 'other' && !isViewMode && (
               <RHFTextField
                 name="customDesignation"
                 label="Enter Custom Designation*"
@@ -344,7 +338,9 @@ export default function KYCAddSignatoriesForm({
               />
             )}
 
-            <Typography variant='subtitle2' color='primary'>PAN Section</Typography>
+            <Typography variant="subtitle2" color="primary">
+              PAN Section
+            </Typography>
 
             {isViewMode ? (
               <>
@@ -401,8 +397,9 @@ export default function KYCAddSignatoriesForm({
                   )}
                 />
 
-                <Typography variant='subtitle2' color='primary'>Board Resolution Section</Typography>
-
+                <Typography variant="subtitle2" color="primary">
+                  Board Resolution Section
+                </Typography>
 
                 <RHFCustomFileUploadBox
                   name="boardResolution"
@@ -431,7 +428,7 @@ export default function KYCAddSignatoriesForm({
               <Button
                 type="submit"
                 variant="contained"
-                color='primary'
+                color="primary"
                 disabled={isSubmitting}
                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
               >

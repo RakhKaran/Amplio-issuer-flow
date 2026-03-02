@@ -180,6 +180,9 @@ export const paths = {
       edit: (id) => `${ROOTS.DASHBOARD}/signatories/${id}/edit`,
       details: (id) => `${ROOTS.DASHBOARD}/signatories/${id}`,
     },
+    transactions: {
+      view: `${ROOTS.DASHBOARD}/transactions/view`,
+    },
     bankDetails: {
       details: (id) => `${ROOTS.DASHBOARD}/bankDetails/${id}`,
     },

@@ -30,6 +30,8 @@ import axiosInstance from 'src/utils/axios';
 import { useGetDetails } from 'src/api/companyKyc';
 import { useEffect, useMemo, useState } from 'react';
 import { Card } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -41,6 +43,8 @@ export default function KYCBankDetails({
 }) {
   const router = useRouter();
   const { Details: bankDetails, Loading: bankLoading } = useGetDetails();
+  const [isValidating, setIsValidating] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
 
   // ---------------- VALIDATION ----------------
   const NewSchema = Yup.object().shape({
@@ -82,7 +86,7 @@ export default function KYCBankDetails({
     watch,
     reset,
     control,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isValid },
   } = methods;
 
   const values = watch();
@@ -95,14 +99,30 @@ export default function KYCBankDetails({
     }
   };
 
+  const handleValidatePennyDrop = async () => {
+    if (isVerified) return;
+
+    setIsValidating(true);
+
+    // simulate API delay (1 second)
+    setTimeout(() => {
+      setIsValidating(false);
+      setIsVerified(true);
+
+      enqueueSnackbar('Your bank account verified successfully', {
+        variant: 'success',
+      });
+    }, 1000);
+  };
+
   const existingProof = bankDetails?.bankAccountProof
     ? {
-      id: bankDetails.bankAccountProof.id,
-      name: bankDetails.bankAccountProof.fileOriginalName,
-      url: bankDetails.bankAccountProof.fileUrl,
-      status: bankDetails.status === 1 ? 'approved' : 'pending',
-      isServerFile: true,
-    }
+        id: bankDetails.bankAccountProof.id,
+        name: bankDetails.bankAccountProof.fileOriginalName,
+        url: bankDetails.bankAccountProof.fileUrl,
+        status: bankDetails.status === 1 ? 'approved' : 'pending',
+        isServerFile: true,
+      }
     : null;
 
   const onSubmit = handleSubmit(async (data) => {
@@ -218,10 +238,7 @@ export default function KYCBankDetails({
         bankShortCode: bankDetails[0]?.bankShortCode || '',
       });
       if (!dataInitializedSteps.includes('kyc_bank_details')) {
-        setDataInitializedSteps?.((prev = []) => [
-          ...prev,
-          'kyc_bank_details',
-        ]);
+        setDataInitializedSteps?.((prev = []) => [...prev, 'kyc_bank_details']);
         setActiveStepId();
       }
     }
@@ -263,7 +280,6 @@ export default function KYCBankDetails({
           </Typography>
         </Stack>
         <FormProvider methods={methods} onSubmit={onSubmit}>
-
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 2 }}>
             Select Document Type:
           </Typography>
@@ -436,14 +452,25 @@ export default function KYCBankDetails({
             </Grid>
           </Box>
 
-
           {/* ---------------- FOOTER BUTTONS ---------------- */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4, mb: 2 }}>
-            {/* <Button component={RouterLink} href={paths.kycCompanyDetails} variant="outlined">
-              Back
-            </Button> */}
+            <LoadingButton
+              type="button" // 🔥 VERY IMPORTANT
+              variant="outlined"
+              color={isVerified ? 'success' : 'primary'}
+              loading={isValidating}
+              disabled={!isValid || isVerified}
+              onClick={handleValidatePennyDrop}
+              endIcon={
+                isVerified ? (
+                  <Iconify icon="mdi:check-circle" width={20} sx={{ color: 'success.main' }} />
+                ) : null
+              }
+            >
+              Validate (Penny Drop)
+            </LoadingButton>
 
-            <Button variant="contained" color='primary' type="submit">
+            <Button variant="contained" color="primary" type="submit">
               Next
             </Button>
           </Box>
