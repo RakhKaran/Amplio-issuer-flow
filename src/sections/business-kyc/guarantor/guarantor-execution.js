@@ -117,7 +117,7 @@ export default function GuarantorExecution() {
         )}
 
         {/* DATA FOUND */}
-        {!loading && data && (
+     {!loading && data && !data?.isVerified && (
           <>
             {/* Guarantor Info */}
             <Paper

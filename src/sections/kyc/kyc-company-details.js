@@ -317,7 +317,11 @@ export default function KYCCompanyDetails({
         documents: uploadedDocuments,
       };
 
-      const response = await axiosInstance.post('/company-profiles/kyc-upload-documents', payload);
+      const hasExistingDocs = documents.some((doc) => doc?.documentFile?.id);
+
+      const response = hasExistingDocs
+        ? await axiosInstance.patch('/company-profiles/kyc-upload-documents', payload)
+        : await axiosInstance.post('/company-profiles/kyc-upload-documents', payload);
 
       if (!response?.data?.success) {
         enqueueSnackbar(response?.data?.message || 'Unable to upload documents', {
@@ -331,11 +335,8 @@ export default function KYCCompanyDetails({
       setActiveStepId();
     } catch (error) {
       const message = error?.error?.message || error?.message || 'Error uploading documents';
-      const normalizedMessage = /duplicate|already exists|unique/i.test(message)
-        ? 'One or more documents are already uploaded for this requirement.'
-        : message;
 
-      enqueueSnackbar(normalizedMessage, { variant: 'error' });
+      enqueueSnackbar(message, { variant: 'error' });
     }
   });
 
@@ -486,8 +487,8 @@ export default function KYCCompanyDetails({
                   {typeof kycSectionError === 'string'
                     ? kycSectionError
                     : kycSectionError?.message ||
-                      kycSectionError?.error?.message ||
-                      'Unable to load required documents'}
+                    kycSectionError?.error?.message ||
+                    'Unable to load required documents'}
                 </Typography>
               )}
 

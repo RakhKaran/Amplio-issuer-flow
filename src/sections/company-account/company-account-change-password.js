@@ -89,7 +89,7 @@ export default function CompanyAccountChangePassword() {
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Stack component={Card} spacing={3} sx={{ p: 3 }}>
+      <Stack spacing={3} sx={{ p: 3 }}>
         <RHFTextField
           name="oldPassword"
           type={password.value ? 'text' : 'password'}

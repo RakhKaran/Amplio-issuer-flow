@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
-import { Box, Button, Card, Grid, MenuItem, Stack, Typography } from '@mui/material';
+import { Box, Button, Card, Grid, IconButton, MenuItem, Stack, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
@@ -20,6 +20,7 @@ import FormProvider, {
   RHFTextField,
 } from 'src/components/hook-form';
 import { NewCollateralAsset } from 'src/forms-autofilled-script/kyb-script/newkyb';
+import Iconify from 'src/components/iconify';
 import axiosInstance from 'src/utils/axios';
 import * as Yup from 'yup';
 
@@ -121,7 +122,7 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
 
   const collateralAssets = watch('collateralAssets');
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: 'collateralAssets',
   });
@@ -146,6 +147,10 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
 
       remark: '',
     });
+  };
+
+  const handleRemove = (index) => {
+    remove(index);
   };
 
   const onSubmit = handleSubmit(async (data) => {
@@ -320,6 +325,10 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
           fileOriginalName: asset.valuerCertificate.fileOriginalName,
           fileUrl: asset.valuerCertificate.fileUrl,
         }
+          id: asset.valuerCertificate.id,
+          fileOriginalName: asset.valuerCertificate.fileOriginalName,
+          fileUrl: asset.valuerCertificate.fileUrl,
+        }
         : null,
       assetCoverCertificate: null,
       valuationReport: null,
@@ -417,9 +426,28 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
               mt: '0px',
             }}
           >
-            <Typography variant="h5" fontWeight="bold" mb={2} color="primary">
-              Collateral & Asset Verification
-            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 3,
+              }}
+            >
+              <Typography variant="h4" fontWeight="bold" color="primary">
+                Collateral & Asset Verification
+              </Typography>
+
+              {fields.length > 1 && (
+                <IconButton
+                  color="error"
+                  onClick={() => handleRemove(index)}
+                  sx={{ fontSize: 32 }}
+                >
+                  <Iconify icon="mdi:close-circle-outline" width={28} />
+                </IconButton>
+              )}
+            </Box>
             <Grid container spacing={3}>
               {/* Collateral Type */}
               <Grid item xs={12} md={4}>

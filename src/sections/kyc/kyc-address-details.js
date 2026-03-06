@@ -187,12 +187,21 @@ export default function KYCAddressDetails({
         addressProofId: form.addressProof?.id,
       };
 
-      await axiosInstance.post('/company-profiles/kyc-address-details', {
-        usersId,
-        registeredAddress: registeredAddressPayload,
-        correspondenceAddress: correspondenceAddressPayload,
-      });
+      let res;
 
+      if (registeredAddress) {
+        res = await axiosInstance.patch('/company-profiles/kyc-address-details', {
+          usersId,
+          registeredAddress: registeredAddressPayload,
+          correspondenceAddress: correspondenceAddressPayload,
+        });
+      } else {
+        res = await axiosInstance.post('/company-profiles/kyc-address-details', {
+          usersId,
+          registeredAddress: registeredAddressPayload,
+          correspondenceAddress: correspondenceAddressPayload,
+        });
+      }
       enqueueSnackbar('Address details saved successfully', {
         variant: 'success',
       });
