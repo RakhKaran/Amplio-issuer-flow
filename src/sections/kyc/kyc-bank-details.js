@@ -117,12 +117,12 @@ export default function KYCBankDetails({
 
   const existingProof = bankDetails?.bankAccountProof
     ? {
-        id: bankDetails.bankAccountProof.id,
-        name: bankDetails.bankAccountProof.fileOriginalName,
-        url: bankDetails.bankAccountProof.fileUrl,
-        status: bankDetails.status === 1 ? 'approved' : 'pending',
-        isServerFile: true,
-      }
+      id: bankDetails.bankAccountProof.id,
+      name: bankDetails.bankAccountProof.fileOriginalName,
+      url: bankDetails.bankAccountProof.fileUrl,
+      status: bankDetails.status === 1 ? 'approved' : 'pending',
+      isServerFile: true,
+    }
     : null;
 
   const onSubmit = handleSubmit(async (data) => {
@@ -190,10 +190,24 @@ export default function KYCBankDetails({
 
       console.log('📤 FINAL BANK PAYLOAD:', payload);
 
-      const res = await axiosInstance.post('/company-profiles/kyc-bank-details', payload);
+      let res;
+
+      if (bankDetails && bankDetails.length > 0) {
+        res = await axiosInstance.patch(
+          '/company-profiles/kyc-bank-details',
+          payload
+        );
+      } else {
+        res = await axiosInstance.post(
+          '/company-profiles/kyc-bank-details',
+          payload
+        );
+      }
 
       if (res?.data?.success) {
-        enqueueSnackbar('Bank details submitted successfully!', { variant: 'success' });
+        enqueueSnackbar('Bank details submitted successfully!', {
+          variant: 'success',
+        });
         percent(100);
         setActiveStepId();
       } else {
