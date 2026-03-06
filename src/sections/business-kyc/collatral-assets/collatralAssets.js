@@ -325,10 +325,6 @@ export default function CollateralAssets({ percent, setActiveStepId }) {
           fileOriginalName: asset.valuerCertificate.fileOriginalName,
           fileUrl: asset.valuerCertificate.fileUrl,
         }
-          id: asset.valuerCertificate.id,
-          fileOriginalName: asset.valuerCertificate.fileOriginalName,
-          fileUrl: asset.valuerCertificate.fileUrl,
-        }
         : null,
       assetCoverCertificate: null,
       valuationReport: null,
